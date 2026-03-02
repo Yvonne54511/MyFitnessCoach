@@ -1,4 +1,6 @@
 <Solution>
-  <Folder Name="/ReadMe/" />
+  <Folder Name="/ReadMe/">
+    <File Path="ReadMe/Yvonne.txt" />
+  </Folder>
   <Project Path="Project-MyFitnessCoach/Project-MyFitnessCoach.csproj" Id="3c0b97ec-6f4c-4122-9581-b622a33095a2" />
 </Solution>
