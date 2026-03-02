@@ -1,1 +1,7 @@
-[]Member
+[]Register
+[]Login
+[]Confirmation
+[]Forgot Password
+[]Reset Password
+[]Change Password
+[]Logout
