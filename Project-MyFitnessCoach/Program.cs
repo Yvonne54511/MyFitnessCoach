@@ -1,3 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+using Project_MyFitnessCoach.Models.EfModels;
+using Project_MyFitnessCoach.Models.Repositories;
+using Project_MyFitnessCoach.Models.Services;
+
 namespace Project_MyFitnessCoach
 {
 	public class Program
@@ -8,6 +13,14 @@ namespace Project_MyFitnessCoach
 
 			// Add services to the container.
 			builder.Services.AddControllersWithViews();
+
+			// 設定資料庫連接
+			builder.Services.AddDbContext<MyFitnessCoachDbContext>(options =>
+				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+			// 註冊產品服務
+			builder.Services.AddScoped<IProductRepository, ProductRepository>();
+			builder.Services.AddScoped<ProductService>();
 
 			var app = builder.Build();
 
