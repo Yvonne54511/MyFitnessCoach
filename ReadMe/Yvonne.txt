@@ -1,7 +1,21 @@
-[]Register
-[]Login
-[]Confirmation
-[]Forgot Password
-[]Reset Password
-[]Change Password
-[]Logout
+[]建立資料表
+[]連結資料庫
+	設定EfModels
+	設定連線字串
+	註冊 DbContext 到 DI	
+
+[]註冊Register
+[]登入
+[]email驗證Email Confirmation
+	[]寄送驗證信
+[]登入/登出 Login/Logout
+[]修改密碼Change Password
+[]忘記密碼Forget Password
+[]重設密碼Reset Password
+[]外部登入External Login
+	-google登入
+[]使用者管理User Management
+	-查看使用者列表View User List
+	-編輯使用者Edit User
+	-刪除使用者Delete User
+
