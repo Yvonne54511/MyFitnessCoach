@@ -4,8 +4,19 @@
 	v 設定連線字串
 	v 註冊 DbContext 到 DI	
 
-[]註冊Register
 []登入
+  v url:/Users/Login/
+  v UserController
+	v LoginDto:Account,Password
+	v LoginViewModel:Account,Password
+	- UserService:
+		驗證帳密
+	- UserRepository
+
+  v View
+[]Cookies
+	權限分級
+[]註冊Register
 []email驗證Email Confirmation
 	[]寄送驗證信
 []登入/登出 Login/Logout
