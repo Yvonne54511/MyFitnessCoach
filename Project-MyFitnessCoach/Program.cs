@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using Project_MyFitnessCoach.Models.EfModels;
+
 namespace Project_MyFitnessCoach
 {
 	public class Program
@@ -8,6 +11,8 @@ namespace Project_MyFitnessCoach
 
 			// Add services to the container.
 			builder.Services.AddControllersWithViews();
+			builder.Services.AddDbContext<MyFitnessCoachDbContext>(options =>
+options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 			var app = builder.Build();
 

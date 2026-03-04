@@ -1,8 +1,8 @@
-[]建立資料表
-[]連結資料庫
-	設定EfModels
-	設定連線字串
-	註冊 DbContext 到 DI	
+[V]建立資料表 3hr
+[V]連結資料庫
+	v 設定EfModels
+	v 設定連線字串
+	v 註冊 DbContext 到 DI	
 
 []註冊Register
 []登入
