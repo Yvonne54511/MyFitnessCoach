@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <Folder Include="Models\EfModels\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
