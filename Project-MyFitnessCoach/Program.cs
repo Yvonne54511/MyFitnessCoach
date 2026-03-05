@@ -14,13 +14,18 @@ namespace Project_MyFitnessCoach
 			// Add services to the container.
 			builder.Services.AddControllersWithViews();
 
-			// ³]©w¸ê®Æ®w³s±µ
+			// ï¿½]ï¿½wï¿½ï¿½Æ®wï¿½sï¿½ï¿½
 			builder.Services.AddDbContext<MyFitnessCoachDbContext>(options =>
 				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-			// µù¥U²£«~ªA°È
+			// ï¿½ï¿½ï¿½Uï¿½ï¿½ï¿½~ï¿½Aï¿½ï¿½
+			// U~A
 			builder.Services.AddScoped<IProductRepository, ProductRepository>();
 			builder.Services.AddScoped<ProductService>();
+			builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+			builder.Services.AddScoped<CategoryService>();
+			builder.Services.AddScoped<ITopUpPlanRepository, TopUpPlanRepository>();
+			builder.Services.AddScoped<TopUpPlanService>();
 
 			var app = builder.Build();
 

@@ -28,7 +28,7 @@ namespace Project_MyFitnessCoach.Models.ViewModels
 		[Display(Name = "排序")]
 		public int SortOrder { get; set; }
 
-		[Display(Name = "是否啟用")]
+		[Display(Name = "是否上架")]
 		public bool IsActive { get; set; }
 
 		[Display(Name = "分類名稱")]
