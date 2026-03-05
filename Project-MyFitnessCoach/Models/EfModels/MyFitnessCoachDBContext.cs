@@ -161,6 +161,11 @@ public partial class MyFitnessCoachDBContext : DbContext
             entity.Property(e => e.Receiver)
                 .IsRequired()
                 .HasMaxLength(30);
+
+            entity.HasOne(d => d.Member).WithMany(p => p.ProductOrders)
+                .HasForeignKey(d => d.MemberId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ProductOrders_Members");
         });
 
         modelBuilder.Entity<ProductOrderDetail>(entity =>

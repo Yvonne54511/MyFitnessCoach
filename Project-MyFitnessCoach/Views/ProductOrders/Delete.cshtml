@@ -1,0 +1,48 @@
+@model Project_MyFitnessCoach.Models.DTOs.ProductOrderDto
+
+@{
+    ViewData["Title"] = "刪除訂單";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4 text-danger">刪除訂單</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-action="Index">訂單管理</a></li>
+        <li class="breadcrumb-item active">刪除確認</li>
+    </ol>
+
+    <div class="alert alert-danger">
+        <h4><i class="fas fa-exclamation-triangle"></i> 警告！</h4>
+        您確定要刪除這筆訂單嗎？此操作將會連同<strong>訂單明細</strong>一併刪除，且無法復原。
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            訂單資訊回顧
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">訂單編號</dt>
+                <dd class="col-sm-9">#@Model.Id</dd>
+
+                <dt class="col-sm-3">訂單時間</dt>
+                <dd class="col-sm-9">@Model.CreateAt.ToString("yyyy-MM-dd HH:mm")</dd>
+
+                <dt class="col-sm-3">會員帳號</dt>
+                <dd class="col-sm-9">@Model.MemberName</dd>
+
+                <dt class="col-sm-3">收件人</dt>
+                <dd class="col-sm-9">@Model.Receiver</dd>
+
+                <dt class="col-sm-3">總金額</dt>
+                <dd class="col-sm-9 text-danger fw-bold">@Model.OriginalAmount.ToString("C0")</dd>
+            </dl>
+
+            <form asp-action="Delete">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger">確認刪除</button>
+                <a asp-action="Index" class="btn btn-secondary">取消並返回</a>
+            </form>
+        </div>
+    </div>
+</div>

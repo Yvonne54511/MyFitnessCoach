@@ -1,3 +1,8 @@
+using MyFitnessCoachDb.Models.EfModels;
+using Microsoft.EntityFrameworkCore;
+using Project_MyFitnessCoach.Models.Repositories;
+using Project_MyFitnessCoach.Models.Services;
+
 namespace Project_MyFitnessCoach
 {
 	public class Program
@@ -7,7 +12,16 @@ namespace Project_MyFitnessCoach
 			var builder = WebApplication.CreateBuilder(args);
 
 			// Add services to the container.
+			builder.Services.AddRazorPages();
 			builder.Services.AddControllersWithViews();
+			
+			// Register DbContext
+			builder.Services.AddDbContext<MyFitnessCoachDBContext>(options =>
+				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+			// 註冊三層式架構組件
+			builder.Services.AddScoped<IProductOrderRepository, ProductOrderRepository>();
+			builder.Services.AddScoped<ProductOrderService>();
 
 			var app = builder.Build();
 
@@ -25,6 +39,8 @@ namespace Project_MyFitnessCoach
 			app.UseRouting();
 
 			app.UseAuthorization();
+
+			app.MapRazorPages();
 
 			app.MapControllerRoute(
 				name: "default",

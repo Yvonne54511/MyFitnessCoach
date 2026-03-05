@@ -27,5 +27,7 @@ public partial class ProductOrder
 
     public int Status { get; set; }
 
+    public virtual Member Member { get; set; }
+
     public virtual ICollection<ProductOrderDetail> ProductOrderDetails { get; set; } = new List<ProductOrderDetail>();
 }

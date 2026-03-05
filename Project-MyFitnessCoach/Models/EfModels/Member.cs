@@ -31,6 +31,8 @@ public partial class Member
 
     public int CancelCount { get; set; }
 
+    public virtual ICollection<ProductOrder> ProductOrders { get; set; } = new List<ProductOrder>();
+
     public virtual User User { get; set; }
 
     public virtual UserWallet UserWallet { get; set; }

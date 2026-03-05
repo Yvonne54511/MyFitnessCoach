@@ -1,0 +1,80 @@
+﻿@model MyFitnessCoachDb.Models.EfModels.ProductOrder
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Edit</title>
+</head>
+<body>
+
+<h4>ProductOrder</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="MemberId" class="control-label"></label>
+                <select asp-for="MemberId" class="form-control" asp-items="ViewBag.MemberId"></select>
+                <span asp-validation-for="MemberId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CreateAt" class="control-label"></label>
+                <input asp-for="CreateAt" class="form-control" />
+                <span asp-validation-for="CreateAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="OriginalAmount" class="control-label"></label>
+                <input asp-for="OriginalAmount" class="form-control" />
+                <span asp-validation-for="OriginalAmount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DiscountAmount" class="control-label"></label>
+                <input asp-for="DiscountAmount" class="form-control" />
+                <span asp-validation-for="DiscountAmount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Receiver" class="control-label"></label>
+                <input asp-for="Receiver" class="form-control" />
+                <span asp-validation-for="Receiver" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Address" class="control-label"></label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Mobile" class="control-label"></label>
+                <input asp-for="Mobile" class="form-control" />
+                <span asp-validation-for="Mobile" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TaxNumber" class="control-label"></label>
+                <input asp-for="TaxNumber" class="form-control" />
+                <span asp-validation-for="TaxNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Status" class="control-label"></label>
+                <input asp-for="Status" class="form-control" />
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+</body>
+</html>
