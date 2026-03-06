@@ -1,32 +1,79 @@
-[V]�إ߸�ƪ� 3hr
-[V]�s����Ʈw
-	v �]�wEfModels
-	v �]�w�s�u�r��
-	v ���U DbContext �� DI	
+[V] 建立資料庫 3hr
+[V] 連線資料庫
+    v 設定 EfModels
+    v 設定連線字串
+    v 註冊 DbContext 及 DI
 
-[]�n�J
-  v url:/Users/Login/
-  v UserController
-	v LoginDto:Account,Password
-	v LoginViewModel:Account,Password
-	- UserService:
-		���ұb�K
-	- UserRepository
+[V] 登入 (Login)
+    v URL: /Auth/Login/
+    v Controller: UsersController
+    - DTO: LoginDto (Account, Password)
+    - ViewModel: LoginViewModel (Account, Password)
+    - Service: UserService (驗證帳密邏輯)
+    - Repository: UserRepository (查詢使用者)
+    v View
 
-  v View
-[]Cookies
-	�v������
-[]���URegister
-[]email����Email Confirmation
-	[]�H�e���ҫH
-[]�n�J/�n�X Login/Logout
-[]�ק�K�XChange Password
-[]�ѰO�K�XForget Password
-[]���]�K�XReset Password
-[]�~���n�JExternal Login
-	-google�n�J
-[]�ϥΪ̺޲zUser Management
-	-�d�ݨϥΪ̦C��View User List
-	-�s��ϥΪ�Edit User
-	-�R���ϥΪ�Delete User
+[] 註冊 (Register)
+    - URL: /Auth/Register
+    - Controller: UsersController
+    - DTO: RegisterDto (Account, Password, Email, Name)
+    - ViewModel: RegisterViewModel
+    - Service: UserService (密碼雜湊加密、檢查帳號重複、建立會員邏輯)
+    - Repository: UserRepository (Insert Users/Member)
 
+[] 驗證 (Confirmation)
+    - URL: /Auth/ActivateRegister
+    - Controller: AuthController
+    - Service: UserService (產生/驗證 Token、發送驗證郵件)
+    - Repository: UserRepository (更新 EmailConfirmed 狀態)
+
+[] 登出 (Logout)
+    - URL: /Users/Logout
+    - Controller: UsersController
+    - Service: UserService (清除登入狀態 SignOut)
+
+[] 修改密碼 (Change Password)
+    - URL: /Users/ChangePassword
+    - Controller: UsersController
+    - DTO: ChangePasswordDto (OldPassword, NewPassword)
+    - ViewModel: ChangePasswordViewModel
+    - Service: UserService (驗證舊密碼、雜湊新密碼)
+    - Repository: UserRepository (Update PasswordHash)
+
+[] 忘記/重設密碼 (Forget / Reset Password)
+    - URL: /Users/ForgotPassword, /Users/ResetPassword
+    - Controller: UsersController
+    - DTO: ResetPasswordDto
+    - ViewModel: ForgotPasswordViewModel, ResetPasswordViewModel
+    - Service: UserService (產生重設權杖、發送郵件、更新密碼)
+    - Repository: UserRepository
+
+[] 第三方登入 (External Login - Google)
+    - URL: /Users/ExternalLogin, /Users/ExternalLoginCallback
+    - Controller: UsersController
+    - Service: UserService (OAuth 資訊處理、關聯現有帳號)
+    - Repository: UserRepository / UserExternalLoginRepository
+
+[] 用戶管理 - 列表 (View User List)
+    - URL: /Users/Index
+    - Controller: UsersController
+    - ViewModel: IEnumerable<UserListViewModel>
+    - Service: UserService (獲取分頁/篩選後的用戶列表)
+    - Repository: UserRepository (Select Joined Roles)
+
+[] 用戶管理 - 編輯 (Edit User)
+    - URL: /Users/Edit/{id}
+    - Controller: UsersController
+    - DTO: UserEditDto
+    - ViewModel: UserEditViewModel
+    - Service: UserService (更新用戶基本資料與權限)
+    - Repository: UserRepository (Update User)
+
+[] 用戶管理 - 刪除 (Delete User)
+    - URL: /Users/Delete/{id}
+    - Controller: UsersController
+    - Service: UserService (執行刪除或軟刪除邏輯)
+    - Repository: UserRepository (Delete User)
+
+[] Cookies / Middleware
+    - 授權與身分驗證 (Authentication/Authorization)
