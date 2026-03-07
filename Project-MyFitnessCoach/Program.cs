@@ -14,7 +14,9 @@ namespace Project_MyFitnessCoach
 			builder.Services.AddDbContext<MyFitnessCoachDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-		
+			// Register Auth Services and Repositories
+			builder.Services.AddScoped<Project_MyFitnessCoach.Repositories.IAuthRepository, Project_MyFitnessCoach.Repositories.AuthRepository>();
+			builder.Services.AddScoped<Project_MyFitnessCoach.Services.IAuthService, Project_MyFitnessCoach.Services.AuthService>();
 
 			var app = builder.Build();
 

@@ -28,8 +28,9 @@
                 <br />
                 <br />
                 <br />
-                <h2>  陪你養成
-                <br />一輩子的好習慣
+                <h2>
+                    陪你養成
+                    <br />一輩子的好習慣
                 </h2>
             </div>
         </div>
@@ -50,7 +51,14 @@
 
                 <div class="form-group mb-3">
                     <label asp-for="Password" class="control-label"></label>
-                    <input asp-for="Password" class="form-control" placeholder="請輸入英文及數字6-12碼" />
+                    <div class="input-group">
+                        <input asp-for="Password" class="form-control" type="password" id="passwordInput" placeholder="請輸入英文及數字6-12碼" />
+                        <div class="input-group-append">
+                            <span class="input-group-text" id="togglePassword" style="cursor: pointer;">
+                                <i class="fas fa-eye-slash" id="eyeIcon"></i>
+                            </span>
+                        </div>
+                    </div>
                     <span asp-validation-for="Password" class="text-danger small"></span>
                 </div>
 
@@ -69,8 +77,8 @@
             </form>
 
             <div class="login-links">
-                <a href="forgot-password.html">忘記密碼</a>
-                <a href="register.html">註冊新帳號</a>
+                <a href="#">忘記密碼</a>
+                <a asp-action="Register" asp-controller="Auth">註冊新帳號</a>
             </div>
         </div>
 
@@ -80,6 +88,21 @@
     <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
     <script src="~/js/sb-admin-2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#togglePassword').click(function () {
+                const passwordInput = $('#passwordInput');
+                const eyeIcon = $('#eyeIcon');
+                if (passwordInput.attr('type') === 'password') {
+                    passwordInput.attr('type', 'text');
+                    eyeIcon.removeClass('fa-eye-slash').addClass('fa-eye');
+                } else {
+                    passwordInput.attr('type', 'password');
+                    eyeIcon.removeClass('fa-eye').addClass('fa-eye-slash');
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

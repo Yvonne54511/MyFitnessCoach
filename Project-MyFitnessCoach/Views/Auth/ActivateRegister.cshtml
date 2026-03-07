@@ -1,0 +1,62 @@
+@{
+    Layout = null;
+    bool isSuccess = ViewBag.IsSuccess ?? false;
+    string message = ViewBag.Message ?? "驗證發生未知錯誤";
+}
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>MyFitnessCoach - 帳號啟用</title>
+
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700,800&display=swap" rel="stylesheet">
+    <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="~/css/Login.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="login-wrapper">
+        <div class="login-left">
+            <img src="~/img/LoginPhoto.png" alt="圖片" />
+            <div class="login-left-text text-secondary">
+                <br /><br /><br />
+                <h2>陪你養成<br />一輩子的好習慣</h2>
+            </div>
+        </div>
+
+        <div class="login-right">
+            <div class="text-center">
+                @if (isSuccess)
+                {
+                    <i class="fas fa-check-circle fa-4x text-success mb-4"></i>
+                    <h1 class="h3 text-gray-900 mb-4">啟用成功!</h1>
+                }
+                else
+                {
+                    <i class="fas fa-times-circle fa-4x text-danger mb-4"></i>
+                    <h1 class="h3 text-gray-900 mb-4">啟用失敗</h1>
+                }
+                
+                <p class="mb-4">@message</p>
+
+                @if (isSuccess)
+                {
+                    <a asp-action="Login" asp-controller="Auth" class="btn btn-warning btn-login">
+                        前往登入
+                    </a>
+                }
+                else
+                {
+                    <a asp-action="Register" asp-controller="Auth" class="btn btn-secondary btn-login">
+                        重新註冊
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</body>
+</html>

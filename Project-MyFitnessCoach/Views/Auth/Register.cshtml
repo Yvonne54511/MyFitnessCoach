@@ -1,0 +1,135 @@
+@model Project_MyFitnessCoach.Models.ViewModel.RegisterViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>MyFitnessCoach - 註冊新帳號</title>
+
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700,800&display=swap" rel="stylesheet">
+    <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="~/css/Login.css" rel="stylesheet">
+    <style>
+        .text-danger {
+            color: #e74a3b !important; /* 強制紅字 */
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-wrapper">
+
+        <!-- 左側：圖片 + 文字 -->
+        <div class="login-left">
+            <img src="~/img/LoginPhoto.png" alt="註冊頁面圖片" />
+            <div class="login-left-text text-secondary">
+                <br />
+                <br />
+                <br />
+                <h2>
+                    開始你的
+                    <br />健身旅程
+                </h2>
+            </div>
+        </div>
+
+        <!-- 右側：表單 -->
+        <div class="login-right">
+            <h1>註冊帳號</h1>
+            <p class="text-muted mb-4">加入我們，追蹤你的每一分進步!</p>
+
+            <form asp-action="Register" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Account" class="control-label"></label>
+                    <input asp-for="Account" class="form-control" placeholder="請輸入帳號" />
+                    <span asp-validation-for="Account" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Password" class="control-label"></label>
+                    <div class="input-group">
+                        <input asp-for="Password" class="form-control" type="password" id="passwordInput" placeholder="6-12碼英數" />
+                        <div class="input-group-append">
+                            <span class="input-group-text toggle-password" data-target="passwordInput" style="cursor: pointer;">
+                                <i class="fas fa-eye-slash"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="ConfirmPassword" class="control-label"></label>
+                    <div class="input-group">
+                        <input asp-for="ConfirmPassword" class="form-control" type="password" id="confirmPasswordInput" placeholder="再次輸入密碼" />
+                        <div class="input-group-append">
+                            <span class="input-group-text toggle-password" data-target="confirmPasswordInput" style="cursor: pointer;">
+                                <i class="fas fa-eye-slash"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="UserName" class="control-label"></label>
+                    <input asp-for="UserName" class="form-control" placeholder="您的姓名" />
+                    <span asp-validation-for="UserName" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Email" class="control-label"></label>
+                    <input asp-for="Email" class="form-control" placeholder="example@email.com" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label asp-for="Mobile" class="control-label"></label>
+                    <input asp-for="Mobile" class="form-control" placeholder="09xxxxxxxx" />
+                    <span asp-validation-for="Mobile" class="text-danger small"></span>
+                </div>
+
+                <input type="submit" value="立即註冊" class="btn btn-login btn-warning" />
+            </form>
+
+            <div class="login-links mt-3">
+                <a asp-action="Login" asp-controller="Auth">已有帳號？前往登入</a>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="~/vendor/jquery/jquery.min.js"></script>
+    <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="~/js/sb-admin-2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.toggle-password').click(function () {
+                const targetId = $(this).data('target');
+                const passwordInput = $('#' + targetId);
+                const eyeIcon = $(this).find('i');
+                
+                if (passwordInput.attr('type') === 'password') {
+                    passwordInput.attr('type', 'text');
+                    eyeIcon.removeClass('fa-eye-slash').addClass('fa-eye');
+                } else {
+                    passwordInput.attr('type', 'password');
+                    eyeIcon.removeClass('fa-eye').addClass('fa-eye-slash');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
