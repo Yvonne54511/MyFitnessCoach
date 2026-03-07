@@ -1,0 +1,107 @@
+Admin / Console 後台
+│
+├─ AccountController         // 登入 / 密碼管理
+│    ├ Login()
+│    ├ ForgotPassword()
+│    ├ ResetPassword()
+│    └ ChangePassword()
+│
+├─ StaffController           // 後台管理員帳號 CRUD
+│    ├ Index()        // 列表
+│    ├ Create()
+│    ├ Edit()
+│    └ Delete()
+│
+├─ RolesController           // 系統角色 CRUD
+│    ├ Index()
+│    ├ Create()
+│    ├ Edit()
+│    └ Delete()
+│
+├─ FunctionsController       // 系統功能 / 權限 CRUD
+│    ├ Index()
+│    ├ Create()
+│    ├ Edit()
+│    └ Delete()
+│
+├─ StaffRolesController      // 指派角色給員工
+│    ├ AssignRole()
+│    └ RevokeRole()
+│
+├─ InstructorController      // InstructorDetails CRUD
+│    ├ Index()          
+│    ├ Details(int id)  
+│    ├ Create()         
+│    ├ Edit(int id)     
+│    └ Delete(int id)   
+│
+├─ FoodCategoriesController  // 食物分類 CRUD
+│    ├ Index()        // 顯示分類列表
+│    ├ Create()
+│    ├ Edit(int id)
+│    └ Delete(int id)
+│
+├─ FoodsController           // 食物基本資訊 CRUD
+│    ├ Index()        // 顯示食物列表
+│    ├ Create()
+│    ├ Edit(int id)
+│    └ Delete(int id)
+│
+├─ NutrientsController       // 食物營養成分 CRUD
+│    ├ Index()        // 顯示營養成分列表
+│    ├ Create()       // 新增營養成分
+│    ├ Edit(int id)   // 編輯營養成分
+│    └ Delete(int id)
+│
+└─ FoodRecordsController     // 會員飲食日誌檢視
+     ├ Index()        // 顯示所有 FoodRecords
+     ├ Details(int id) // 查看單筆日誌
+     └ Filter()       // 可按日期 / 會員 / 餐別篩選
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/Account/Login
+/Account/ForgotPassword
+/Account/ResetPassword
+/Account/ChangePassword
+
+/Staff
+/Staff/Create
+/Staff/Edit
+/Staff/Delete
+
+/Roles
+/Roles/Create
+/Roles/Edit
+/Roles/Delete
+
+/Permissions
+/Permissions/Create
+/Permissions/Edit
+/Permissions/Delete
+
+/StaffRoles/Assign
+/StaffRoles/Revoke
