@@ -1,0 +1,63 @@
+@{
+    ViewData["Title"] = "新增點數儲值";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800">新增點數儲值</h1>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">儲值資訊</h6>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Recharge" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="form-group">
+                            <label for="memberId" class="control-label">會員 ID</label>
+                            <input type="number" name="memberId" id="memberId" class="form-control" placeholder="請輸入已註冊會員 ID" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pointAmount" class="control-label">儲值點數</label>
+                            <input type="number" name="pointAmount" id="pointAmount" class="form-control" placeholder="例如：100" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="price" class="control-label">付款金額</label>
+                            <input type="number" name="price" id="price" class="form-control" placeholder="例如：100" step="0.01" required />
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> 確認儲值
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">返回列表</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card shadow mb-4 border-left-info">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">提示資訊</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">儲值規則</div>
+                            <p class="mt-2">1. 必須是已註冊會員才能進行儲值。</p>
+                            <p>2. 儲值點數與金額必須大於 0。</p>
+                            <p>3. 儲值成功後，點數將立即匯入會員錢包，並記錄於變動紀錄中。</p>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-info-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
