@@ -76,17 +76,17 @@ https://gemini.google.com/app/c232e5a3db135bcc?hl=zh-TW&pageId=none}
     margin-left: 0;
     width: min(100%, 600px);
     min-height: 100%;
-    padding: 36px 20px 36px 12px;
+    padding: 36px 20px 36px 0;
     display: flex;
     flex-direction: column;
     justify-content:center;
     align-items: flex-start;
 }
 .hero-badge, .eyebrow {
-    display: inline-flex;
-    align-items: center;
+    display:flex;
+    align-items:flex-start;
     width: fit-content;
-    letter-spacing: .18em;
+/*    letter-spacing: .18em;*/
     font-size: .74rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -102,13 +102,14 @@ https://gemini.google.com/app/c232e5a3db135bcc?hl=zh-TW&pageId=none}
     margin: 18px 0 12px;
     font-family: var(--font-display);
     line-height: 1.08;
+    text-align: left;
 }
 .account-hero h1 {
     font-size: clamp(2.3rem, 3.6vw, 3.7rem);
-    max-width: 300px;
+    max-width: 500px;
 }
-.account-hero p { max-width: 280px; font-size: 1.02rem; color: #74533b; }
-.hero-points { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; max-width: 300px; }
+.hero-points { display: flex; flex-wrap: nowrap; gap: 12px; margin-top: 24px; max-width: 800px; justify-content: flex-start; }
+.account-hero p { max-width: 600px; font-size: 1.02rem; color: #74533b; text-align: left; }
 .hero-points span {
     padding: 12px 16px;
     border-radius: 999px;

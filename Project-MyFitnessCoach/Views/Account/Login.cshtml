@@ -8,7 +8,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>��x�n�J | MyFitnessCoach</title>
+    <title>登入帳戶 | MyFitnessCoach</title>
     <link rel="stylesheet" href="~/vendor/fontawesome-free/css/all.min.css" />
     <link rel="stylesheet" href="~/css/account.css" />
 </head>
@@ -16,15 +16,14 @@
     <main class="account-shell">
         <section class="account-hero nutrition-hero">
             <div class="hero-overlay-card">
-                <div class="hero-badge">My Fitness Coach</div>
-                <h1>�u�@���ӡA<br />�P���d�P��</h1>
-                <p>�����J�z�� �ǻ��M�~�ū� �гy�L���i��<p>
+                <h3 class="hero-badge">My Fitness Coach</h3>
+                
+                <h1>守護未來，<br />與健康同行</h1>
+                <p>落實初衷理念 傳遞專業溫度 創造無限可能</p>
                 <div class="hero-points">
-                    <span><i class="fas fa-sun"></i> �����޲z</span>
-                    
-                    <span><i class="fas fa-seedling"></i> �ƾڤ��R</span>
-                    
-                    <span><i class="fas fa-shield-alt"></i> �w�����@</span>
+                    <span><i class="fas fa-sun"></i> 成員管理</span>
+                    <span><i class="fas fa-seedling"></i> 數據分析</span>
+                    <span><i class="fas fa-shield-alt"></i> 安全防護</span>
                 </div>
             </div>
         </section>
@@ -32,8 +31,8 @@
         <section class="account-card warm-card">
             <div class="card-header">
                 <p class="eyebrow">WELCOME BACK</p>
-                <h2>�n�J��x</h2>
-                <p>�п�J�޲z�b���P�K�X�C</p>
+                <h2>登入帳戶</h2>
+                <p>請輸入管理帳號與密碼。</p>
             </div>
 
             @if (TempData["LoginMessage"] is string loginMessage)
@@ -50,7 +49,7 @@
                     <label asp-for="Account"></label>
                     <div class="input-frame">
                         <i class="fas fa-user"></i>
-                        <input asp-for="Account" placeholder="�п�J�b��" />
+                        <input asp-for="Account" placeholder="請輸入帳號" />
                     </div>
                     <span asp-validation-for="Account" class="field-error"></span>
                 </div>
@@ -59,20 +58,20 @@
                     <label asp-for="Password"></label>
                     <div class="input-frame">
                         <i class="fas fa-lock"></i>
-                        <input asp-for="Password" id="passwordInput" placeholder="�п�J�K�X" />
-                        <button type="button" class="icon-button" id="togglePassword" aria-label="��ܩ����ñK�X">
+                        <input asp-for="Password" id="passwordInput" placeholder="請輸入密碼" />
+                        <button type="button" class="icon-button" id="togglePassword" aria-label="顯示或隱藏密碼">
                             <i class="fas fa-eye-slash" id="eyeIcon"></i>
                         </button>
                     </div>
                     <span asp-validation-for="Password" class="field-error"></span>
                 </div>
 
-                <button type="submit" class="primary-button warm-button">�n�J��x</button>
+                <button type="submit" class="primary-button warm-button">登入帳戶</button>
             </form>
 
             <div class="card-links">
-                <a asp-action="ForgetPassword">�ѰO�K�X</a>
-                <a asp-controller="Auth" asp-action="Register">���U�s�b��</a>
+                <a asp-action="ForgetPassword">忘記密碼</a>
+                <a asp-controller="Auth" asp-action="Register">註冊新帳號</a>
             </div>
         </section>
     </main>
