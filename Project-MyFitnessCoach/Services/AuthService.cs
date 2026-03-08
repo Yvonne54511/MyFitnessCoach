@@ -15,7 +15,7 @@ namespace Project_MyFitnessCoach.Services
     {
         private readonly IAuthRepository _repo;
         private readonly PasswordHasher<User> _passwordHasher;
-        private readonly MyFitnessCoachDbContext _db; // Needed for transaction if repo doesn't handle it
+        private readonly MyFitnessCoachDbContext _db;
 
         public AuthService(IAuthRepository repo, MyFitnessCoachDbContext db)
         {
@@ -27,79 +27,76 @@ namespace Project_MyFitnessCoach.Services
         public (bool Success, string Message) Activate(int userId, string confirmCode)
         {
             var user = _db.Users.FirstOrDefault(u => u.Id == userId);
-            if (user == null) return (false, "æ‰¾ä¸åˆ°ä½¿ç”¨è€…");
-            if (user.IsConfirmed) return (true, "å¸³è™Ÿå·²é©—è­‰æˆåŠŸ");
-            if (user.NewMemberConfirmCode != confirmCode) return (false, "é©—è­‰ç¢¼ä¸æ­£ç¢º");
-            if (user.NewMemberConfirmCodeExpiry < DateTime.Now) return (false, "é©—è­‰ç¢¼å·²éæœŸ");
+            if (user == null) return (false, "§ä¤£¨ì¨Ï¥ÎªÌ¸ê®Æ");
+            if (user.IsConfirmed) return (true, "±b¸¹¤wÅçÃÒ¦¨¥\");
+            if (user.NewMemberConfirmCode != confirmCode) return (false, "ÅçÃÒ½X¿ù»~");
+            if (user.NewMemberConfirmCodeExpiry < DateTime.Now) return (false, "ÅçÃÒ½X¤w¹L´Á");
 
             user.IsConfirmed = true;
+            user.IsActive = true;
             user.NewMemberConfirmCode = null;
             user.NewMemberConfirmCodeExpiry = null;
             _db.SaveChanges();
 
-            return (true, "é©—è­‰æˆåŠŸï¼Œæ‚¨å¯ä»¥ç™»å…¥äº†");
+            return (true, "ÅçÃÒ¦¨¥\¡A²{¦b¥i¥Hµn¤J¨t²Î");
         }
 
         public (bool Success, string Message) Register(RegisterViewModel model)
         {
             if (_repo.IsAccountExist(model.Account))
             {
-                return (false, "æ­¤å¸³è™Ÿå·²å­˜åœ¨");
+                return (false, "±b¸¹¤w¦s¦b");
             }
 
             if (_repo.IsEmailExist(model.Email))
             {
-                return (false, "æ­¤é›»å­éƒµä»¶å·²è¨»å†Šé");
+                return (false, "¹q¤l«H½c¤w³Q¨Ï¥Î");
             }
 
-            using (var transaction = _db.Database.BeginTransaction())
+            using var transaction = _db.Database.BeginTransaction();
+            try
             {
-                try
+                var user = new User
                 {
-                    var user = new User
-                    {
-                        Account = model.Account,
-                        UserName = model.UserName,
-                        Email = model.Email,
-                        Mobile = model.Mobile,
-                        IsConfirmed = false, // æ”¹ç‚º falseï¼Œéœ€é©—è­‰
-                        NewMemberConfirmCode = Guid.NewGuid().ToString(), // ç”¢ç”Ÿé©—è­‰ç¢¼
-                        NewMemberConfirmCodeExpiry = DateTime.Now.AddHours(24), // 24å°æ™‚æœ‰æ•ˆ
-                        HashedPassword = "" // Placeholder
-                    };
+                    Account = model.Account,
+                    UserName = model.UserName,
+                    Email = model.Email,
+                    Mobile = model.Mobile,
+                    IsConfirmed = false,
+                    IsActive = false,
+                    NewMemberConfirmCode = Guid.NewGuid().ToString(),
+                    NewMemberConfirmCodeExpiry = DateTime.Now.AddHours(24),
+                    HashedPassword = string.Empty
+                };
 
-                    user.HashedPassword = _passwordHasher.HashPassword(user, model.Password);
+                user.HashedPassword = _passwordHasher.HashPassword(user, model.Password);
 
-                    _db.Users.Add(user);
-                    _db.SaveChanges(); // Save to get the UserId
+                _db.Users.Add(user);
+                _db.SaveChanges();
 
-                    // Create Member record
-                    var member = new Member
-                    {
-                        UserId = user.Id,
-                        CancelCount = 0
-                        // Other fields can be null as per schema
-                    };
-                    _db.Members.Add(member);
-
-                    // Add default role: member (Id=1 as per your SQL snippet)
-                    var userRole = new UserRole
-                    {
-                        UserId = user.Id,
-                        RoleId = 1 
-                    };
-                    _db.UserRoles.Add(userRole);
-
-                    _db.SaveChanges();
-                    transaction.Commit();
-
-                    return (true, "è¨»å†ŠæˆåŠŸ");
-                }
-                catch (Exception ex)
+                var member = new Member
                 {
-                    transaction.Rollback();
-                    return (false, $"è¨»å†Šç™¼ç”ŸéŒ¯èª¤: {ex.Message}");
-                }
+                    UserId = user.Id,
+                    CancelCount = 0
+                };
+                _db.Members.Add(member);
+
+                var userRole = new UserRole
+                {
+                    UserId = user.Id,
+                    RoleId = 1
+                };
+                _db.UserRoles.Add(userRole);
+
+                _db.SaveChanges();
+                transaction.Commit();
+
+                return (true, "µù¥U¦¨¥\¡A½Ğ«e©¹«H½c§¹¦¨ÅçÃÒ");
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                return (false, $"µù¥U¥¢±Ñ: {ex.Message}");
             }
         }
     }

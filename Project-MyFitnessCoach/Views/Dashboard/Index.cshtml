@@ -1,0 +1,113 @@
+@model Project_MyFitnessCoach.Models.ViewModel.DashboardSummaryViewModel
+@{
+    ViewData["Title"] = "後台 Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800">後台 Dashboard</h1>
+            <p class="mb-0 text-muted">登入成功後進入這裡，快速查看會員、角色與功能啟用狀態。</p>
+        </div>
+        <span class="badge badge-warning px-3 py-2">@DateTime.Now.ToString("yyyy/MM/dd HH:mm")</span>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">總會員數</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">@Model.TotalUsers</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-users fa-2x text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">已啟用會員</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">@Model.ActiveUsers</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-user-check fa-2x text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">待驗證帳號</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">@Model.PendingUsers</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-user-clock fa-2x text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">啟用中的營養師</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">@Model.ActiveInstructors</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-apple-alt fa-2x text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">系統狀態摘要</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h4 class="small font-weight-bold">角色啟用中 <span class="float-right">@Model.ActiveRoles 個</span></h4>
+                        <div class="progress mb-3"><div class="progress-bar bg-warning" role="progressbar" style="width: 100%"></div></div>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="small font-weight-bold">功能啟用中 <span class="float-right">@Model.ActiveFunctions 個</span></h4>
+                        <div class="progress mb-3"><div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div></div>
+                    </div>
+                    <div class="alert alert-light border-left-warning mb-0">
+                        新註冊使用者預設 `IsActive = 0`，完成 `IsConfirmed` 驗證後才會自動改成啟用。
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">管理提醒</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 p-3 bg-light rounded">
+                        <div class="font-weight-bold text-warning mb-1">SMTP 已支援 Gmail / Outlook</div>
+                        <div class="text-muted small">請到 appsettings.json 填入帳號、密碼與寄件信箱。</div>
+                    </div>
+                    <div class="mb-3 p-3 bg-light rounded">
+                        <div class="font-weight-bold text-success mb-1">重設密碼信件</div>
+                        <div class="text-muted small">系統會將 ResetPasswordConfirmCode 串成正式重設連結。</div>
+                    </div>
+                    <div class="p-3 bg-light rounded">
+                        <div class="font-weight-bold text-info mb-1">目前登入者</div>
+                        <div class="text-muted small">@User.Identity?.Name</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

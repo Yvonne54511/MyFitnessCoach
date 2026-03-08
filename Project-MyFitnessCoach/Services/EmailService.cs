@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mail;
+using System.Text;
 using Microsoft.Extensions.Configuration;
 
 namespace Project_MyFitnessCoach.Services
@@ -22,43 +23,81 @@ namespace Project_MyFitnessCoach.Services
 
         public bool SendPasswordResetEmail(string email, string userName, string resetUrl)
         {
-            var host = _configuration["Smtp:Host"];
-            var fromEmail = _configuration["Smtp:FromEmail"];
+            var providerName = _configuration["Smtp:Provider"] ?? "Gmail";
+            var providerSection = _configuration.GetSection($"Smtp:Providers:{providerName}");
 
-            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(fromEmail))
+            var host = providerSection["Host"] ?? _configuration["Smtp:Host"];
+            var portText = providerSection["Port"] ?? _configuration["Smtp:Port"];
+            var enableSslText = providerSection["EnableSsl"] ?? _configuration["Smtp:EnableSsl"];
+            var username = providerSection["Username"] ?? _configuration["Smtp:Username"];
+            var password = providerSection["Password"] ?? _configuration["Smtp:Password"];
+            var fromEmail = providerSection["FromEmail"] ?? _configuration["Smtp:FromEmail"];
+            var fromName = providerSection["FromName"] ?? _configuration["Smtp:FromName"] ?? "MyFitnessCoach";
+
+            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(fromEmail) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 _logger.LogWarning(
-                    "SMTP is not configured. Reset password link for {Email}: {ResetUrl}",
+                    "SMTP provider {Provider} is not fully configured. Reset password link for {Email}: {ResetUrl}",
+                    providerName,
                     email,
                     resetUrl);
                 return false;
             }
 
-            var fromName = _configuration["Smtp:FromName"] ?? "MyFitnessCoach";
-            var port = int.TryParse(_configuration["Smtp:Port"], out var smtpPort) ? smtpPort : 25;
-            var enableSsl = bool.TryParse(_configuration["Smtp:EnableSsl"], out var ssl) && ssl;
-            var username = _configuration["Smtp:Username"];
-            var password = _configuration["Smtp:Password"];
+            var port = int.TryParse(portText, out var smtpPort) ? smtpPort : 587;
+            var enableSsl = bool.TryParse(enableSslText, out var ssl) && ssl;
+
+            var htmlBody = $@"
+<!DOCTYPE html>
+<html lang='zh-Hant'>
+<head>
+    <meta charset='utf-8' />
+    <title>MyFitnessCoach 密碼重設</title>
+</head>
+<body style='margin:0;padding:0;background:#fff7e8;font-family:Segoe UI,Microsoft JhengHei,sans-serif;color:#4a3523;'>
+    <div style='max-width:640px;margin:32px auto;padding:24px;'>
+        <div style='background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 20px 45px rgba(209,134,28,.16);'>
+            <div style='padding:32px 36px;background:linear-gradient(135deg,#ffd976,#ffb44d);color:#5c3d0f;'>
+                <div style='font-size:12px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;'>Password Reset</div>
+                <h1 style='margin:14px 0 10px;font-size:30px;'>連結每一份努力，與健康同行。</h1>
+                <p style='margin:0;font-size:15px;line-height:1.8;'>我們收到你的密碼重設請求，請點擊下方按鈕完成設定。</p>
+            </div>
+            <div style='padding:36px;'>
+                <p style='margin:0 0 14px;'>Hi {WebUtility.HtmlEncode(userName)}，</p>
+                <p style='margin:0 0 24px;line-height:1.8;'>請在 30 分鐘內點擊下方按鈕，前往 MyFitnessCoach 後台重設密碼。</p>
+                <p style='margin:0 0 28px;'>
+                    <a href='{WebUtility.HtmlEncode(resetUrl)}' style='display:inline-block;padding:14px 28px;border-radius:999px;background:linear-gradient(135deg,#f2a531,#e47b22);color:#fffaf2;text-decoration:none;font-weight:700;'>重設密碼</a>
+                </p>
+                <p style='margin:0 0 8px;line-height:1.8;'>若按鈕無法點擊，請直接複製以下連結到瀏覽器：</p>
+                <p style='margin:0;padding:14px 16px;border-radius:14px;background:#fff5dc;word-break:break-all;'>
+                    <a href='{WebUtility.HtmlEncode(resetUrl)}' style='color:#b96410;'>{WebUtility.HtmlEncode(resetUrl)}</a>
+                </p>
+                <p style='margin:24px 0 0;line-height:1.8;color:#7a614d;'>如果這不是你本人操作，請忽略這封信。</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
 
             using var message = new MailMessage
             {
                 From = new MailAddress(fromEmail, fromName),
                 Subject = "MyFitnessCoach 密碼重設通知",
-                Body = $"{userName} 您好，\n\n請點選以下連結重設您的密碼：\n{resetUrl}\n\n若這不是您本人操作，請忽略此信件。",
-                IsBodyHtml = false
+                Body = htmlBody,
+                IsBodyHtml = true,
+                SubjectEncoding = Encoding.UTF8,
+                BodyEncoding = Encoding.UTF8
             };
 
             message.To.Add(email);
 
             using var client = new SmtpClient(host, port)
             {
-                EnableSsl = enableSsl
+                EnableSsl = enableSsl,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(username, password)
             };
-
-            if (!string.IsNullOrWhiteSpace(username))
-            {
-                client.Credentials = new NetworkCredential(username, password);
-            }
 
             client.Send(message);
             return true;

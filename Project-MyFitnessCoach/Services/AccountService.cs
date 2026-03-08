@@ -35,7 +35,7 @@ namespace Project_MyFitnessCoach.Services
         {
             var user = _accountRepository.GetByAccount(model.Account);
 
-            if (user == null)
+            if (user == null || string.IsNullOrWhiteSpace(user.HashedPassword))
             {
                 return (false, "帳號或密碼錯誤", null);
             }
@@ -49,6 +49,11 @@ namespace Project_MyFitnessCoach.Services
             if (!user.IsConfirmed)
             {
                 return (false, "此帳號尚未完成啟用", null);
+            }
+
+            if (!user.IsActive)
+            {
+                return (false, "此帳號目前未啟用，請聯絡管理員", null);
             }
 
             return (true, "登入成功", user);

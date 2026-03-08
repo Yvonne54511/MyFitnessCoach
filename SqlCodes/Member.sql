@@ -1,12 +1,12 @@
-ï»¿-- ============================================================
---  å®Œæ•´å»ºè¡¨ + ç¯„ä¾‹è³‡æ–™ T-SQL è…³æœ¬ v2
+-- ============================================================
+--  §¹¾ã«Øªí + ½d¨Ò¸ê®Æ T-SQL ¸}¥» v2
 -- ============================================================
 
-USE MyFitnessCoachDb;  -- â† è«‹æ”¹æˆä½ çš„è³‡æ–™åº«åç¨±
+USE MyFitnessCoachDb;  -- ¡ö ½Ğ§ï¦¨§Aªº¸ê®Æ®w¦WºÙ
 GO
 
 -- ============================================================
--- 0. æ¸…é™¤èˆŠè¡¨ï¼ˆä¾ FK é †åºç”±å­åˆ°çˆ¶ï¼‰
+-- 0. ²M°£ÂÂªí¡]¨Ì FK ¶¶§Ç¥Ñ¤l¨ì¤÷¡^
 -- ============================================================
 IF OBJECT_ID('RoleFunctions',       'U') IS NOT NULL DROP TABLE RoleFunctions;
 IF OBJECT_ID('UserRoles',           'U') IS NOT NULL DROP TABLE UserRoles;
@@ -30,13 +30,14 @@ CREATE TABLE Users (
     Email                          NVARCHAR(200) NOT NULL,
     Mobile                         VARCHAR(10)   NULL,
     IsConfirmed                    BIT           NOT NULL DEFAULT 0,
+    IsActive                       BIT           NOT NULL DEFAULT 0,
     NewMemberConfirmCode           VARCHAR(100)  NULL,
     NewMemberConfirmCodeExpiry     DATETIME2(0)  NULL,
     ResetPasswordConfirmCode       VARCHAR(100)  NULL,
     ResetPasswordConfirmCodeExpiry DATETIME2(0)  NULL,
     CONSTRAINT UQ_Users_Email UNIQUE (Email)
 );
--- âœ… éæ¿¾ç´¢å¼•ï¼šåªå°é NULL çš„ Account åšå”¯ä¸€æª¢æŸ¥ï¼Œå…è¨±å¤šå€‹ NULLï¼ˆGoogle ç™»å…¥è€…ï¼‰
+-- ? ¹LÂo¯Á¤Ş¡G¥u¹ï«D NULL ªº Account °µ°ß¤@ÀË¬d¡A¤¹³\¦h­Ó NULL¡]Google µn¤JªÌ¡^
 CREATE UNIQUE INDEX UX_Users_Account ON Users(Account) WHERE Account IS NOT NULL;
 GO
 
@@ -58,7 +59,8 @@ GO
 -- ============================================================
 CREATE TABLE Roles (
     Id       INT          PRIMARY KEY IDENTITY(1,1),
-    RoleName NVARCHAR(30) NOT NULL
+    RoleName NVARCHAR(30) NOT NULL,
+    IsActive BIT          NOT NULL DEFAULT 0
 );
 GO
 
@@ -80,7 +82,8 @@ GO
 -- ============================================================
 CREATE TABLE [Functions] (
     Id           INT          PRIMARY KEY IDENTITY(1,1),
-    FunctionName NVARCHAR(50) NOT NULL
+    FunctionName NVARCHAR(50) NOT NULL,
+    IsActive     BIT          NOT NULL DEFAULT 0
 );
 GO
 
@@ -98,12 +101,12 @@ CREATE TABLE RoleFunctions (
 GO
 
 -- ============================================================
--- 5. Membersï¼ˆç§»é™¤ UserWalletId åŠå°æ‡‰ FKï¼‰
+-- 5. Members¡]²¾°£ UserWalletId ¤Î¹ïÀ³ FK¡^
 -- ============================================================
 CREATE TABLE Members (
     Id            INT           PRIMARY KEY IDENTITY(1,1),
     UserId        INT           NOT NULL,
-    Gender        TINYINT       NULL,    -- 0=æœªå¡«, 1=ç”·, 2=å¥³, 3=å…¶ä»–
+    Gender        TINYINT       NULL,    -- 0=¥¼¶ñ, 1=¨k, 2=¤k, 3=¨ä¥L
     DateOfBirth   DATETIME2(0)  NULL,
     Weight        FLOAT         NULL,
     Height        FLOAT         NULL,
@@ -118,7 +121,7 @@ CREATE TABLE Members (
 GO
 
 -- ============================================================
--- UserWalletsï¼ˆâœ… æ”¹ç‚ºå°æ‡‰ MemberIdï¼‰
+-- UserWallets¡]? §ï¬°¹ïÀ³ MemberId¡^
 -- ============================================================
 CREATE TABLE UserWallets (
     Id             INT           NOT NULL PRIMARY KEY IDENTITY(1,1),
@@ -126,7 +129,7 @@ CREATE TABLE UserWallets (
     CurrentBalance DECIMAL(10,2) NOT NULL DEFAULT 0,
     LastUpdated    DATETIME2(0)  NOT NULL DEFAULT GETDATE(),
     CONSTRAINT FK_UserWallets_Members FOREIGN KEY (MemberId) REFERENCES Members(Id),
-    CONSTRAINT UQ_UserWallets_Member  UNIQUE (MemberId)   -- ä¸€å€‹ Member åªæœ‰ä¸€å€‹éŒ¢åŒ…
+    CONSTRAINT UQ_UserWallets_Member  UNIQUE (MemberId)   -- ¤@­Ó Member ¥u¦³¤@­Ó¿ú¥]
 );
 GO
 
@@ -147,32 +150,32 @@ GO
 
 
 -- ============================================================
--- â–ˆâ–ˆ INSERT ç¯„ä¾‹è³‡æ–™
+-- ¢i¢i INSERT ½d¨Ò¸ê®Æ
 -- ============================================================
 
 -- ============================================================
 -- Users
 -- ============================================================
-INSERT INTO Users (Account, HashedPassword, UserName, Email, Mobile, IsConfirmed)
+INSERT INTO Users (Account, HashedPassword, UserName, Email, Mobile, IsConfirmed, IsActive)
 VALUES
--- ä¸€èˆ¬æœƒå“¡ (å·²é©—è­‰)
-(N'alice01',     '$2b$12$AAAbbbCCCdddEEEfffGGGhhhIIIjjjKKKlllMMMnnnOOO', N'Alice Wang',   'alice@example.com',   '0912345601', 1),
-(N'bob02',       '$2b$12$BBBcccDDDeeeFFFgggHHHiiiJJJkkkLLLmmmNNNooo111', N'Bob Chen',     'bob@example.com',     '0912345602', 1),
-(N'carol03',     '$2b$12$CCCdddEEEffFFFgggHHHiiiJJJkkkLLLmmmNNNooo222', N'Carol Lin',    'carol@example.com',   '0912345603', 1),
--- ç‡Ÿé¤Šå¸«
-(N'inst_david',  '$2b$12$DDDeeeFFfgggHHHiiiJJJkkkLLLmmmNNNooo333444555', N'David Lee',    'david@example.com',   '0912345604', 1),
-(N'inst_emma',   '$2b$12$EEEffgggHHHiiiJJJkkkLLLmmmNNNooo444555666777', N'Emma Huang',   'emma@example.com',    '0912345605', 1),
--- æ¡è³¼äººå“¡
-(N'pur_frank',   '$2b$12$FFFghhHHHiiiJJJkkkLLLmmmNNNooo555666777888999', N'Frank Wu',     'frank@example.com',   '0912345606', 1),
-(N'pur_grace',   '$2b$12$GGGhiiIIIjjjKKKlllMMMnnnOOOppp666777888999aaa', N'Grace Tsai',   'grace@example.com',   '0912345607', 1),
--- è¡ŒéŠ·äººå“¡
-(N'mkt_henry',   '$2b$12$HHHijjJJJkkkLLLmmmNNNooo777888999aaabbbccc111', N'Henry Chang',  'henry@example.com',   '0912345608', 1),
-(N'mkt_iris',    '$2b$12$IIIjkkKKKlllMMMnnnOOOppp888999aaabbbccc222333', N'Iris Chou',    'iris@example.com',    '0912345609', 1),
+-- ¤@¯ë·|­û (¤wÅçÃÒ)
+(N'alice01',     '$2b$12$AAAbbbCCCdddEEEfffGGGhhhIIIjjjKKKlllMMMnnnOOO', N'Alice Wang',   'alice@example.com',   '0912345601', 1, 1),
+(N'bob02',       '$2b$12$BBBcccDDDeeeFFFgggHHHiiiJJJkkkLLLmmmNNNooo111', N'Bob Chen',     'bob@example.com',     '0912345602', 1, 1),
+(N'carol03',     '$2b$12$CCCdddEEEffFFFgggHHHiiiJJJkkkLLLmmmNNNooo222', N'Carol Lin',    'carol@example.com',   '0912345603', 1, 1),
+-- Àç¾i®v
+(N'inst_david',  '$2b$12$DDDeeeFFfgggHHHiiiJJJkkkLLLmmmNNNooo333444555', N'David Lee',    'david@example.com',   '0912345604', 1, 1),
+(N'inst_emma',   '$2b$12$EEEffgggHHHiiiJJJkkkLLLmmmNNNooo444555666777', N'Emma Huang',   'emma@example.com',    '0912345605', 1, 1),
+-- ±ÄÁÊ¤H­û
+(N'pur_frank',   '$2b$12$FFFghhHHHiiiJJJkkkLLLmmmNNNooo555666777888999', N'Frank Wu',     'frank@example.com',   '0912345606', 1, 1),
+(N'pur_grace',   '$2b$12$GGGhiiIIIjjjKKKlllMMMnnnOOOppp666777888999aaa', N'Grace Tsai',   'grace@example.com',   '0912345607', 1, 1),
+-- ¦æ¾P¤H­û
+(N'mkt_henry',   '$2b$12$HHHijjJJJkkkLLLmmmNNNooo777888999aaabbbccc111', N'Henry Chang',  'henry@example.com',   '0912345608', 1, 1),
+(N'mkt_iris',    '$2b$12$IIIjkkKKKlllMMMnnnOOOppp888999aaabbbccc222333', N'Iris Chou',    'iris@example.com',    '0912345609', 1, 1),
 -- Admin
-(N'admin_jack',  '$2b$12$JJJkllLLLmmmNNNoooOOO999aaabbbccc333444555666', N'Jack Admin',   'jack.admin@example.com','0912345610', 1),
--- Google ç™»å…¥æœƒå“¡
-(NULL, NULL, N'Kevin Google',  'kevin.google@gmail.com',  '0912345611', 1),
-(NULL, NULL, N'Linda Google',  'linda.google@gmail.com',  '0912345612', 1);
+(N'admin_jack',  '$2b$12$JJJkllLLLmmmNNNoooOOO999aaabbbccc333444555666', N'Jack Admin',   'jack.admin@example.com','0912345610', 1, 1),
+-- Google µn¤J·|­û
+(NULL, NULL, N'Kevin Google',  'kevin.google@gmail.com',  '0912345611', 1, 1),
+(NULL, NULL, N'Linda Google',  'linda.google@gmail.com',  '0912345612', 1, 1);
 GO
 
 -- ============================================================
@@ -188,52 +191,52 @@ GO
 -- Roles
 -- Id: 1=member, 2=instructor, 3=purchasor, 4=marketor, 5=admin
 -- ============================================================
-INSERT INTO Roles (RoleName) VALUES
-(N'member'),      -- 1
-(N'instructor'),  -- 2
-(N'purchasor'),   -- 3
-(N'marketor'),    -- 4
-(N'admin');       -- 5
+INSERT INTO Roles (RoleName, IsActive) VALUES
+(N'member', 1),      -- 1
+(N'instructor', 1),  -- 2
+(N'purchasor', 1),   -- 3
+(N'marketor', 1),    -- 4
+(N'admin', 1);       -- 5
 GO
 
 -- ============================================================
 -- UserRoles
 -- ============================================================
 INSERT INTO UserRoles (UserId, RoleId) VALUES
-(1,  1),   -- alice   â†’ member
-(2,  1),   -- bob     â†’ member
-(3,  1),   -- carol   â†’ member
-(4,  2),   -- david   â†’ instructor
-(5,  2),   -- emma    â†’ instructor
-(6,  3),   -- frank   â†’ purchasor
-(7,  3),   -- grace   â†’ purchasor
-(8,  4),   -- henry   â†’ marketor
-(9,  4),   -- iris    â†’ marketor
-(10, 5),   -- jack    â†’ admin
-(11, 1),   -- kevin   â†’ member (Google)
-(12, 1);   -- linda   â†’ member (Google)
+(1,  1),   -- alice   ¡÷ member
+(2,  1),   -- bob     ¡÷ member
+(3,  1),   -- carol   ¡÷ member
+(4,  2),   -- david   ¡÷ instructor
+(5,  2),   -- emma    ¡÷ instructor
+(6,  3),   -- frank   ¡÷ purchasor
+(7,  3),   -- grace   ¡÷ purchasor
+(8,  4),   -- henry   ¡÷ marketor
+(9,  4),   -- iris    ¡÷ marketor
+(10, 5),   -- jack    ¡÷ admin
+(11, 1),   -- kevin   ¡÷ member (Google)
+(12, 1);   -- linda   ¡÷ member (Google)
 GO
 
 -- ============================================================
 -- Functions
 -- ============================================================
-INSERT INTO [Functions] (FunctionName) VALUES
--- Instructor åŠŸèƒ½
-(N'ManageOwnProfile'),          -- 1  ç‡Ÿé¤Šå¸«è³‡æ–™ç¶­è­·
-(N'ManageSchedule'),            -- 2  æ’ç­è¡¨ç®¡ç†
-(N'ViewOwnAppointments'),       -- 3  æŸ¥çœ‹è‡ªå·±è¢«é ç´„æ™‚æ®µ
-(N'ReportComment'),             -- 4  æª¢èˆ‰è©•è«–å€
--- Purchasor åŠŸèƒ½
-(N'ManageProducts'),            -- 5  å•†å“ä¸Šæ¶
-(N'ManageCategories'),          -- 6  é¡åˆ¥ç®¡ç†
-(N'ManageOrders'),              -- 7  è¨‚å–®ç®¡ç†
--- Marketor åŠŸèƒ½
-(N'ManageTopUpPlans'),          -- 8  å„²å€¼æ–¹æ¡ˆç®¡ç†
-(N'ManageTopUpOrders'),         -- 9  å„²å€¼è¨‚å–®ç®¡ç†
-(N'QueryMemberBalance'),        -- 10 å®¢æˆ¶é»æ•¸æŸ¥è©¢
--- Admin å°ˆå±¬åŠŸèƒ½
-(N'ToggleInstructorActive'),    -- 11 ä¸Šä¸‹æ¶ç‡Ÿé¤Šå¸«
-(N'SuspendStaff');              -- 12 å°å“¡å·¥åœæ¬Š
+INSERT INTO [Functions] (FunctionName, IsActive) VALUES
+-- Instructor ¥\¯à
+(N'ManageOwnProfile', 1),          -- 1  Àç¾i®v¸ê®ÆºûÅ@
+(N'ManageSchedule', 1),            -- 2  ±Æ¯ZªíºŞ²z
+(N'ViewOwnAppointments', 1),       -- 3  ¬d¬İ¦Û¤v³Q¹w¬ù®É¬q
+(N'ReportComment', 1),             -- 4  ÀËÁ|µû½×°Ï
+-- Purchasor ¥\¯à
+(N'ManageProducts', 1),            -- 5  °Ó«~¤W¬[
+(N'ManageCategories', 1),          -- 6  Ãş§OºŞ²z
+(N'ManageOrders', 1),              -- 7  ­q³æºŞ²z
+-- Marketor ¥\¯à
+(N'ManageTopUpPlans', 1),          -- 8  Àx­È¤è®×ºŞ²z
+(N'ManageTopUpOrders', 1),         -- 9  Àx­È­q³æºŞ²z
+(N'QueryMemberBalance', 1),        -- 10 «È¤áÂI¼Æ¬d¸ß
+-- Admin ±MÄİ¥\¯à
+(N'ToggleInstructorActive', 1),    -- 11 ¤W¤U¬[Àç¾i®v
+(N'SuspendStaff', 1);              -- 12 ¹ï­û¤u°±Åv
 GO
 
 -- ============================================================
@@ -246,7 +249,7 @@ INSERT INTO RoleFunctions (RoleId, FunctionId) VALUES
 (3, 5), (3, 6), (3, 7),
 -- marketor (RoleId=4)
 (4, 8), (4, 9), (4, 10),
--- admin (RoleId=5)ï¼šç¹¼æ‰¿æ‰€æœ‰ + å°ˆå±¬åŠŸèƒ½
+-- admin (RoleId=5)¡GÄ~©Ó©Ò¦³ + ±MÄİ¥\¯à
 (5, 1), (5, 2),  (5, 3),  (5, 4),
 (5, 5), (5, 6),  (5, 7),
 (5, 8), (5, 9),  (5, 10),
@@ -259,16 +262,16 @@ GO
 INSERT INTO Members (UserId, Gender, DateOfBirth, Weight, Height,
                      ActivityLevel, Target, BMR, TDEE, ImageUrl)
 VALUES
-(1,  2, '1995-03-15', 58.0, 163.0, N'è¼•åº¦æ´»å‹•', N'ç¶­æŒé«”é‡', 1368.5, 1873.8, N'/images/members/alice.jpg'),
-(2,  1, '1990-07-22', 75.0, 178.0, N'ä¸­åº¦æ´»å‹•', N'å¢è‚Œ',      1806.0, 2797.8, N'/images/members/bob.jpg'),
-(3,  2, '1998-11-05', 52.0, 158.0, N'ä¹…å',     N'æ¸›é‡',      1271.2, 1525.4, N'/images/members/carol.jpg'),
-(11, 1, '1993-04-10', 70.0, 175.0, N'ä¸­åº¦æ´»å‹•', N'å¢è‚Œ',      1720.0, 2666.0, N'/images/members/kevin.jpg'),
-(12, 2, '1997-09-25', 54.0, 161.0, N'è¼•åº¦æ´»å‹•', N'ç¶­æŒé«”é‡',  1310.0, 1794.7, N'/images/members/linda.jpg');
+(1,  2, '1995-03-15', 58.0, 163.0, N'»´«×¬¡°Ê', N'ºû«ùÅé­«', 1368.5, 1873.8, N'/images/members/alice.jpg'),
+(2,  1, '1990-07-22', 75.0, 178.0, N'¤¤«×¬¡°Ê', N'¼W¦Ù',      1806.0, 2797.8, N'/images/members/bob.jpg'),
+(3,  2, '1998-11-05', 52.0, 158.0, N'¤[§¤',     N'´î­«',      1271.2, 1525.4, N'/images/members/carol.jpg'),
+(11, 1, '1993-04-10', 70.0, 175.0, N'¤¤«×¬¡°Ê', N'¼W¦Ù',      1720.0, 2666.0, N'/images/members/kevin.jpg'),
+(12, 2, '1997-09-25', 54.0, 161.0, N'»´«×¬¡°Ê', N'ºû«ùÅé­«',  1310.0, 1794.7, N'/images/members/linda.jpg');
 GO
 -- Members.Id: 1=alice, 2=bob, 3=carol, 4=kevin, 5=linda
 
 -- ============================================================
--- UserWalletsï¼ˆå°æ‡‰ MemberIdï¼‰
+-- UserWallets¡]¹ïÀ³ MemberId¡^
 -- ============================================================
 INSERT INTO UserWallets (MemberId, CurrentBalance, LastUpdated) VALUES
 (1, 500.00,   GETDATE()),
@@ -284,13 +287,13 @@ GO
 INSERT INTO Instructors (UserId, ImageUrl, Description, HourWage, CancelCount, IsActive)
 VALUES
 (4, N'/images/instructors/david.jpg',
-   N'å°ˆé•·ï¼šé‹å‹•å“¡é£²é£Ÿè¦åŠƒã€å¢è‚Œæ¸›è„‚ã€‚æ“æœ‰ 10 å¹´è‡¨åºŠç‡Ÿé¤Šå¸«ç¶“é©—ï¼Œæ›¾æœå‹™å¤šæ”¯è·æ¥­çƒéšŠã€‚',
+   N'±Mªø¡G¹B°Ê­û¶¼­¹³W¹º¡B¼W¦Ù´î¯×¡C¾Ö¦³ 10 ¦~Á{§ÉÀç¾i®v¸gÅç¡A´¿ªA°È¦h¤äÂ¾·~²y¶¤¡C',
    1200, 0, 1),
 (5, N'/images/instructors/emma.jpg',
-   N'å°ˆé•·ï¼šå­•æœŸç‡Ÿé¤Šã€å¬°å¹¼å…’å‰¯é£Ÿå“è«®è©¢ã€‚æŒæœ‰åœ‹éš›èªè­‰æ³Œä¹³é¡§å• (IBCLC) è³‡æ ¼ã€‚',
+   N'±Mªø¡G¥¥´ÁÀç¾i¡BÀ¦¥®¨à°Æ­¹«~¿Ô¸ß¡C«ù¦³°ê»Ú»{ÃÒªc¨ÅÅU°İ (IBCLC) ¸ê®æ¡C',
    1000, 1, 1);
 GO
 
 -- ============================================================
-PRINT 'æ‰€æœ‰è³‡æ–™è¡¨å»ºç«‹ä¸¦æ’å…¥ç¯„ä¾‹è³‡æ–™å®Œç•¢ï¼ˆv2ï¼‰ã€‚';
+PRINT '©Ò¦³¸ê®Æªí«Ø¥ß¨Ã´¡¤J½d¨Ò¸ê®Æ§¹²¦¡]v2¡^¡C';
 GO
