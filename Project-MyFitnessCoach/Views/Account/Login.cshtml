@@ -1,0 +1,92 @@
+@model Project_MyFitnessCoach.Models.ViewModel.LoginViewModel
+@{
+    Layout = null;
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>後台登入 | MyFitnessCoach</title>
+    <link rel="stylesheet" href="~/vendor/fontawesome-free/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/account.css" />
+</head>
+<body class="account-page">
+    <main class="account-shell">
+        <section class="account-hero">
+            <div class="hero-badge">Admin Portal</div>
+            <h1>MyFitnessCoach 後台入口</h1>
+            <p>集中管理會員、教練與課程資料，從這裡開始安全登入。</p>
+            <div class="hero-points">
+                <span><i class="fas fa-shield-alt"></i> 安全驗證</span>
+                <span><i class="fas fa-chart-line"></i> 營運追蹤</span>
+                <span><i class="fas fa-user-check"></i> 會員管理</span>
+            </div>
+        </section>
+
+        <section class="account-card">
+            <div class="card-header">
+                <p class="eyebrow">WELCOME BACK</p>
+                <h2>登入後台</h2>
+                <p>請輸入管理帳號與密碼。</p>
+            </div>
+
+            @if (TempData["LoginMessage"] is string loginMessage)
+            {
+                <div class="status-banner success">@loginMessage</div>
+            }
+
+            <form asp-action="Login" method="post" class="account-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                <div class="field">
+                    <label asp-for="Account"></label>
+                    <div class="input-frame">
+                        <i class="fas fa-user"></i>
+                        <input asp-for="Account" placeholder="請輸入帳號" />
+                    </div>
+                    <span asp-validation-for="Account" class="field-error"></span>
+                </div>
+
+                <div class="field">
+                    <label asp-for="Password"></label>
+                    <div class="input-frame">
+                        <i class="fas fa-lock"></i>
+                        <input asp-for="Password" id="passwordInput" placeholder="請輸入密碼" />
+                        <button type="button" class="icon-button" id="togglePassword" aria-label="顯示或隱藏密碼">
+                            <i class="fas fa-eye-slash" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="field-error"></span>
+                </div>
+
+                <button type="submit" class="primary-button">登入</button>
+            </form>
+
+            <div class="card-links">
+                <a asp-action="ForgetPassword">忘記密碼</a>
+                <a asp-controller="Auth" asp-action="Register">註冊新帳號</a>
+            </div>
+        </section>
+    </main>
+
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('passwordInput');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        if (togglePassword && passwordInput && eyeIcon) {
+            togglePassword.addEventListener('click', function () {
+                const isPassword = passwordInput.getAttribute('type') === 'password';
+                passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                eyeIcon.classList.toggle('fa-eye-slash', !isPassword);
+                eyeIcon.classList.toggle('fa-eye', isPassword);
+            });
+        }
+    </script>
+</body>
+</html>

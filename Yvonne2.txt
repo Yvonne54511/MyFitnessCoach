@@ -4,7 +4,7 @@ Admin / Console 後台
 │    ├ Login()
 │    ├ ForgotPassword()
 │    ├ ResetPassword()
-│    └ ChangePassword()
+│    
 │
 ├─ StaffController           // 後台管理員帳號 CRUD
 │    ├ Index()        // 列表

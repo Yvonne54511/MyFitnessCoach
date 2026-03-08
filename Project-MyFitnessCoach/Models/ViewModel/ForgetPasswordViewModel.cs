@@ -1,17 +1,13 @@
-ï»¿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Project_MyFitnessCoach.Models.ViewModel
 {
-	public class ForgetPasswordViewModel
-	{
-		[Display(Name = "å¸³è™Ÿ")]
-		[Required(ErrorMessage = "{0}ç‚ºå¿…å¡«")]
-		[StringLength(50, ErrorMessage = "é•·åº¦ä¸å¯è¶…é{1}å€‹å­—å…ƒ")]
-		public string Account { get; set; }
-
-		[Display(Name = "å¯†ç¢¼")]
-		[Required(ErrorMessage = "{0}ç‚ºå¿…å¡«")]
-		[StringLength(12, MinimumLength = 6, ErrorMessage = "å¯†ç¢¼é•·åº¦å¿…é ˆåœ¨{2}åˆ°{1}å€‹å­—å…ƒä¹‹é–“")]
-		public string Password { get; set; }
-	}
+    public class ForgetPasswordViewModel
+    {
+        [Display(Name = "¹q¤l«H½c")]
+        [Required(ErrorMessage = "{0}¬°¥²¶ñ")]
+        [EmailAddress(ErrorMessage = "½Ğ¿é¤J¥¿½Tªº¹q¤l«H½c®æ¦¡")]
+        [StringLength(200, ErrorMessage = "{0}ªø«×¤£¥i¶W¹L{1}­Ó¦r¤¸")]
+        public string Email { get; set; } = string.Empty;
+    }
 }
