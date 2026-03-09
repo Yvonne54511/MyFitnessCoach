@@ -9,11 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.24" />
-    <None Include="efpt.config.json.user" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.24" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.23">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -22,15 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.24" />
+    <None Include="efpt.config.json.user" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Models\EfModels\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="efpt.config.json.user" />
   </ItemGroup>
 
 </Project>
