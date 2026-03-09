@@ -8,7 +8,7 @@
    "MinimumProductVersion": "2.6.1378",
    "ModelNamespace": null,
    "OutputContextPath": null,
-   "OutputPath": "Models\/EfModels",
+   "OutputPath": "Models\\EfModels",
    "PluralRules": null,
    "PreserveCasingWithRegex": true,
    "ProjectRootNamespace": "Project_MyFitnessCoach",
@@ -32,18 +32,30 @@
       },
       {
          "Name": "[dbo].[Functions]",
+         "Name": "[dbo].[PointOrders]",
          "ObjectType": 0
       },
       {
          "Name": "[dbo].[Instructors]",
+         "Name": "[dbo].[PointsRecordDetails]",
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[ProductCategories]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ProductOrderDetails]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ProductOrders]",
          "Name": "[dbo].[Members]",
          "ObjectType": 0
       },
       {
          "Name": "[dbo].[Nutrients]",
+         "Name": "[dbo].[Products]",
          "ObjectType": 0
       },
       {
@@ -64,6 +76,10 @@
       },
       {
          "Name": "[dbo].[Users]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UserWallets]",
          "ObjectType": 0
       }
    ],

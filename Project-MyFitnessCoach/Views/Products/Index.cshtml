@@ -1,0 +1,144 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.ViewModels.ProductIndexItemViewModel>
+
+@{
+    ViewData["Title"] = "產品列表";
+}
+
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <h1 class="h3 mb-2 text-gray-800">產品管理</h1>
+    <p class="mb-4">
+        這裡可以管理所有的產品，包含新增、修改、下架以及查詢功能。
+    </p>
+
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">產品列表</h6>
+            <a asp-action="Create" class="btn btn-primary btn-sm shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> 新增產品
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Id)</th>
+                            <th>@Html.DisplayNameFor(model => model.CategoryName)</th>
+                            <th>@Html.DisplayNameFor(model => model.Name)</th>
+                            <th>@Html.DisplayNameFor(model => model.ImageUrl)</th>
+                            <th>@Html.DisplayNameFor(model => model.OriginalPrice)</th>
+                            <th>@Html.DisplayNameFor(model => model.UnitPrice)</th>
+                            <th>@Html.DisplayNameFor(model => model.IsActive)</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Id)</th>
+                            <th>@Html.DisplayNameFor(model => model.CategoryName)</th>
+                            <th>@Html.DisplayNameFor(model => model.Name)</th>
+                            <th>@Html.DisplayNameFor(model => model.ImageUrl)</th>
+                            <th>@Html.DisplayNameFor(model => model.OriginalPrice)</th>
+                            <th>@Html.DisplayNameFor(model => model.UnitPrice)</th>
+                            <th>@Html.DisplayNameFor(model => model.IsActive)</th>
+                            <th>操作</th>
+                        </tr>
+                    </tfoot>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@Html.DisplayFor(modelItem => item.Id)</td>
+                                <td>@Html.DisplayFor(modelItem => item.CategoryName)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.Name" style="max-height: 50px;" />
+                                    }
+                                    else
+                                    {
+                                        <span>無圖片</span>
+                                    }
+                                </td>
+                                <td>@Html.DisplayFor(modelItem => item.OriginalPrice)</td>
+                                <td>@Html.DisplayFor(modelItem => item.UnitPrice)</td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge badge-success">啟用</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">下架</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-info btn-circle btn-sm" title="編輯">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary btn-circle btn-sm" title="詳情">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger btn-circle btn-sm btn-delete" 
+                                            data-id="@item.Id" data-name="@item.Name" title="下架">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Delete Confirmation Modal-->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">確認下架？</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">您確定要下架產品「<span id="deleteItemName"></span>」嗎？</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
+                <form id="deleteForm" method="post" asp-action="Delete">
+                    <input type="hidden" name="id" id="deleteItemId" value="" />
+                    <button type="submit" class="btn btn-danger">確認下架</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section styles {
+    <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+}
+
+@section scripts {
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/js/demo/datatables-demo.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('.btn-delete').on('click', function () {
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+                $('#deleteItemId').val(id);
+                $('#deleteItemName').text(name);
+                $('#deleteModal').modal('show');
+            });
+        });
+    </script>
+}

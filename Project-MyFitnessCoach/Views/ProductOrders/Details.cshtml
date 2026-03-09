@@ -1,0 +1,162 @@
+@model Project_MyFitnessCoach.Models.DTOs.ProductOrderDto
+
+@{
+    ViewData["Title"] = "訂單詳情";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">訂單詳情</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-action="Index">訂單管理</a></li>
+        <li class="breadcrumb-item active">訂單 #@Model.Id</li>
+    </ol>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- 訂單基本資訊 -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-info-circle me-1"></i> 基本資訊
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr><th>訂單編號</th><td>#@Model.Id</td></tr>
+                        <tr><th>下單日期</th><td>@Model.CreateAt.ToString("yyyy-MM-dd HH:mm:ss")</td></tr>
+                        <tr><th>目前狀態</th><td>
+                            @switch (Model.Status)
+                            {
+                                case 0: <span class="badge bg-warning">待處理</span> break;
+                                case 1: <span class="badge bg-primary">已出貨</span> break;
+                                case 2: <span class="badge bg-success">已送達</span> break;
+                                case 3: <span class="badge bg-danger">已取消</span> break;
+                            }
+                        </td></tr>
+                        <tr><th>會員帳號</th><td>@Model.MemberName</td></tr>
+                        <tr><th>總金額</th><td class="text-primary fw-bold">@Model.OriginalAmount.ToString("C0")</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 狀態變更操作 -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-shipping-fast me-1"></i> 訂單狀態管理
+                </div>
+                <div class="card-body">
+                    <form asp-action="UpdateStatus" method="post" class="d-grid gap-2">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">變更狀態為：</label>
+                            <select name="newStatus" class="form-select">
+                                <option value="0" selected="@(Model.Status == 0)">待處理</option>
+                                <option value="1" selected="@(Model.Status == 1)">已出貨</option>
+                                <option value="2" selected="@(Model.Status == 2)">已送達</option>
+                                <option value="3" selected="@(Model.Status == 3)">已取消</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> 更新狀態
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 收件人與商品明細 -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-user me-1"></i> 收件人資訊
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>收件人名稱：</strong> @Model.Receiver</p>
+                            <p><strong>聯絡電話：</strong> @Model.Mobile</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>送貨地址：</strong> @Model.Address</p>
+                            @if (Model.TaxNumber.HasValue)
+                            {
+                                <p><strong>統一編號：</strong> @Model.TaxNumber</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white d-flex justify-content-between">
+                    <span><i class="fas fa-list me-1"></i> 商品明細</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>產品名稱</th>
+                                    <th class="text-end">單價</th>
+                                    <th class="text-center">數量</th>
+                                    <th class="text-end">小計</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detail in Model.OrderDetails)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(detail.ImageUrl))
+                                                {
+                                                    <img src="@detail.ImageUrl" class="img-thumbnail me-2" style="width: 50px;" />
+                                                }
+                                                <div>
+                                                    <div>@detail.ProductName</div>
+                                                    @if (!string.IsNullOrEmpty(detail.Memo))
+                                                    {
+                                                        <small class="text-muted">備註: @detail.Memo</small>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-end">@detail.UnitPrice.ToString("C0")</td>
+                                        <td class="text-center">@detail.Qty</td>
+                                        <td class="text-end">@detail.SubTotal.ToString("C0")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td colspan="3" class="text-end">商品小計：</td>
+                                    <td class="text-end">@Model.OriginalAmount.ToString("C0")</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end text-danger">折扣金額：</td>
+                                    <td class="text-end text-danger">-@Model.DiscountAmount.ToString("C0")</td>
+                                </tr>
+                                <tr class="table-active">
+                                    <td colspan="3" class="text-end h5">應付金額：</td>
+                                    <td class="text-end h5 text-primary">@((Model.OriginalAmount - Model.DiscountAmount).ToString("C0"))</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> 返回列表
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
