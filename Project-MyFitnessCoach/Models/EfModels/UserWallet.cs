@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Project_MyFitnessCoach.Models.EfModels;
+namespace MyFitnessCoachDb.Models.EfModels;
 
 public partial class UserWallet
 {

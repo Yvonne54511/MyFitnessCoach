@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Project_MyFitnessCoach.Models.EfModels;
+namespace MyFitnessCoachDb.Models.EfModels;
 
 public partial class Product
 {
@@ -26,4 +26,6 @@ public partial class Product
     public bool IsActive { get; set; }
 
     public virtual ProductCategory Category { get; set; }
+
+    public virtual ICollection<ProductOrderDetail> ProductOrderDetails { get; set; } = new List<ProductOrderDetail>();
 }

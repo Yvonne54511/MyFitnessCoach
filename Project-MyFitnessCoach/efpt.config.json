@@ -11,7 +11,7 @@
    "OutputPath": "Models\\EfModels",
    "PluralRules": null,
    "PreserveCasingWithRegex": true,
-   "ProjectRootNamespace": "Project_MyFitnessCoach",
+   "ProjectRootNamespace": "MyFitnessCoachDb",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,
@@ -31,7 +31,23 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[PointOrders]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PointsRecordDetails]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[ProductCategories]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ProductOrderDetails]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ProductOrders]",
          "ObjectType": 0
       },
       {
@@ -44,10 +60,6 @@
       },
       {
          "Name": "[dbo].[Roles]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[TopUpPlans]",
          "ObjectType": 0
       },
       {

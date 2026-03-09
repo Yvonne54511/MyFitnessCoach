@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Project_MyFitnessCoach.Models.EfModels;
+namespace MyFitnessCoachDb.Models.EfModels;
 
 public partial class Member
 {
@@ -30,6 +30,8 @@ public partial class Member
     public string ImageUrl { get; set; }
 
     public int CancelCount { get; set; }
+
+    public virtual ICollection<ProductOrder> ProductOrders { get; set; } = new List<ProductOrder>();
 
     public virtual User User { get; set; }
 
