@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using MyFitnessCoachDb.Models.EfModels;
-using MyFitnessCoachDb.Models.Repositories;
-using MyFitnessCoachDb.Models.Services;
+//using MyFitnessCoachDb.Models.Repositories;
+//using MyFitnessCoachDb.Models.Services;
+using Project_MyFitnessCoach.Models.EfModels;
+using Project_MyFitnessCoach.Models.Repositories;
+using Project_MyFitnessCoach.Models.Services;
 
 namespace Project_MyFitnessCoach
 {
@@ -16,7 +19,7 @@ namespace Project_MyFitnessCoach
 			builder.Services.AddControllersWithViews();
 			
 			// Register DbContext
-			builder.Services.AddDbContext<MyFitnessCoachDBContext>(options =>
+			builder.Services.AddDbContext<MyFitnessCoachDbContext>(options =>
 				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 			// 註冊三層式架構組件

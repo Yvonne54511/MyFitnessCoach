@@ -1,3 +1,4 @@
+using MyFitnessCoachDb.Models.EfModels;
 using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Models.ViewModels;
 

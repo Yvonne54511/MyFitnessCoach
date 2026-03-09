@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyFitnessCoachDb.Models.EfModels;
 using Project_MyFitnessCoach.Models.DTOs;
+using Project_MyFitnessCoach.Models.EfModels;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,9 +19,9 @@ namespace Project_MyFitnessCoach.Models.Repositories
 
     public class ProductOrderRepository : IProductOrderRepository
     {
-        private readonly MyFitnessCoachDBContext _context;
+        private readonly MyFitnessCoachDbContext _context;
 
-        public ProductOrderRepository(MyFitnessCoachDBContext context)
+        public ProductOrderRepository(MyFitnessCoachDbContext context)
         {
             _context = context;
         }

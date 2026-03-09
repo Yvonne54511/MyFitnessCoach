@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyFitnessCoachDb.Models.EfModels;
+using Project_MyFitnessCoach.Models.EfModels;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,9 +10,9 @@ namespace Project_MyFitnessCoach.Controllers
 {
     public class PointOrdersController : Controller
     {
-        private readonly MyFitnessCoachDBContext _context;
+        private readonly MyFitnessCoachDbContext _context;
 
-        public PointOrdersController(MyFitnessCoachDBContext context)
+        public PointOrdersController(MyFitnessCoachDbContext context)
         {
             _context = context;
         }
@@ -100,7 +101,7 @@ namespace Project_MyFitnessCoach.Controllers
                     MerchandiseCategory = "Recharge", // 儲值
                     ReserveOrderId = "N/A"
                 };
-                _context.PointsRecordDetails.Add(record);
+                _context.PointOrders.Include(p => p.PointsRecordDetails).FirstOrDefault(p => p.Id == pointOrder.Id)?.PointsRecordDetails.Add(record);
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
