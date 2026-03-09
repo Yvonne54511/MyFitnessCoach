@@ -1,7 +1,7 @@
-using MyFitnessCoachDb.Models.EfModels;
 using Microsoft.EntityFrameworkCore;
-using Project_MyFitnessCoach.Models.Repositories;
-using Project_MyFitnessCoach.Models.Services;
+using MyFitnessCoachDb.Models.EfModels;
+using MyFitnessCoachDb.Models.Repositories;
+using MyFitnessCoachDb.Models.Services;
 
 namespace Project_MyFitnessCoach
 {
@@ -22,6 +22,19 @@ namespace Project_MyFitnessCoach
 			// 註冊三層式架構組件
 			builder.Services.AddScoped<IProductOrderRepository, ProductOrderRepository>();
 			builder.Services.AddScoped<ProductOrderService>();
+
+			// �]�w��Ʈw�s��
+			builder.Services.AddDbContext<MyFitnessCoachDbContext>(options =>
+				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+			// ���U���~�A��
+			// U~A
+			builder.Services.AddScoped<IProductRepository, ProductRepository>();
+			builder.Services.AddScoped<ProductService>();
+			builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+			builder.Services.AddScoped<CategoryService>();
+			builder.Services.AddScoped<ITopUpPlanRepository, TopUpPlanRepository>();
+			builder.Services.AddScoped<TopUpPlanService>();
 
 			var app = builder.Build();
 

@@ -1,0 +1,47 @@
+-- 切換到您的資料庫
+USE [MyFitnessCoachDb];
+GO
+
+-- 1. 建立 ProductCategories (商品分類) 資料表
+CREATE TABLE [dbo].[ProductCategories] (
+    [Id] INT IDENTITY(1,1) NOT NULL,
+    [CategoryName] NVARCHAR(50) NOT NULL,
+    [SortOrder] INT NOT NULL,
+    [IsActive] BIT NOT NULL DEFAULT 0,
+    CONSTRAINT [PK_ProductCategories] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+GO
+
+-- 2. 建立 Products (商品) 資料表
+CREATE TABLE [dbo].[Products] (
+    [Id] INT IDENTITY(1,1) NOT NULL,
+    [CategoryId] INT NOT NULL,
+    [Name] NVARCHAR(100) NOT NULL,
+    [ImageUrl] NVARCHAR(300) NULL,
+    [OriginalPrice] DECIMAL(18, 0) NOT NULL,
+    [UnitPrice] DECIMAL(18, 0) NOT NULL,
+    [Description] NVARCHAR(MAX) NULL,
+    [SortOrder] INT NOT NULL,
+    [IsActive] BIT NOT NULL DEFAULT 0,
+    CONSTRAINT [PK_Products] PRIMARY KEY CLUSTERED ([Id] ASC),
+    -- 設定外部鍵 (Foreign Key) 關聯到 ProductCategories
+    CONSTRAINT [FK_Products_ProductCategories] FOREIGN KEY ([CategoryId]) 
+        REFERENCES [dbo].[ProductCategories] ([Id])
+       -- ON DELETE CASCADE -- 依您的需求，如果不希望連動刪除可將此行移除
+);
+GO
+
+-- 3. 建立 TopUpPlans (儲值方案) 資料表
+CREATE TABLE [dbo].[TopUpPlans] (
+    [Id] INT IDENTITY(1,1) NOT NULL,
+    [PlanName] NVARCHAR(50) NULL,
+    [Price] DECIMAL(18, 2) NULL,
+    [Points] INT NULL,
+    [Description] NVARCHAR(MAX) NULL,
+    [IsActive] BIT NULL,
+    [SortOrder] INT NULL,
+    CONSTRAINT [PK_TopUpPlans] PRIMARY KEY CLUSTERED ([Id] ASC)
+);
+GO
+
+PRINT '資料表建立完成！';
