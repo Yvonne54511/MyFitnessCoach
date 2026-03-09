@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MyFitnessCoachDb.Models.EfModels;
+namespace Project_MyFitnessCoach.Models.EfModels;
 
 public partial class PointOrder
 {

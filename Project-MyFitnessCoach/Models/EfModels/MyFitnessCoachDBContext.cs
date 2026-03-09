@@ -3,9 +3,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using MyFitnessCoachDb.Models.EfModels;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using Function = MyFitnessCoachDb.Models.EfModels.Function;
 
 namespace Project_MyFitnessCoach.Models.EfModels;
 
@@ -17,48 +14,35 @@ public partial class MyFitnessCoachDbContext : DbContext
     }
 
     public virtual DbSet<Food> Foods { get; set; }
-
     public virtual DbSet<FoodCategory> FoodCategories { get; set; }
-
     public virtual DbSet<FoodRecord> FoodRecords { get; set; }
-
     public virtual DbSet<Function> Functions { get; set; }
-
     public virtual DbSet<Instructor> Instructors { get; set; }
-
     public virtual DbSet<Member> Members { get; set; }
-
     public virtual DbSet<Nutrient> Nutrients { get; set; }
+    public virtual DbSet<PointOrder> PointOrders { get; set; }
+    public virtual DbSet<PointsRecordDetail> PointsRecordDetails { get; set; }
     public virtual DbSet<Product> Products { get; set; }
-	public virtual DbSet<ProductOrder> ProductOrders { get; set; }
-
-	public virtual DbSet<PointOrder> PointOrders { get; set; }
-
-	public virtual DbSet<ProductCategory> ProductCategories { get; set; }
-
+    public virtual DbSet<ProductCategory> ProductCategories { get; set; }
+    public virtual DbSet<ProductOrder> ProductOrders { get; set; }
+    public virtual DbSet<ProductOrderDetail> ProductOrderDetails { get; set; }
     public virtual DbSet<Role> Roles { get; set; }
-
     public virtual DbSet<RoleFunction> RoleFunctions { get; set; }
-
     public virtual DbSet<TopUpPlan> TopUpPlans { get; set; }
-
     public virtual DbSet<User> Users { get; set; }
-
     public virtual DbSet<UserExternalLogin> UserExternalLogins { get; set; }
-
     public virtual DbSet<UserRole> UserRoles { get; set; }
+    public virtual DbSet<UserWallet> UserWallets { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Food>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Foods__3214EC07A9C0B9E7");
-    public virtual DbSet<UserWallet> UserWallets { get; set; }
 
             entity.Property(e => e.FoodName)
                 .IsRequired()
                 .HasMaxLength(50);
-    public virtual DbSet<PointsRecordDetail> PointsRecordDetails { get; set; }
 
             entity.HasOne(d => d.Category).WithMany(p => p.Foods)
                 .HasForeignKey(d => d.CategoryId)
@@ -67,8 +51,7 @@ public partial class MyFitnessCoachDbContext : DbContext
         });
 
         modelBuilder.Entity<FoodCategory>(entity =>
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
+        {
             entity.HasKey(e => e.Id).HasName("PK__FoodCate__3214EC07A4B4C182");
 
             entity.Property(e => e.CategoryName)
@@ -105,7 +88,6 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Function>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Function__3214EC07D84E9FD2");
             entity.HasKey(e => e.Id).HasName("PK__Function__3214EC07114E7B72");
 
             entity.Property(e => e.FunctionName)
@@ -116,7 +98,6 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Instructor>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC074C68C788");
             entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC07B9A14E26");
 
             entity.Property(e => e.Description)
@@ -135,7 +116,6 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Member>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Members__3214EC072EC284D4");
             entity.HasKey(e => e.Id).HasName("PK__Members__3214EC079136E28E");
 
             entity.Property(e => e.ActivityLevel).HasMaxLength(50);
@@ -151,39 +131,107 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasConstraintName("FK_Members_Users");
         });
 
-        modelBuilder.Entity<Product>(entity =>
         modelBuilder.Entity<Nutrient>(entity =>
         {
-            entity.Property(e => e.ImageUrl).HasMaxLength(300);
-            entity.Property(e => e.Name)
             entity.HasKey(e => e.Id).HasName("PK__Nutrient__3214EC0788DFB27B");
 
-            entity.Property(e => e.Measure)
+            entity.HasOne(d => d.Food).WithMany(p => p.Nutrients)
+                .HasForeignKey(d => d.FoodId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Nutrients_Foods");
+        });
+
+        modelBuilder.Entity<PointOrder>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__PointOrd__3214EC07920A7007");
+
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.OriginalPrice).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.DiscountedPrice).HasColumnType("decimal(18, 2)");
+        });
+
+        modelBuilder.Entity<PointsRecordDetail>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__PointsRe__3214EC074A5462D6");
+
+            entity.Property(e => e.CreateAt).HasMaxLength(50);
+            entity.Property(e => e.PointAmount).HasMaxLength(50);
+            entity.Property(e => e.MerchandiseCategory).HasMaxLength(100);
+            entity.Property(e => e.ReserveOrderId).HasMaxLength(100);
+
+            entity.HasOne(d => d.PointOrder).WithMany(p => p.PointsRecordDetails)
+                .HasForeignKey(d => d.PointOrderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PointsRecordDetails_PointOrders");
+        });
+
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Products__3214EC078A9C0212");
+
+            entity.Property(e => e.ImageUrl).HasMaxLength(300);
+            entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(100);
-            entity.Property(e => e.OriginalPrice).HasColumnType("decimal(18, 0)");
-            entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 0)");
-                .HasMaxLength(20);
+            entity.Property(e => e.OriginalPrice).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.Category).WithMany(p => p.Products)
                 .HasForeignKey(d => d.CategoryId)
-            entity.HasOne(d => d.Food).WithMany(p => p.Nutrients)
-                .HasForeignKey(d => d.FoodId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Products_ProductCategories");
         });
 
         modelBuilder.Entity<ProductCategory>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PK__ProductC__3214EC0797F16C6D");
+
             entity.Property(e => e.CategoryName)
                 .IsRequired()
                 .HasMaxLength(50);
-                .HasConstraintName("FK_Nutrients_Foods");
+        });
+
+        modelBuilder.Entity<ProductOrder>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ProductO__3214EC075C418641");
+
+            entity.Property(e => e.CreateAt).HasColumnType("datetime");
+            entity.Property(e => e.OriginalAmount).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Receiver).HasMaxLength(50);
+            entity.Property(e => e.Address).HasMaxLength(200);
+            entity.Property(e => e.Mobile).HasMaxLength(20);
+
+            entity.HasOne(d => d.Member).WithMany(p => p.ProductOrders)
+                .HasForeignKey(d => d.MemberId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ProductOrders_Members");
+        });
+
+        modelBuilder.Entity<ProductOrderDetail>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ProductO__3214EC074E418641");
+
+            entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.SubTotal).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.DiscountedPrice).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.ProductName).HasMaxLength(100);
+            entity.Property(e => e.ImageUrl).HasMaxLength(300);
+            entity.Property(e => e.Memo).HasMaxLength(500);
+
+            entity.HasOne(d => d.ProductOrder).WithMany(p => p.ProductOrderDetails)
+                .HasForeignKey(d => d.ProductOrderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ProductOrderDetails_ProductOrders");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.ProductOrderDetails)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ProductOrderDetails_Products");
         });
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Roles__3214EC073344BF98");
             entity.HasKey(e => e.Id).HasName("PK__Roles__3214EC07E40304E0");
 
             entity.Property(e => e.RoleName)
@@ -194,7 +242,6 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<RoleFunction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__RoleFunc__3214EC07BB6A4B59");
             entity.HasKey(e => e.Id).HasName("PK__RoleFunc__3214EC074F77D49C");
 
             entity.HasIndex(e => new { e.RoleId, e.FunctionId }, "UQ_RoleFunctions").IsUnique();
@@ -212,13 +259,14 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<TopUpPlan>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("PK__TopUpPla__3214EC07C3B78F8A");
+
             entity.Property(e => e.PlanName).HasMaxLength(50);
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC072F597BE6");
             entity.HasKey(e => e.Id).HasName("PK__Users__3214EC07DE5F3AE4");
 
             entity.HasIndex(e => e.Email, "UQ_Users_Email").IsUnique();
@@ -251,7 +299,6 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<UserExternalLogin>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__UserExte__3214EC076CD025DB");
             entity.HasKey(e => e.Id).HasName("PK__UserExte__3214EC070AAFF429");
 
             entity.Property(e => e.LoginProvider)
@@ -270,7 +317,6 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<UserRole>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__UserRole__3214EC070638170C");
             entity.HasKey(e => e.Id).HasName("PK__UserRole__3214EC07534211F7");
 
             entity.HasIndex(e => new { e.UserId, e.RoleId }, "UQ_UserRoles").IsUnique();

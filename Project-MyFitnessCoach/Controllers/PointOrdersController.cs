@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MyFitnessCoachDb.Models.EfModels;
 using Project_MyFitnessCoach.Models.EfModels;
 using System;
 using System.Linq;

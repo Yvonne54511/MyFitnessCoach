@@ -1,17 +1,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
+using Project_MyFitnessCoach.Models.Repositories;
+using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.ViewModel;
 using Project_MyFitnessCoach.Repositories;
 using Project_MyFitnessCoach.Services;
-
-using Microsoft.EntityFrameworkCore;
-using MyFitnessCoachDb.Models.EfModels;
-//using MyFitnessCoachDb.Models.Repositories;
-//using MyFitnessCoachDb.Models.Services;
-using Project_MyFitnessCoach.Models.EfModels;
-using Project_MyFitnessCoach.Models.Repositories;
-using Project_MyFitnessCoach.Models.Services;
 
 namespace Project_MyFitnessCoach
 {
@@ -21,35 +15,24 @@ namespace Project_MyFitnessCoach
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddRazorPages();
+
+            // Register DbContext
             builder.Services.AddDbContext<MyFitnessCoachDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-			// Add services to the container.
-			builder.Services.AddRazorPages();
-			builder.Services.AddControllersWithViews();
-			
-			// Register DbContext
-			builder.Services.AddDbContext<MyFitnessCoachDbContext>(options =>
-				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-			// 註冊三層式架構組件
-			builder.Services.AddScoped<IProductOrderRepository, ProductOrderRepository>();
-			builder.Services.AddScoped<ProductOrderService>();
+            // 註冊三層式架構組件
+            builder.Services.AddScoped<IProductOrderRepository, ProductOrderRepository>();
+            builder.Services.AddScoped<ProductOrderService>();
 
-			// �]�w��Ʈw�s��
-			builder.Services.AddDbContext<MyFitnessCoachDbContext>(options =>
-				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-			// ���U���~�A��
-			// U~A
-			builder.Services.AddScoped<IProductRepository, ProductRepository>();
-			builder.Services.AddScoped<ProductService>();
-			builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-			builder.Services.AddScoped<CategoryService>();
-			builder.Services.AddScoped<ITopUpPlanRepository, TopUpPlanRepository>();
-			builder.Services.AddScoped<TopUpPlanService>();
-
-			var app = builder.Build();
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<ProductService>();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<CategoryService>();
+            builder.Services.AddScoped<ITopUpPlanRepository, TopUpPlanRepository>();
+            builder.Services.AddScoped<TopUpPlanService>();
 
             builder.Services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -85,11 +68,11 @@ namespace Project_MyFitnessCoach
             app.UseAuthentication();
             app.UseAuthorization();
 
-			app.MapRazorPages();
+            app.MapRazorPages();
 
-			app.MapControllerRoute(
-				name: "default",
-				pattern: "{controller=Home}/{action=Index}/{id?}");
+            app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
 
             // --- Seed Admin User ---
             using (var scope = app.Services.CreateScope())
