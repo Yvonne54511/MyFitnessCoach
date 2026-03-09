@@ -3,6 +3,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using MyFitnessCoachDb.Models.EfModels;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using Function = MyFitnessCoachDb.Models.EfModels.Function;
 
 namespace Project_MyFitnessCoach.Models.EfModels;
 
@@ -20,8 +23,11 @@ public partial class MyFitnessCoachDbContext : DbContext
     public virtual DbSet<Member> Members { get; set; }
 
     public virtual DbSet<Product> Products { get; set; }
+	public virtual DbSet<ProductOrder> ProductOrders { get; set; }
 
-    public virtual DbSet<ProductCategory> ProductCategories { get; set; }
+	public virtual DbSet<PointOrder> PointOrders { get; set; }
+
+	public virtual DbSet<ProductCategory> ProductCategories { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
 
@@ -36,6 +42,8 @@ public partial class MyFitnessCoachDbContext : DbContext
     public virtual DbSet<UserRole> UserRoles { get; set; }
 
     public virtual DbSet<UserWallet> UserWallets { get; set; }
+
+    public virtual DbSet<PointsRecordDetail> PointsRecordDetails { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
