@@ -1,0 +1,96 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.DTOs.ProductOrderDto>
+
+@{
+    ViewData["Title"] = "訂單管理";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">訂單管理</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/">首頁</a></li>
+        <li class="breadcrumb-item active">訂單概覽</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-search me-1"></i>
+            訂單查詢與篩選
+        </div>
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">訂單狀態</label>
+                    <select name="status" class="form-select" onchange="this.form.submit()">
+                        <option value="">全部狀態</option>
+                        <option value="0" selected="@(ViewBag.CurrentStatus?.ToString() == "0")">待處理</option>
+                        <option value="1" selected="@(ViewBag.CurrentStatus?.ToString() == "1")">已出貨</option>
+                        <option value="2" selected="@(ViewBag.CurrentStatus?.ToString() == "2")">已送達</option>
+                        <option value="3" selected="@(ViewBag.CurrentStatus?.ToString() == "3")">已取消</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">關鍵字查詢 (會員或收件人)</label>
+                    <div class="input-group">
+                        <input type="text" name="searchString" class="form-control" placeholder="輸入關鍵字..." value="@ViewBag.CurrentSearch">
+                        <button class="btn btn-primary" type="submit">查詢</button>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <a asp-action="Index" class="btn btn-secondary">重置</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            訂單列表
+        </div>
+        <div class="card-body">
+            <table class="table table-hover table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>編號</th>
+                        <th>訂單時間</th>
+                        <th>會員帳號</th>
+                        <th>收件人</th>
+                        <th>總金額</th>
+                        <th>狀態</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.CreateAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@item.MemberName</td>
+                            <td>@item.Receiver</td>
+                            <td class="text-end">@item.OriginalAmount.ToString("C0")</td>
+                            <td>
+                                @switch (item.Status)
+                                {
+                                    case 0: <span class="badge bg-warning">待處理</span> break;
+                                    case 1: <span class="badge bg-primary">已出貨</span> break;
+                                    case 2: <span class="badge bg-success">已送達</span> break;
+                                    case 3: <span class="badge bg-danger">已取消</span> break;
+                                    default: <span class="badge bg-secondary">未知</span> break;
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">
+                                    <i class="fas fa-info-circle"></i> 詳情
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

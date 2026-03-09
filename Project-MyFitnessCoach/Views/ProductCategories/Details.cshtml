@@ -1,0 +1,40 @@
+@model Project_MyFitnessCoach.Models.ViewModels.CategoryViewModel
+
+@{
+    ViewData["Title"] = "類別詳情";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800">類別詳情</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">類別資訊 (ID: @Model.Id)</h6>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-info btn-sm">編輯</a>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.CategoryName)</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.CategoryName)</dd>
+
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.SortOrder)</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.SortOrder)</dd>
+
+                <dt class="col-sm-3">@Html.DisplayNameFor(model => model.IsActive)</dt>
+                <dd class="col-sm-9">
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge badge-success">啟用中</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-danger">已下架</span>
+                    }
+                </dd>
+            </dl>
+            <div class="form-group mt-4 border-top pt-3">
+                <a asp-action="Index" class="btn btn-secondary">返回列表</a>
+            </div>
+        </div>
+    </div>
+</div>
