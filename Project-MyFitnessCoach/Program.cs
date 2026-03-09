@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
+using Project_MyFitnessCoach.Models.ViewModel;
 using Project_MyFitnessCoach.Repositories;
 using Project_MyFitnessCoach.Services;
 
@@ -31,6 +32,8 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
             builder.Services.AddScoped<IDashboardService, DashboardService>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
             var app = builder.Build();
 
@@ -51,6 +54,40 @@ namespace Project_MyFitnessCoach
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            // --- Seed Admin User ---
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<MyFitnessCoachDbContext>();
+                
+                // 如果 admin 帳號不存在，才進行建立
+                if (!db.Users.Any(u => u.Account == "admin"))
+                {
+                    var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<User>();
+                    var adminUser = new User
+                    {
+                        Account = "admin",
+                        UserName = "系統管理員",
+                        Email = "admin@myfitnesscoach.com",
+                        IsConfirmed = true,
+                        IsActive = true
+                    };
+                    
+                    // 由程式產生符合當前環境的正確雜湊值
+                    adminUser.HashedPassword = hasher.HashPassword(adminUser, "123456");
+
+                    db.Users.Add(adminUser);
+                    db.SaveChanges();
+
+                    // 分配角色 (Id 為 1 的角色)
+                    if (db.Roles.Any(r => r.Id == 1))
+                    {
+                        db.UserRoles.Add(new UserRole { UserId = adminUser.Id, RoleId = 1 });
+                        db.SaveChanges();
+                    }
+                }
+            }
+            // -----------------------
 
             app.Run();
         }

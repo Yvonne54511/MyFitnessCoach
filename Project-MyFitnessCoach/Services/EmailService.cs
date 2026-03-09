@@ -8,6 +8,7 @@ namespace Project_MyFitnessCoach.Services
     public interface IEmailService
     {
         bool SendPasswordResetEmail(string email, string userName, string resetUrl);
+        bool SendStaffInvitationEmail(string email, string userName, string invitationUrl);
     }
 
     public class EmailService : IEmailService
@@ -52,27 +53,27 @@ namespace Project_MyFitnessCoach.Services
 <html lang='zh-Hant'>
 <head>
     <meta charset='utf-8' />
-    <title>MyFitnessCoach ±K½X­«³]</title>
+    <title>MyFitnessCoach å¯†ç¢¼é‡ç½®</title>
 </head>
 <body style='margin:0;padding:0;background:#fff7e8;font-family:Segoe UI,Microsoft JhengHei,sans-serif;color:#4a3523;'>
     <div style='max-width:640px;margin:32px auto;padding:24px;'>
         <div style='background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 20px 45px rgba(209,134,28,.16);'>
             <div style='padding:32px 36px;background:linear-gradient(135deg,#ffd976,#ffb44d);color:#5c3d0f;'>
                 <div style='font-size:12px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;'>Password Reset</div>
-                <h1 style='margin:14px 0 10px;font-size:30px;'>³sµ²¨C¤@¥÷§V¤O¡A»P°·±d¦P¦æ¡C</h1>
-                <p style='margin:0;font-size:15px;line-height:1.8;'>§Ú­Ì¦¬¨ì§Aªº±K½X­«³]½Ğ¨D¡A½ĞÂIÀ»¤U¤è«ö¶s§¹¦¨³]©w¡C</p>
+                <h1 style='margin:14px 0 10px;font-size:30px;'>å®ˆè­·æœªä¾†ï¼Œèˆ‡å¥åº·åŒè¡Œ</h1>
+                <p style='margin:0;font-size:15px;line-height:1.8;'>æˆ‘å€‘æ”¶åˆ°äº†æ‚¨çš„å¯†ç¢¼é‡ç½®è«‹æ±‚ï¼Œè«‹é»æ“Šä¸‹æ–¹æŒ‰éˆ•é‡æ–°è¨­ç½®ã€‚</p>
             </div>
             <div style='padding:36px;'>
-                <p style='margin:0 0 14px;'>Hi {WebUtility.HtmlEncode(userName)}¡A</p>
-                <p style='margin:0 0 24px;line-height:1.8;'>½Ğ¦b 30 ¤ÀÄÁ¤ºÂIÀ»¤U¤è«ö¶s¡A«e©¹ MyFitnessCoach «á¥x­«³]±K½X¡C</p>
+                <p style='margin:0 0 14px;'>Hi {WebUtility.HtmlEncode(userName)}ï¼Œ</p>
+                <p style='margin:0 0 24px;line-height:1.8;'>è«‹åœ¨ 30 åˆ†é˜å…§é»æ“Šä¸‹æ–¹æŒ‰éˆ•é‡æ–°è¨­å®šæ‚¨çš„ MyFitnessCoach å¸³æˆ¶å¯†ç¢¼ã€‚</p>
                 <p style='margin:0 0 28px;'>
-                    <a href='{WebUtility.HtmlEncode(resetUrl)}' style='display:inline-block;padding:14px 28px;border-radius:999px;background:linear-gradient(135deg,#f2a531,#e47b22);color:#fffaf2;text-decoration:none;font-weight:700;'>­«³]±K½X</a>
+                    <a href='{WebUtility.HtmlEncode(resetUrl)}' style='display:inline-block;padding:14px 28px;border-radius:999px;background:linear-gradient(135deg,#f2a531,#e47b22);color:#fffaf2;text-decoration:none;font-weight:700;'>é‡è¨­å¯†ç¢¼</a>
                 </p>
-                <p style='margin:0 0 8px;line-height:1.8;'>­Y«ö¶sµLªkÂIÀ»¡A½Ğª½±µ½Æ»s¥H¤U³sµ²¨ìÂsÄı¾¹¡G</p>
+                <p style='margin:0 0 8px;line-height:1.8;'>å¦‚æœæŒ‰éˆ•ç„¡æ³•é»æ“Šï¼Œè«‹è¤‡è£½ä¸¦è²¼ä¸Šä»¥ä¸‹é€£çµï¼š</p>
                 <p style='margin:0;padding:14px 16px;border-radius:14px;background:#fff5dc;word-break:break-all;'>
                     <a href='{WebUtility.HtmlEncode(resetUrl)}' style='color:#b96410;'>{WebUtility.HtmlEncode(resetUrl)}</a>
                 </p>
-                <p style='margin:24px 0 0;line-height:1.8;color:#7a614d;'>¦pªG³o¤£¬O§A¥»¤H¾Ş§@¡A½Ğ©¿²¤³o«Ê«H¡C</p>
+                <p style='margin:24px 0 0;line-height:1.8;color:#7a614d;'>å¦‚æœæ‚¨æ²’æœ‰æ“ä½œï¼Œè«‹å¿½ç•¥é€™å°ä¿¡ã€‚</p>
             </div>
         </div>
     </div>
@@ -82,7 +83,89 @@ namespace Project_MyFitnessCoach.Services
             using var message = new MailMessage
             {
                 From = new MailAddress(fromEmail, fromName),
-                Subject = "MyFitnessCoach ±K½X­«³]³qª¾",
+                Subject = "MyFitnessCoach å¯†ç¢¼é‡ç½®é€šçŸ¥",
+                Body = htmlBody,
+                IsBodyHtml = true,
+                SubjectEncoding = Encoding.UTF8,
+                BodyEncoding = Encoding.UTF8
+            };
+
+            message.To.Add(email);
+
+            using var client = new SmtpClient(host, port)
+            {
+                EnableSsl = enableSsl,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(username, password)
+            };
+
+            client.Send(message);
+            return true;
+        }
+
+        public bool SendStaffInvitationEmail(string email, string userName, string invitationUrl)
+        {
+            var providerName = _configuration["Smtp:Provider"] ?? "Gmail";
+            var providerSection = _configuration.GetSection($"Smtp:Providers:{providerName}");
+
+            var host = providerSection["Host"] ?? _configuration["Smtp:Host"];
+            var portText = providerSection["Port"] ?? _configuration["Smtp:Port"];
+            var enableSslText = providerSection["EnableSsl"] ?? _configuration["Smtp:EnableSsl"];
+            var username = providerSection["Username"] ?? _configuration["Smtp:Username"];
+            var password = providerSection["Password"] ?? _configuration["Smtp:Password"];
+            var fromEmail = providerSection["FromEmail"] ?? _configuration["Smtp:FromEmail"];
+            var fromName = providerSection["FromName"] ?? _configuration["Smtp:FromName"] ?? "MyFitnessCoach";
+
+            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(fromEmail) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                _logger.LogWarning(
+                    "SMTP provider {Provider} is not fully configured. Invitation link for {Email}: {InvitationUrl}",
+                    providerName,
+                    email,
+                    invitationUrl);
+                return false;
+            }
+
+            var port = int.TryParse(portText, out var smtpPort) ? smtpPort : 587;
+            var enableSsl = bool.TryParse(enableSslText, out var ssl) && ssl;
+
+            var htmlBody = $@"
+<!DOCTYPE html>
+<html lang='zh-Hant'>
+<head>
+    <meta charset='utf-8' />
+    <title>MyFitnessCoach å“¡å·¥é‚€è«‹</title>
+</head>
+<body style='margin:0;padding:0;background:#fff7e8;font-family:Segoe UI,Microsoft JhengHei,sans-serif;color:#4a3523;'>
+    <div style='max-width:640px;margin:32px auto;padding:24px;'>
+        <div style='background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 20px 45px rgba(209,134,28,.16);'>
+            <div style='padding:32px 36px;background:linear-gradient(135deg,#ffd976,#ffb44d);color:#5c3d0f;'>
+                <div style='font-size:12px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;'>Staff Invitation</div>
+                <h1 style='margin:14px 0 10px;font-size:30px;'>æ­¡è¿åŠ å…¥ MyFitnessCoach</h1>
+                <p style='margin:0;font-size:15px;line-height:1.8;'>ç®¡ç†å“¡å·²ç‚ºæ‚¨å»ºç«‹å¸³æˆ¶ï¼Œè«‹é»æ“Šä¸‹æ–¹æŒ‰éˆ•å®Œæˆå¸³è™Ÿè¨­å®šã€‚</p>
+            </div>
+            <div style='padding:36px;'>
+                <p style='margin:0 0 14px;'>Hi {WebUtility.HtmlEncode(userName)}ï¼Œ</p>
+                <p style='margin:0 0 24px;line-height:1.8;'>è«‹é»æ“Šä¸‹æ–¹æŒ‰éˆ•è¨­å®šæ‚¨çš„å¸³è™Ÿèˆ‡å¯†ç¢¼ï¼Œå®Œæˆå¾Œå³å¯ç™»å…¥ç³»çµ±ã€‚</p>
+                <p style='margin:0 0 28px;'>
+                    <a href='{WebUtility.HtmlEncode(invitationUrl)}' style='display:inline-block;padding:14px 28px;border-radius:999px;background:linear-gradient(135deg,#f2a531,#e47b22);color:#fffaf2;text-decoration:none;font-weight:700;'>è¨­å®šå¸³è™Ÿå¯†ç¢¼</a>
+                </p>
+                <p style='margin:0 0 8px;line-height:1.8;'>å¦‚æœæŒ‰éˆ•ç„¡æ³•é»æ“Šï¼Œè«‹è¤‡è£½ä¸¦è²¼ä¸Šä»¥ä¸‹é€£çµï¼š</p>
+                <p style='margin:0;padding:14px 16px;border-radius:14px;background:#fff5dc;word-break:break-all;'>
+                    <a href='{WebUtility.HtmlEncode(invitationUrl)}' style='color:#b96410;'>{WebUtility.HtmlEncode(invitationUrl)}</a>
+                </p>
+                <p style='margin:24px 0 0;line-height:1.8;color:#7a614d;'>é€™å°ä¿¡æ˜¯ç”±ç³»çµ±è‡ªå‹•ç™¼å‡ºï¼Œè«‹å‹¿ç›´æ¥å›è¦†ã€‚</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+
+            using var message = new MailMessage
+            {
+                From = new MailAddress(fromEmail, fromName),
+                Subject = "MyFitnessCoach å“¡å·¥å¸³è™Ÿå•Ÿç”¨é€šçŸ¥",
                 Body = htmlBody,
                 IsBodyHtml = true,
                 SubjectEncoding = Encoding.UTF8,
