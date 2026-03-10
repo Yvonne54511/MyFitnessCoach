@@ -5,16 +5,17 @@ namespace Project_MyFitnessCoach.Repositories
 {
     public interface IUserRepository
     {
-        IEnumerable<User> GetAllUsers();
-        User GetUserById(int id);
-        User GetUserByEmail(string email);
-        User GetUserByConfirmCode(string code);
-        void CreateUser(User user, IEnumerable<int> roleIds);
-        void UpdateUser(User user, IEnumerable<int> roleIds);
-        void DeleteUser(int id);
-        IEnumerable<Role> GetAllRoles();
-        void UpdateUserActivation(int id, bool isActive);
-        bool AccountExists(string account);
+        Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<User?> GetUserByIdAsync(int id);
+        Task<User?> GetUserByEmailAsync(string email);
+        Task<User?> GetUserByConfirmCodeAsync(string code);
+        Task CreateUserAsync(User user, IEnumerable<int> roleIds);
+        Task UpdateUserAsync(User user, IEnumerable<int> roleIds);
+        Task DeleteUserAsync(int id);
+        Task<IEnumerable<Role>> GetAllRolesAsync();
+        Task UpdateUserActivationAsync(int id, bool isActive);
+        Task<bool> AccountExistsAsync(string account);
+        Task SaveChangesAsync();
     }
 
     public class UserRepository : IUserRepository
@@ -26,36 +27,36 @@ namespace Project_MyFitnessCoach.Repositories
             _context = context;
         }
 
-        public IEnumerable<User> GetAllUsers()
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
-            return _context.Users
+            return await _context.Users
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
-                .ToList();
+                .ToListAsync();
         }
 
-        public User GetUserById(int id)
+        public async Task<User?> GetUserByIdAsync(int id)
         {
-            return _context.Users
+            return await _context.Users
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
-                .FirstOrDefault(u => u.Id == id);
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public User GetUserByEmail(string email)
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return _context.Users.FirstOrDefault(u => u.Email == email);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public User GetUserByConfirmCode(string code)
+        public async Task<User?> GetUserByConfirmCodeAsync(string code)
         {
-            return _context.Users.FirstOrDefault(u => u.NewMemberConfirmCode == code);
+            return await _context.Users.FirstOrDefaultAsync(u => u.NewMemberConfirmCode == code);
         }
 
-        public void CreateUser(User user, IEnumerable<int> roleIds)
+        public async Task CreateUserAsync(User user, IEnumerable<int> roleIds)
         {
             _context.Users.Add(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             if (roleIds != null)
             {
@@ -63,15 +64,15 @@ namespace Project_MyFitnessCoach.Repositories
                 {
                     _context.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = roleId });
                 }
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
-        public void UpdateUser(User user, IEnumerable<int> roleIds)
+        public async Task UpdateUserAsync(User user, IEnumerable<int> roleIds)
         {
-            var existingUser = _context.Users
+            var existingUser = await _context.Users
                 .Include(u => u.UserRoles)
-                .FirstOrDefault(u => u.Id == user.Id);
+                .FirstOrDefaultAsync(u => u.Id == user.Id);
 
             if (existingUser != null)
             {
@@ -98,42 +99,45 @@ namespace Project_MyFitnessCoach.Repositories
                     }
                 }
 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
-        public void DeleteUser(int id)
+        public async Task DeleteUserAsync(int id)
         {
-            var user = _context.Users.Find(id);
+            var user = await _context.Users.FindAsync(id);
             if (user != null)
             {
-                // Due to foreign key constraints, we might want to soft delete or handle cascade
-                // For now, let's just delete the user roles and then the user
                 var roles = _context.UserRoles.Where(ur => ur.UserId == id);
                 _context.UserRoles.RemoveRange(roles);
                 _context.Users.Remove(user);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
-        public IEnumerable<Role> GetAllRoles()
+        public async Task<IEnumerable<Role>> GetAllRolesAsync()
         {
-            return _context.Roles.Where(r => r.IsActive).ToList();
+            return await _context.Roles.Where(r => r.IsActive).ToListAsync();
         }
 
-        public void UpdateUserActivation(int id, bool isActive)
+        public async Task UpdateUserActivationAsync(int id, bool isActive)
         {
-            var user = _context.Users.Find(id);
+            var user = await _context.Users.FindAsync(id);
             if (user != null)
             {
                 user.IsActive = isActive;
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
-        public bool AccountExists(string account)
+        public async Task<bool> AccountExistsAsync(string account)
         {
-            return _context.Users.Any(u => u.Account == account);
+            return await _context.Users.AnyAsync(u => u.Account == account);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

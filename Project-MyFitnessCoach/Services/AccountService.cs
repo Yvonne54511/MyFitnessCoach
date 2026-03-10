@@ -1,17 +1,17 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Repositories;
+using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Services
 {
     public interface IMemberAccountService
     {
-        LoginResultDto Login(LoginDto dto);
-        ResetPasswordRequestDto CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory);
-        AccountResultDto ResetPassword(ResetPasswordDto dto);
-        bool IsResetPasswordCodeValid(string code);
+        Task<LoginResultDto> LoginAsync(LoginDto dto);
+        Task<ResetPasswordRequestDto> CreateResetPasswordRequestAsync(string email, Func<string, string> resetUrlFactory);
+        Task<AccountResultDto> ResetPasswordAsync(ResetPasswordDto dto);
+        Task<bool> IsResetPasswordCodeValidAsync(string code);
     }
 
     public class MemberAccountService : IMemberAccountService
@@ -33,9 +33,9 @@ namespace Project_MyFitnessCoach.Services
             _passwordHasher = passwordHasher;
         }
 
-        public LoginResultDto Login(LoginDto dto)
+        public async Task<LoginResultDto> LoginAsync(LoginDto dto)
         {
-            var user = _accountRepository.GetByAccount(dto.Account);
+            var user = await _accountRepository.GetByAccountAsync(dto.Account);
 
             if (user == null || string.IsNullOrWhiteSpace(user.HashedPassword))
             {
@@ -73,9 +73,9 @@ namespace Project_MyFitnessCoach.Services
             };
         }
 
-        public ResetPasswordRequestDto CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory)
+        public async Task<ResetPasswordRequestDto> CreateResetPasswordRequestAsync(string email, Func<string, string> resetUrlFactory)
         {
-            var user = _accountRepository.GetByEmail(email);
+            var user = await _accountRepository.GetByEmailAsync(email);
             if (user == null)
             {
                 return new ResetPasswordRequestDto { IsSuccess = true, Email = email, EmailSent = false };
@@ -83,8 +83,9 @@ namespace Project_MyFitnessCoach.Services
 
             user.ResetPasswordConfirmCode = Guid.NewGuid().ToString("N");
             user.ResetPasswordConfirmCodeExpiry = DateTime.Now.AddMinutes(30);
+            
             _accountRepository.Update(user);
-            _accountRepository.SaveChanges();
+            await _accountRepository.SaveChangesAsync();
 
             var resetUrl = resetUrlFactory(user.ResetPasswordConfirmCode);
             var emailSent = false;
@@ -107,17 +108,17 @@ namespace Project_MyFitnessCoach.Services
             };
         }
 
-        public bool IsResetPasswordCodeValid(string code)
+        public async Task<bool> IsResetPasswordCodeValidAsync(string code)
         {
-            var user = _accountRepository.GetByResetPasswordCode(code);
+            var user = await _accountRepository.GetByResetPasswordCodeAsync(code);
             return user != null
                 && user.ResetPasswordConfirmCodeExpiry.HasValue
                 && user.ResetPasswordConfirmCodeExpiry.Value >= DateTime.Now;
         }
 
-        public AccountResultDto ResetPassword(ResetPasswordDto dto)
+        public async Task<AccountResultDto> ResetPasswordAsync(ResetPasswordDto dto)
         {
-            var user = _accountRepository.GetByResetPasswordCode(dto.Code);
+            var user = await _accountRepository.GetByResetPasswordCodeAsync(dto.Code);
             if (user == null)
             {
                 return new AccountResultDto { IsSuccess = false, Message = "重設密碼連結不存在" };
@@ -133,7 +134,7 @@ namespace Project_MyFitnessCoach.Services
             user.ResetPasswordConfirmCodeExpiry = null;
 
             _accountRepository.Update(user);
-            _accountRepository.SaveChanges();
+            await _accountRepository.SaveChangesAsync();
 
             return new AccountResultDto { IsSuccess = true, Message = "密碼已重設完成，請重新登入" };
         }

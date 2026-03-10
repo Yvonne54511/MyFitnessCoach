@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModel;
 using Project_MyFitnessCoach.Services;
+using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Controllers
 {
@@ -40,14 +41,13 @@ namespace Project_MyFitnessCoach.Controllers
                 return View(model);
             }
 
-            // 將 ViewModel 映射到 DTO
             var dto = new LoginDto
             {
                 Account = model.Account,
                 Password = model.Password
             };
 
-            var result = _accountService.Login(dto);
+            var result = await _accountService.LoginAsync(dto);
             if (!result.IsSuccess || result.Member == null)
             {
                 ModelState.AddModelError(string.Empty, result.Message);
@@ -89,14 +89,14 @@ namespace Project_MyFitnessCoach.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ForgetPassword(ForgetPasswordViewModel model)
+        public async Task<IActionResult> ForgetPassword(ForgetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            var result = _accountService.CreateResetPasswordRequest(
+            var result = await _accountService.CreateResetPasswordRequestAsync(
                 model.Email,
                 code => Url.Action("ResetPassword", "Account", new { code }, Request.Scheme) ?? string.Empty);
 
@@ -108,11 +108,11 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [HttpGet]
-        public IActionResult ResetPassword(string code)
+        public async Task<IActionResult> ResetPassword(string code)
         {
-            if (string.IsNullOrWhiteSpace(code) || !_accountService.IsResetPasswordCodeValid(code))
+            if (string.IsNullOrWhiteSpace(code) || !await _accountService.IsResetPasswordCodeValidAsync(code))
             {
-                TempData["ResetPasswordError"] = "重設密碼連結無效或已過期";
+                TempData["ResetPasswordError"] = "重設密碼連結無效 or 已過期";
                 return RedirectToAction(nameof(ForgetPassword));
             }
 
@@ -124,14 +124,13 @@ namespace Project_MyFitnessCoach.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ResetPassword(ResetPasswordViewModel model)
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            // 將 ViewModel 映射到 DTO
             var dto = new ResetPasswordDto
             {
                 Code = model.Code,
@@ -139,7 +138,7 @@ namespace Project_MyFitnessCoach.Controllers
                 ConfirmPassword = model.ConfirmPassword
             };
 
-            var result = _accountService.ResetPassword(dto);
+            var result = await _accountService.ResetPasswordAsync(dto);
             if (!result.IsSuccess)
             {
                 ModelState.AddModelError(string.Empty, result.Message);

@@ -1,15 +1,15 @@
-using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace Project_MyFitnessCoach.Repositories
 {
     public interface IAccountRepository
     {
-        User? GetByAccount(string account);
-        User? GetByEmail(string email);
-        User? GetByResetPasswordCode(string code);
+        Task<User?> GetByAccountAsync(string account);
+        Task<User?> GetByEmailAsync(string email);
+        Task<User?> GetByResetPasswordCodeAsync(string code);
         void Update(User user);
-        void SaveChanges();
+        Task SaveChangesAsync();
     }
 
     public class AccountRepository : IAccountRepository
@@ -21,21 +21,21 @@ namespace Project_MyFitnessCoach.Repositories
             _db = db;
         }
 
-        public User? GetByAccount(string account)
+        public async Task<User?> GetByAccountAsync(string account)
         {
-            return _db.Users
+            return await _db.Users
                 .AsNoTracking()
-                .FirstOrDefault(u => u.Account == account);
+                .FirstOrDefaultAsync(u => u.Account == account);
         }
 
-        public User? GetByEmail(string email)
+        public async Task<User?> GetByEmailAsync(string email)
         {
-            return _db.Users.FirstOrDefault(u => u.Email == email);
+            return await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public User? GetByResetPasswordCode(string code)
+        public async Task<User?> GetByResetPasswordCodeAsync(string code)
         {
-            return _db.Users.FirstOrDefault(u => u.ResetPasswordConfirmCode == code);
+            return await _db.Users.FirstOrDefaultAsync(u => u.ResetPasswordConfirmCode == code);
         }
 
         public void Update(User user)
@@ -43,9 +43,9 @@ namespace Project_MyFitnessCoach.Repositories
             _db.Users.Update(user);
         }
 
-        public void SaveChanges()
+        public async Task SaveChangesAsync()
         {
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
         }
     }
 }

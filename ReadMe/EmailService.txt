@@ -1,0 +1,177 @@
+# Email 認證註冊服務 (IEmailService) 設定說明
+
+## 1. 安裝 NuGet 套件指令
+請在 `Project-MyFitnessCoach` 專案目錄下執行以下指令：
+```bash
+dotnet add package MailKit
+```
+
+## 2. 本地開發環境設定 User Secrets
+為了資安，請勿將應用程式密碼寫入 `appsettings.json`。請在終端機執行：
+
+```bash
+# 初始化 User Secrets (如果尚未初始化)
+dotnet user-secrets init
+
+# 設定 Gmail 帳號與 16 位應用程式密碼
+dotnet user-secrets set "EmailSettings:Account" "myfitnesscoach2026"
+dotnet user-secrets set "EmailSettings:Password" "XXXXXXXXXXXXXXX"
+dotnet user-secrets set "EmailSettings:SenderName" "MyFitnessCoach 管理員"
+dotnet user-secrets set "EmailSettings:SmtpServer" "smtp.gmail.com"
+dotnet user-secrets set "EmailSettings:SmtpPort" "587"
+```
+
+## 3. 介面定義 (IEmailService.cs)
+```csharp
+using System.Threading.Tasks;
+
+namespace Project_MyFitnessCoach.Services
+{
+    public interface IEmailService
+    {
+        /// <summary>
+        /// 發送註冊啟用驗證信
+        /// </summary>
+        Task<bool> SendActivationEmailAsync(string userEmail, string userName, string activationUrl);
+
+        /// <summary>
+        /// 發送重設密碼驗證信
+        /// </summary>
+        Task<bool> SendResetPwdEmailAsync(string userEmail, string userName, string resetUrl);
+        
+        // 舊有的方法相容性 (如果需要)
+        bool SendPasswordResetEmail(string email, string userName, string resetUrl);
+        bool SendStaffInvitationEmail(string email, string userName, string invitationUrl);
+    }
+}
+```
+
+## 4. 服務實作 (EmailService.cs)
+```csharp
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using Microsoft.Extensions.Configuration;
+using MimeKit;
+using System.Threading.Tasks;
+
+namespace Project_MyFitnessCoach.Services
+{
+    public class EmailService : IEmailService
+    {
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<EmailService> _logger;
+
+        public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
+        {
+            _configuration = configuration;
+            _logger = logger;
+        }
+
+        public async Task<bool> SendActivationEmailAsync(string userEmail, string userName, string activationUrl)
+        {
+            var subject = "MyFitnessCoach 帳號啟用驗證";
+            var bodyHtml = $@"
+                <div style='font-family: sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>
+                    <h2 style='color: #e47b22;'>連結每一份努力，與健康同行</h2>
+                    <p>親愛的 {userName} 您好：</p>
+                    <p>感謝您加入 MyFitnessCoach！請點擊下方按鈕以啟用您的帳號：</p>
+                    <a href='{activationUrl}' style='display: inline-block; padding: 10px 20px; background-color: #f2a531; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;'>立即啟用帳號</a>
+                    <p>如果按鈕無法點擊，請複製連結：<br/>{activationUrl}</p>
+                    <hr/>
+                    <p style='font-size: 0.8em; color: #888;'>此信件為系統自動發出，請勿直接回覆。</p>
+                </div>";
+
+            return await SendEmailAsync(userEmail, subject, bodyHtml);
+        }
+
+        public async Task<bool> SendResetPwdEmailAsync(string userEmail, string userName, string resetUrl)
+        {
+            var subject = "MyFitnessCoach 重設密碼請求";
+            var bodyHtml = $@"
+                <div style='font-family: sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 10px;'>
+                    <h2 style='color: #e47b22;'>密碼重設通知</h2>
+                    <p>親愛的 {userName} 您好：</p>
+                    <p>我們收到了您的密碼重設請求。請點擊下方按鈕重新設定您的密碼：</p>
+                    <a href='{resetUrl}' style='display: inline-block; padding: 10px 20px; background-color: #e47b22; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;'>重設我的密碼</a>
+                    <p>重設連結將於 30 分鐘後過期。</p>
+                    <p>如果按鈕無法點擊，請複製連結：<br/>{resetUrl}</p>
+                </div>";
+
+            return await SendEmailAsync(userEmail, subject, bodyHtml);
+        }
+
+        // 私有通用發信邏輯 (使用 MailKit)
+        private async Task<bool> SendEmailAsync(string toEmail, string subject, string bodyHtml)
+        {
+            var emailAccount = _configuration["EmailSettings:Account"] + "@gmail.com";
+            var emailPassword = _configuration["EmailSettings:Password"];
+            var senderName = _configuration["EmailSettings:SenderName"] ?? "MyFitnessCoach";
+            var smtpServer = _configuration["EmailSettings:SmtpServer"] ?? "smtp.gmail.com";
+            var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587");
+
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(senderName, emailAccount));
+            message.To.Add(new MailboxAddress("", toEmail));
+            message.Subject = subject;
+
+            var bodyBuilder = new BodyBuilder { HtmlBody = bodyHtml };
+            message.Body = bodyBuilder.ToMessageBody();
+
+            try
+            {
+                using var client = new SmtpClient();
+                await client.ConnectAsync(smtpServer, smtpPort, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(emailAccount, emailPassword);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "發送郵件失敗至 {Email}", toEmail);
+                return false;
+            }
+        }
+
+        // 舊方法相容性實作... (省略或以 SendEmailAsync 取代)
+        public bool SendPasswordResetEmail(string email, string userName, string resetUrl) 
+            => SendResetPwdEmailAsync(email, userName, resetUrl).Result;
+
+        public bool SendStaffInvitationEmail(string email, string userName, string invitationUrl)
+            => SendActivationEmailAsync(email, userName, invitationUrl).Result;
+    }
+}
+```
+
+## 5. 在 Program.cs 中註冊服務
+```csharp
+// 註冊 EmailService
+builder.Services.AddScoped<IEmailService, EmailService>();
+```
+
+## 6. 在 Controller 中呼叫範例
+```csharp
+public class AccountController : Controller
+{
+    private readonly IEmailService _emailService;
+
+    public AccountController(IEmailService emailService)
+    {
+        _emailService = emailService;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ForgetPassword(ForgetPasswordViewModel model)
+    {
+        // 1. 驗證使用者並產生 Code (略)
+        string confirmCode = "XXX";
+        string resetUrl = Url.Action("ResetPassword", "Account", new { code = confirmCode }, Request.Scheme);
+
+        // 2. 呼叫服務
+        bool isSent = await _emailService.SendResetPwdEmailAsync(model.Email, "使用者", resetUrl);
+
+        if (isSent) { /* 顯示成功訊息 */ }
+        return View();
+    }
+}
+```
