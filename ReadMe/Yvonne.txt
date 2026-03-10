@@ -1,138 +1,88 @@
-===3/4==
-[V]建立資料庫 3hr
-[V]連接資料庫
-	v 設定EfModels
-	v 設定連線字串
-	v 註冊 DbContext 和 DI	
+===3/10 更新內容===
 
-[]登入
-  v url:/Auth/Login/
-  v AuthController
-	v LoginDto:Account,Password
-	v LoginViewModel:Account,Password
-	- UserService:
-		驗證帳密
-	- UserRepository
-	   - MemberDto 
-	   
-	   
-	   GetById(int memberId))
-  v View
-  顯示密碼
+[V] 登入
+  v url: /Account/Login
+  v AccountController
+	v LoginDto: Account, Password (輸入 DTO)
+	v MemberDto: Id, Account, UserName, Email, HashedPassword (回傳 DTO)
+	v LoginResultDto: IsSuccess, Message, Member (MemberDto)
+	v LoginViewModel: Account, Password
+	- MemberAccountService:
+		- LoginResultDto Login(LoginDto dto)
+	- AccountRepository:
+		- User GetByAccount(string account)
+  v Account/Login View
 
-==3/5==
+  **技術補充:ILogger<T> 與 PasswordHasher<User>**
+  *loginDto需要包含MemberDto?
 
-[]註冊Register
-  - url:/Auth/Register/
-  - UserController (Register action)
-  - RegisterDto:Account,Password,Email,Name
-  - RegisterViewModel:Account,Password,ConfirmPassword,Email,Name
-  - UserService:
-		建立使用者、密碼加密
-  - UserRepository:
-		新增使用者、檢查帳號重複
-  - View
+[V] 登出
+  v url: /Account/Logout
+  v AccountController (Logout action)
+  - 使用 HttpContext.SignOutAsync 清除 Cookie
 
-[]email驗證Email Confirmation
-  - url:/Users/ConfirmEmail/
-  - UserService:
-		發送驗證信(SmtpClient)、產生驗證 Token
-  - UserRepository:
-		更新驗證狀態
+[V] 忘記密碼
+  v url: /Account/ForgetPassword
+  v AccountController
+	v ResetPasswordRequestDto: IsSuccess, Message, Email, EmailSent
+	v ForgetPasswordViewModel: Email
+	- MemberAccountService:
+		- ResetPasswordRequestDto CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory)
+	- AccountRepository:
+		- User GetByEmail(string email)
+  v Account/ForgetPassword View
 
-[]記住密碼 Remember Me
-  - LoginDto & LoginViewModel 增加 RememberMe (bool)
-  - UserService:
-		建立 Cookie / JWT Token (權限控管)
+[V] 重設密碼
+  v url: /Account/ResetPassword
+  v AccountController
+	v ResetPasswordDto: Code, Password, ConfirmPassword (輸入 DTO)
+	v AccountResultDto: IsSuccess, Message (回傳 DTO)
+	v ResetPasswordViewModel: Code, Password, ConfirmPassword
+	- MemberAccountService:
+		- bool IsResetPasswordCodeValid(string code)
+		- AccountResultDto ResetPassword(ResetPasswordDto dto)
+	- AccountRepository:
+		- User GetByResetPasswordCode(string code)
+		- void Update(User user)
+  v Account/ResetPassword View
 
-[]登出功能 Logout (必備)
-  - url:/Users/Logout/
-  - UserController (Logout action)
-  - UserService: 清除 Cookie / Token
+=== 待開發內容 ===
 
-[]修改密碼Change Password
-  - url:/Users/ChangePassword/
-  - UserController (ChangePassword action)
-  - ChangePasswordDto:OldPassword,NewPassword
-  - ChangePasswordViewModel:OldPassword,NewPassword,ConfirmNewPassword
-  - UserService:
-		驗證舊密碼、更新新密碼
-  - UserRepository:
-		更新密碼
-  - View
+[] 註冊 Register
+  - url: /Auth/Register
+  - AuthService / AuthController
+  - RegisterViewModel: Account, Password, ConfirmPassword, Email, UserName, Mobile
+  - AuthService: (bool Success, string Message) Register(RegisterViewModel model)
+  - AuthRepository: bool IsAccountExist(string account), bool IsEmailExist(string email)
 
-[]忘記密碼Forget Password
-  - url:/Users/ForgetPassword/
-  - UserController (ForgetPassword action)
-  - ForgetPasswordDto:Email
-  - ForgetPasswordViewModel:Email
-  - UserService:
-		產生重設密碼連結、寄送 Email
-  - UserRepository:
-		查詢 User (by Email)、儲存重設 Token
+[] Email 驗證 (配合註冊)
+  - url: /Auth/Activate
+  - AuthService: (bool Success, string Message) Activate(int userId, string confirmCode)
 
-[]重設密碼Reset Password
-  - url:/Users/ResetPassword/
-  - UserController (ResetPassword action)
-  - ResetPasswordDto:Token,NewPassword
-  - ResetPasswordViewModel:NewPassword,ConfirmNewPassword
-  - UserService:
-		驗證 Token 有效性、重設密碼
-  - UserRepository:
-		更新密碼 (by Token)
-  - View
+[] Dashboard
+  - url: /Dashboard/Index
+  - DashboardController
+  - DashboardService: DashboardSummaryViewModel GetSummary()
+  - DashboardRepository
+  - Dashboard/Index View
 
-[]外部登入External Login
-  - google登入
-  - UserController (ExternalLogin action)
-  - UserService:
-	 串接 Google OAuth、處理外部帳號連結
-  - UserRepository:
-	 新增/查詢外部登入記錄 (UserExternalLogin)
+[] FoodRecord
+  - url: /FoodRecord/ViewFoodRecord
+  - FoodRecordController
+  - ViewFoodRecord View
 
-[]修改個人資料 Edit Profile
-  - url:/Instructor/EditProfile/
-  - UserController (Profile action)
-  - InstructorProfileDto & InstructorProfileViewModel: Name, Email, Phone...
-  - UserService: 更新個人資料
-  - UserRepository: 更新 User 欄位
-  - View
+=== (補充) 技術說明 ===
 
-[]使用者管理User Management
-  - 查看使用者列表View User List
-	- url:/Users/Index/
-	- UserController (Index action)
-	- UserService: 取得所有使用者清單
-	- UserRepository: 查詢所有 User
-	- View (使用者表格)
-  - 編輯使用者Edit User
-	- url:/Users/Edit/{id}
-	- UserController (Edit action)
-	- UserEditDto & ViewModel: Id, Name, Email, Role, Status
-	- UserService: 更新使用者權限或狀態
-	- UserRepository: 取得/更新 User 資料
-	- View (編輯表單)
-  - 刪除使用者Delete User
-	- UserController (Delete action)
-	- UserService: 刪除使用者(或停用)
-	- UserRepository: 刪除/停用 User
+- ILogger<T>:
+  * 用途: 內建日誌記錄工具，用於追蹤程式執行狀態或記錄錯誤。
+  * 範例: 在 Service 中捕捉 Exception 後，使用 _logger.LogError(ex, "Message") 記錄錯誤詳細資訊。
 
-[]Dashboard
-  - url:/Home/Dashboard/
-  - HomeController
-  - UserService: 統計資訊(如今日運動、攝取熱量)
-  - View
+- PasswordHasher<User>:
+  * 用途: 安全地處理密碼雜湊與驗證，符合資安標準(不存明文)。
+  * 非靜態類別，需實例化後使用。
+  * HashPassword(): 用於將新密碼轉為雜湊值(如重設密碼時)。
+  * VerifyHashedPassword(): 用於登入時比對明文密碼與資料庫中的雜湊值是否相符。
 
-[]FoodRecord
-  - url:/Members/FoodRecord/
-  - FoodController
-  - FoodRecordDto: FoodId, Quantity, MealType, Date
-  - FoodRecordViewModel: FoodId, Quantity, MealType, Date
-  - FoodService: 記錄飲食、計算熱量
-  - FoodRepository: 儲存飲食紀錄
-  - View :(飲食紀錄表單)
+-IPasswordHasher<User>:DI注入介面，可用來單元測試時增加假的雜湊方法。
 
-
-
-[] Cookies / Middleware
-    - 授權與身分驗證 (Authentication/Authorization)
+   .AsNoTracking()

@@ -1,70 +1,84 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.EfModels;
-using Project_MyFitnessCoach.Models.ViewModel;
 using Project_MyFitnessCoach.Repositories;
 
 namespace Project_MyFitnessCoach.Services
 {
-    public interface IAccountService
+    public interface IMemberAccountService
     {
-        (bool Success, string Message, User? User) Login(LoginViewModel model);
-        (bool Success, string Email, bool EmailSent) CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory);
-        (bool Success, string Message) ResetPassword(ResetPasswordViewModel model);
+        LoginResultDto Login(LoginDto dto);
+        ResetPasswordRequestDto CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory);
+        AccountResultDto ResetPassword(ResetPasswordDto dto);
         bool IsResetPasswordCodeValid(string code);
     }
 
-    public class AccountService : IAccountService
+    public class MemberAccountService : IMemberAccountService
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IEmailService _emailService;
-        private readonly PasswordHasher<User> _passwordHasher;
-        private readonly ILogger<AccountService> _logger;
+        private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly ILogger<MemberAccountService> _logger;
 
-        public AccountService(
+        public MemberAccountService(
             IAccountRepository accountRepository,
             IEmailService emailService,
-            ILogger<AccountService> logger)
+            ILogger<MemberAccountService> logger,
+            IPasswordHasher<User> passwordHasher)
         {
             _accountRepository = accountRepository;
             _emailService = emailService;
             _logger = logger;
-            _passwordHasher = new PasswordHasher<User>();
+            _passwordHasher = passwordHasher;
         }
 
-        public (bool Success, string Message, User? User) Login(LoginViewModel model)
+        public LoginResultDto Login(LoginDto dto)
         {
-            var user = _accountRepository.GetByAccount(model.Account);
+            var user = _accountRepository.GetByAccount(dto.Account);
 
             if (user == null || string.IsNullOrWhiteSpace(user.HashedPassword))
             {
-                return (false, "±b¸¹©Î±K½X¿ù»~", null);
+                return new LoginResultDto { IsSuccess = false, Message = "å¸³è™Ÿæˆ–å¯†ç¢¼éŒ¯èª¤" };
             }
 
-            var result = _passwordHasher.VerifyHashedPassword(user, user.HashedPassword, model.Password);
+            var result = _passwordHasher.VerifyHashedPassword(user, user.HashedPassword, dto.Password);
             if (result == PasswordVerificationResult.Failed)
             {
-                return (false, "±b¸¹©Î±K½X¿ù»~", null);
+                return new LoginResultDto { IsSuccess = false, Message = "å¸³è™Ÿæˆ–å¯†ç¢¼éŒ¯èª¤" };
             }
 
             if (!user.IsConfirmed)
             {
-                return (false, "¦¹±b¸¹©|¥¼§¹¦¨±Ò¥Î", null);
+                return new LoginResultDto { IsSuccess = false, Message = "æ­¤å¸³è™Ÿå°šæœªå®Œæˆé©—è­‰" };
             }
 
             if (!user.IsActive)
             {
-                return (false, "¦¹±b¸¹¥Ø«e¥¼±Ò¥Î¡A½ĞÁpµ¸ºŞ²z­û", null);
+                return new LoginResultDto { IsSuccess = false, Message = "æ­¤å¸³è™Ÿç›®å‰åœç”¨ä¸­ï¼Œè«‹æ´½ç®¡ç†å“¡" };
             }
 
-            return (true, "µn¤J¦¨¥\", user);
+            return new LoginResultDto
+            {
+                IsSuccess = true,
+                Message = "ç™»å…¥æˆåŠŸ",
+                Member = new MemberDto
+                {
+                    Id = user.Id,
+                    Account = user.Account,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    HashedPassword = user.HashedPassword
+                }
+            };
         }
 
-        public (bool Success, string Email, bool EmailSent) CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory)
+        public ResetPasswordRequestDto CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory)
         {
             var user = _accountRepository.GetByEmail(email);
             if (user == null)
             {
-                return (true, email, false);
+                return new ResetPasswordRequestDto { IsSuccess = true, Email = email, EmailSent = false };
             }
 
             user.ResetPasswordConfirmCode = Guid.NewGuid().ToString("N");
@@ -84,7 +98,13 @@ namespace Project_MyFitnessCoach.Services
                 _logger.LogError(ex, "Failed to send reset password email to {Email}", user.Email);
             }
 
-            return (true, user.Email, emailSent);
+            return new ResetPasswordRequestDto
+            {
+                IsSuccess = true,
+                Email = user.Email,
+                EmailSent = emailSent,
+                Message = emailSent ? "é‡è¨­å¯†ç¢¼ä¿¡ä»¶å·²å¯„å‡º" : "å¯„é€å¤±æ•—"
+            };
         }
 
         public bool IsResetPasswordCodeValid(string code)
@@ -95,27 +115,27 @@ namespace Project_MyFitnessCoach.Services
                 && user.ResetPasswordConfirmCodeExpiry.Value >= DateTime.Now;
         }
 
-        public (bool Success, string Message) ResetPassword(ResetPasswordViewModel model)
+        public AccountResultDto ResetPassword(ResetPasswordDto dto)
         {
-            var user = _accountRepository.GetByResetPasswordCode(model.Code);
+            var user = _accountRepository.GetByResetPasswordCode(dto.Code);
             if (user == null)
             {
-                return (false, "­«³]±K½X³sµ²¤£¦s¦b");
+                return new AccountResultDto { IsSuccess = false, Message = "é‡è¨­å¯†ç¢¼é€£çµä¸å­˜åœ¨" };
             }
 
             if (!user.ResetPasswordConfirmCodeExpiry.HasValue || user.ResetPasswordConfirmCodeExpiry.Value < DateTime.Now)
             {
-                return (false, "­«³]±K½X³sµ²¤w¥¢®Ä¡A½Ğ­«·s¥Ó½Ğ");
+                return new AccountResultDto { IsSuccess = false, Message = "é‡è¨­å¯†ç¢¼é€£çµå·²éæœŸï¼Œè«‹é‡æ–°ç”³è«‹" };
             }
 
-            user.HashedPassword = _passwordHasher.HashPassword(user, model.Password);
+            user.HashedPassword = _passwordHasher.HashPassword(user, dto.Password);
             user.ResetPasswordConfirmCode = null!;
             user.ResetPasswordConfirmCodeExpiry = null;
 
             _accountRepository.Update(user);
             _accountRepository.SaveChanges();
 
-            return (true, "±K½X¤w­«³]§¹¦¨¡A½Ğ­«·sµn¤J");
+            return new AccountResultDto { IsSuccess = true, Message = "å¯†ç¢¼å·²é‡è¨­å®Œæˆï¼Œè«‹é‡æ–°ç™»å…¥" };
         }
     }
 }

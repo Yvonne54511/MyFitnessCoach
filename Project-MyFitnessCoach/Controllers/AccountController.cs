@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModel;
 using Project_MyFitnessCoach.Services;
 
@@ -9,9 +10,9 @@ namespace Project_MyFitnessCoach.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IAccountService _accountService;
+        private readonly IMemberAccountService _accountService;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IMemberAccountService accountService)
         {
             _accountService = accountService;
         }
@@ -39,8 +40,15 @@ namespace Project_MyFitnessCoach.Controllers
                 return View(model);
             }
 
-            var result = _accountService.Login(model);
-            if (!result.Success || result.User == null)
+            // Â∞á ViewModel Êò†Â∞ÑÂà∞ DTO
+            var dto = new LoginDto
+            {
+                Account = model.Account,
+                Password = model.Password
+            };
+
+            var result = _accountService.Login(dto);
+            if (!result.IsSuccess || result.Member == null)
             {
                 ModelState.AddModelError(string.Empty, result.Message);
                 return View(model);
@@ -48,9 +56,9 @@ namespace Project_MyFitnessCoach.Controllers
 
             var claims = new List<Claim>
             {
-                new(ClaimTypes.NameIdentifier, result.User.Id.ToString()),
-                new(ClaimTypes.Name, result.User.UserName),
-                new(ClaimTypes.Email, result.User.Email)
+                new(ClaimTypes.NameIdentifier, result.Member.Id.ToString()),
+                new(ClaimTypes.Name, result.Member.UserName),
+                new(ClaimTypes.Email, result.Member.Email)
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -95,6 +103,7 @@ namespace Project_MyFitnessCoach.Controllers
             ViewBag.Email = result.Email;
             ViewBag.IsSent = true;
             ViewBag.EmailSent = result.EmailSent;
+            ViewBag.Message = result.Message;
             return View(model);
         }
 
@@ -103,7 +112,7 @@ namespace Project_MyFitnessCoach.Controllers
         {
             if (string.IsNullOrWhiteSpace(code) || !_accountService.IsResetPasswordCodeValid(code))
             {
-                TempData["ResetPasswordError"] = "≠´≥]±KΩX≥sµ≤µLÆƒ©Œ§wπL¥¡";
+                TempData["ResetPasswordError"] = "ÈáçË®≠ÂØÜÁ¢ºÈÄ£ÁµêÁÑ°ÊïàÊàñÂ∑≤ÈÅéÊúü";
                 return RedirectToAction(nameof(ForgetPassword));
             }
 
@@ -122,8 +131,16 @@ namespace Project_MyFitnessCoach.Controllers
                 return View(model);
             }
 
-            var result = _accountService.ResetPassword(model);
-            if (!result.Success)
+            // Â∞á ViewModel Êò†Â∞ÑÂà∞ DTO
+            var dto = new ResetPasswordDto
+            {
+                Code = model.Code,
+                Password = model.Password,
+                ConfirmPassword = model.ConfirmPassword
+            };
+
+            var result = _accountService.ResetPassword(dto);
+            if (!result.IsSuccess)
             {
                 ModelState.AddModelError(string.Empty, result.Message);
                 return View(model);

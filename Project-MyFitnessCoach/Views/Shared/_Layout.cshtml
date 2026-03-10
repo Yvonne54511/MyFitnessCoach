@@ -21,6 +21,7 @@
             <a class="sidebar-brand d-flex align-items-center justify-content-center" asp-controller="Dashboard" asp-action="Index">
                 <div class="sidebar-brand-text mx-3">@(ViewBag.Title ?? "後台管理")</div>
             </a>
+            
             <hr class="sidebar-divider">
             <div class="sidebar-heading">人員管理</div>
             <li class="nav-item active">
@@ -36,7 +37,7 @@
                 </a>
                 <div id="collapseUser" class="collapse" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="#">帳密修改</a>
+                        <a class="collapse-item" href="/Account/ResetPassword">帳密修改</a>
                         <a class="collapse-item" href="#">資料維護-營養師</a>
                         <a class="collapse-item" href="#">資料維護-會員</a>
                     </div>
@@ -149,6 +150,7 @@
                     </button>
                     <div class="sidebar-brand-text d-flex justify-content-center font-weight-bold">MyFitnessCoach Admin</div>
                     <ul class="navbar-nav ml-auto">
+                        <span class="text-black mt-4">@DateTime.Now.ToString("yyyy/MM/dd HH:mm")</span>
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -192,7 +194,7 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
                     <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
-                        @Html.AntiForgeryToken()
+                        @* @Html.AntiForgeryToken() *@
                         <button type="submit" class="btn btn-primary">登出</button>
                     </form>
                 </div>

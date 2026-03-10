@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Models.Repositories;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.ViewModel;
@@ -45,7 +47,10 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-            builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<BCryptPasswordHasher>();
+            //builder.Services.AddScoped<Microsoft.AspNetCore.Identity.IPasswordHasher<User>>(sp => sp.GetRequiredService<BCryptPasswordHasher>());
+			builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+			builder.Services.AddScoped<IMemberAccountService, MemberAccountService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
             builder.Services.AddScoped<IDashboardService, DashboardService>();
@@ -82,7 +87,7 @@ namespace Project_MyFitnessCoach
                 // 如果 admin 帳號不存在，才進行建立
                 if (!db.Users.Any(u => u.Account == "admin"))
                 {
-                    var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<User>();
+                    var hasher = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.IPasswordHasher<User>>();
                     var adminUser = new User
                     {
                         Account = "admin",
