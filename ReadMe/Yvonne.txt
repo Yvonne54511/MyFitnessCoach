@@ -49,15 +49,19 @@
 === 待開發內容 ===
 
 [] 註冊 Register
-  - url: /Auth/Register
+  - url: /Staff/Register
   - AuthService / AuthController
   - RegisterViewModel: Account, Password, ConfirmPassword, Email, UserName, Mobile
   - AuthService: (bool Success, string Message) Register(RegisterViewModel model)
   - AuthRepository: bool IsAccountExist(string account), bool IsEmailExist(string email)
-
+  
+  -邀請員工尚無法發信
 [] Email 驗證 (配合註冊)
   - url: /Auth/Activate
   - AuthService: (bool Success, string Message) Activate(int userId, string confirmCode)
+
+  -按鈕顏色要改
+  -email找不到的errmsg要改
 
 [] Dashboard
   - url: /Dashboard/Index
@@ -95,3 +99,5 @@ GetByEmail 沒有加 .AsNoTracking()，但 GetByAccount 有加，這是因為：
 在這個 AccountRepository 裡：
 •	GetByAccount 只查詢帳號（可能只讀），所以加了 .AsNoTracking()。
 •	GetByEmail 可能查出來後要修改（如重設密碼），所以沒加 .AsNoTracking()，讓 EF Core 可以追蹤並更新。
+
+
