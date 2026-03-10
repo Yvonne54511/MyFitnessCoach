@@ -85,4 +85,13 @@
 
 -IPasswordHasher<User>:DI注入介面，可用來單元測試時增加假的雜湊方法。
 
-   .AsNoTracking()
+-AsNoTracking()
+GetByEmail 沒有加 .AsNoTracking()，但 GetByAccount 有加，這是因為：
+•	.AsNoTracking() 會讓查詢結果不被 EF Core 追蹤（只讀、效能較佳，不能直接修改）。
+•	沒加 .AsNoTracking()，查詢結果會被追蹤（可直接修改屬性並呼叫 SaveChanges() 更新資料庫）。
+用途差異：
+•	如果你只是查詢資料、顯示用，建議加 .AsNoTracking()。
+•	如果你查詢後要修改這個物件（例如重設密碼、更新資料），就不要加 .AsNoTracking()，這樣 EF Core 才能追蹤物件的變更。
+在這個 AccountRepository 裡：
+•	GetByAccount 只查詢帳號（可能只讀），所以加了 .AsNoTracking()。
+•	GetByEmail 可能查出來後要修改（如重設密碼），所以沒加 .AsNoTracking()，讓 EF Core 可以追蹤並更新。
