@@ -14,7 +14,7 @@ dotnet add package MailKit
 dotnet user-secrets init
 
 # 設定 Gmail 帳號與 16 位應用程式密碼
-dotnet user-secrets set "EmailSettings:Account" "myfitnesscoach2026"
+dotnet user-secrets set "EmailSettings:Account" "xxxxxxxxxx"
 dotnet user-secrets set "EmailSettings:Password" "XXXXXXXXXXXXXXX"
 dotnet user-secrets set "EmailSettings:SenderName" "MyFitnessCoach 管理員"
 dotnet user-secrets set "EmailSettings:SmtpServer" "smtp.gmail.com"
