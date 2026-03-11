@@ -28,7 +28,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
                 Price = dto.Price ?? 0,
                 Points = dto.Points ?? 0,
                 Description = dto.Description,
-                IsActive = dto.IsActive ?? false,
+                IsActive = dto.IsActive,
                 SortOrder = dto.SortOrder ?? 0
             };
         }

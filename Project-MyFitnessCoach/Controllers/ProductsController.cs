@@ -9,19 +9,19 @@ namespace Project_MyFitnessCoach.Controllers
 	public class ProductsController : Controller
 	{
 		private readonly ProductService _service;
+		private readonly CategoryService _categoryService;
 
-		public ProductsController(ProductService service)
+		public ProductsController(ProductService service, CategoryService categoryService)
 		{
 			_service = service;
+			_categoryService = categoryService;
 		}
 
 		public IActionResult Index()
 		{
-			var products = _service
-				.GetAllProducts()
+			var products = _service.GetAllProducts()
 				.Select(p => p.ToViewModel())
 				.ToList();
-
 			return View(products);
 		}
 
@@ -109,7 +109,7 @@ namespace Project_MyFitnessCoach.Controllers
 
 		private void PrepareCategories()
 		{
-			var categories = _service.GetCategories();
+			var categories = _categoryService.GetAllCategories();
 			ViewBag.Categories = new SelectList(categories, "Id", "CategoryName");
 		}
 	}

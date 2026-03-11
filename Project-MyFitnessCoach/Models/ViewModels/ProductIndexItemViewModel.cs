@@ -11,10 +11,11 @@ namespace Project_MyFitnessCoach.Models.ViewModels
 		public int CategoryId { get; set; }
 
 		[Display(Name = "產品名稱")]
-		public string Name { get; set; }
+		[Required(ErrorMessage = "{0} 為必填")]
+		public string Name { get; set; } = string.Empty;
 
 		[Display(Name = "圖片網址")]
-		public string ImageUrl { get; set; }
+		public string? ImageUrl { get; set; }
 
 		[Display(Name = "原價")]
 		public decimal OriginalPrice { get; set; }
@@ -23,7 +24,7 @@ namespace Project_MyFitnessCoach.Models.ViewModels
 		public decimal UnitPrice { get; set; }
 
 		[Display(Name = "描述")]
-		public string Description { get; set; }
+		public string? Description { get; set; }
 
 		[Display(Name = "排序")]
 		public int SortOrder { get; set; }
@@ -32,6 +33,6 @@ namespace Project_MyFitnessCoach.Models.ViewModels
 		public bool IsActive { get; set; }
 
 		[Display(Name = "分類名稱")]
-		public string CategoryName { get; set; }
+		public string? CategoryName { get; set; }
 	}
 }

@@ -47,7 +47,7 @@ namespace Project_MyFitnessCoach.Controllers
                     Price = model.Price,
                     Points = model.Points,
                     Description = model.Description,
-                    IsActive = model.IsActive ?? true,
+                    IsActive = model.IsActive,
                     SortOrder = model.SortOrder ?? 0
                 };
                 _service.CreatePlan(dto);
