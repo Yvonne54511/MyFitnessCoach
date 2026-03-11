@@ -57,11 +57,17 @@ namespace Project_MyFitnessCoach.Controllers
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, result.Member.Id.ToString()),
-                new(ClaimTypes.Name, result.Member.UserName),
-                new(ClaimTypes.Email, result.Member.Email)
+                new(ClaimTypes.Name, result.Member.UserName ?? result.Member.Account),
+                new(ClaimTypes.Email, result.Member.Email),
+                new("Account", result.Member.Account)
             };
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            foreach (var role in result.Member.Roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme, ClaimTypes.Name, ClaimTypes.Role);
             var principal = new ClaimsPrincipal(identity);
 
             await HttpContext.SignInAsync(

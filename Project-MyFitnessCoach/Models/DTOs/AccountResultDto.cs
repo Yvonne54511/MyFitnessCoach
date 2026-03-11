@@ -7,6 +7,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
 		public string UserName { get; set; }
 		public string Email { get; set; }
 		public string HashedPassword { get; set; }
+        public List<string> Roles { get; set; } = new List<string>();
 	}
 	public class LoginDto
 	{

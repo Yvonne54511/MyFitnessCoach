@@ -1,4 +1,10 @@
-===3/10 更新內容===
+todo
+*註冊頁很醜
+*記住密碼
+*忘記密碼要等一分鐘後再嘗試
+*邀請新員工下面的角色分配要改成中文 而且沒有被寫進資料庫
+ 
+ ===3/10 更新內容===
 
 [V] 登入
   v url: /Account/Login
@@ -15,6 +21,7 @@
 
   **技術補充:ILogger<T> 與 PasswordHasher<User>**
   *loginDto需要包含MemberDto?
+  
 
 [V] 登出
   v url: /Account/Logout
@@ -31,6 +38,9 @@
 	- AccountRepository:
 		- User GetByEmail(string email)
   v Account/ForgetPassword View
+
+  *按鈕顏色不清楚
+  *新增"發送後等一分鐘再傳一次"
 
 [V] 重設密碼
   v url: /Account/ResetPassword
@@ -55,7 +65,7 @@
   - AuthService: (bool Success, string Message) Register(RegisterViewModel model)
   - AuthRepository: bool IsAccountExist(string account), bool IsEmailExist(string email)
   
-  -邀請員工尚無法發信
+  
 [] Email 驗證 (配合註冊)
   - url: /Auth/Activate
   - AuthService: (bool Success, string Message) Activate(int userId, string confirmCode)

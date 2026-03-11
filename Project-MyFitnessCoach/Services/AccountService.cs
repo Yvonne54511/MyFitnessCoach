@@ -68,7 +68,8 @@ namespace Project_MyFitnessCoach.Services
                     Account = user.Account,
                     UserName = user.UserName,
                     Email = user.Email,
-                    HashedPassword = user.HashedPassword
+                    HashedPassword = user.HashedPassword,
+                    Roles = user.UserRoles.Select(ur => ur.Role.RoleName).ToList()
                 }
             };
         }
