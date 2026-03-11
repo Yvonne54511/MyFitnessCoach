@@ -1,0 +1,26 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>錯誤 | MyFitnessCoach</title>
+    <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6 text-center mt-5">
+                <div class="error-content p-5 bg-white rounded shadow">
+                    <h1 class="text-danger mb-4">無法啟用帳號</h1>
+                    <p class="lead text-gray-800">@ViewBag.Error</p>
+                    <p>請聯繫系統管理員重新發送邀請信。</p>
+                    <a href="/" class="btn btn-primary mt-3">回到首頁</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

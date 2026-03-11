@@ -1,0 +1,57 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.EfModels.PointOrder>
+
+@{
+    ViewData["Title"] = "儲值訂單管理";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800">儲值訂單管理</h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">儲值紀錄列表</h6>
+            <a asp-action="Recharge" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> 新增儲值
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>訂單編號</th>
+                            <th>會員ID</th>
+                            <th>儲值點數</th>
+                            <th>原始金額</th>
+                            <th>實付金額</th>
+                            <th>儲值時間</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.MemberId</td>
+                                <td>@item.PointQty</td>
+                                <td>@item.OriginalPrice.ToString("C0")</td>
+                                <td>@item.DiscountedPrice.ToString("C0")</td>
+                                <td>@item.CreateAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

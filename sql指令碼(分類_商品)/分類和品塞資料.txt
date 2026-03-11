@@ -1,0 +1,64 @@
+USE [MyFitnessCoachDb];
+GO
+
+PRINT '開始新增測試資料...';
+
+-- ==========================================
+-- 1. 建立 ProductCategories 測試資料 (4筆)
+-- ==========================================
+INSERT INTO [dbo].[ProductCategories] ([CategoryName], [SortOrder], [IsActive])
+VALUES 
+    (N'雞胸肉', 1, 1),
+    (N'蛋白粉', 2, 1),
+    (N'各種維生素', 3, 1),
+    (N'便當盒', 4, 1);
+
+PRINT '分類資料新增完成！';
+
+-- ==========================================
+-- 2. 建立 Products 測試資料 (30筆)
+-- ==========================================
+-- 分類對應: 1=雞胸肉, 2=蛋白粉, 3=各種維生素, 4=便當盒
+
+INSERT INTO [dbo].[Products] ([CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive])
+VALUES 
+    -- 雞胸肉系列 (8筆)
+    (1, N'經典原味舒肥雞胸肉', N'/images/products/chicken_01.jpg', 120, 99, N'鮮嫩多汁，低脂高蛋白，無過多調味', 1, 1),
+    (1, N'黑胡椒海鹽雞胸肉', N'/images/products/chicken_02.jpg', 120, 99, N'使用天然海鹽與粗粒黑胡椒，經典百搭', 2, 1),
+    (1, N'蒜香風味雞胸肉', N'/images/products/chicken_03.jpg', 120, 99, N'濃郁蒜香，健身後補充的最佳首選', 3, 1),
+    (1, N'泰式檸檬雞胸肉', N'/images/products/chicken_04.jpg', 130, 109, N'微酸微辣，清爽解膩的泰式風味', 4, 1),
+    (1, N'印度咖哩雞胸肉', N'/images/products/chicken_05.jpg', 130, 109, N'濃郁咖哩香氣，異國風味口感豐富', 5, 1),
+    (1, N'川味麻辣雞胸肉', N'/images/products/chicken_06.jpg', 130, 109, N'嗜辣者必備，刺激味蕾好下飯', 6, 1),
+    (1, N'義式香草雞胸肉', N'/images/products/chicken_07.jpg', 140, 119, N'特選義式綜合香料醃製，香氣四溢', 7, 1),
+    (1, N'迷迭香烤雞胸肉', N'/images/products/chicken_08.jpg', 140, 119, N'高級餐廳等級口感，在家也能輕鬆享受', 8, 1),
+
+    -- 蛋白粉系列 (8筆)
+    (2, N'濃縮乳清蛋白 - 醇厚巧克力', N'/images/products/protein_01.jpg', 1500, 1200, N'每份含25g蛋白質，濃郁可可風味', 1, 1),
+    (2, N'濃縮乳清蛋白 - 經典香草', N'/images/products/protein_02.jpg', 1500, 1200, N'百搭香草風味，適合搭配牛奶或燕麥', 2, 1),
+    (2, N'分離乳清蛋白 - 鮮採草莓', N'/images/products/protein_03.jpg', 1800, 1450, N'乳糖不耐症適用，酸甜草莓口感', 3, 1),
+    (2, N'分離乳清蛋白 - 英式奶茶', N'/images/products/protein_04.jpg', 1800, 1450, N'超人氣奶茶口味，享受喝手搖飲的快感', 4, 1),
+    (2, N'緩釋型酪蛋白 - 原味', N'/images/products/protein_05.jpg', 1600, 1300, N'緩慢釋放胺基酸，睡前補充最佳選擇', 5, 1),
+    (2, N'純素大豆分離蛋白 - 抹茶', N'/images/products/protein_06.jpg', 1400, 1100, N'素食者健身必備，日式靜岡抹茶風味', 6, 1),
+    (2, N'綜合植物蛋白粉 - 芝麻', N'/images/products/protein_07.jpg', 1450, 1150, N'富含多種植物性胺基酸，濃郁芝麻香', 7, 1),
+    (2, N'高蛋白能量代餐飲 - 香蕉', N'/images/products/protein_08.jpg', 1200, 990, N'富含飽足感，減脂期代餐好幫手', 8, 1),
+
+    -- 各種維生素系列 (7筆)
+    (3, N'高單位活力B群', N'/images/products/vitamin_01.jpg', 600, 450, N'增強體力，精神旺盛，運動後恢復必備', 1, 1),
+    (3, N'維生素C1000發泡錠', N'/images/products/vitamin_02.jpg', 350, 280, N'酸甜好喝，日常保養與促進膠原蛋白形成', 2, 1),
+    (3, N'陽光維生素D3軟膠囊', N'/images/products/vitamin_03.jpg', 500, 390, N'室內族必備，促進鈣質吸收', 3, 1),
+    (3, N'綜合礦物質複方錠', N'/images/products/vitamin_04.jpg', 800, 650, N'一次補充多種流汗流失的必需礦物質', 4, 1),
+    (3, N'高濃度深海魚油 Omega-3', N'/images/products/vitamin_05.jpg', 1200, 890, N'晶亮護明，循環順暢，維持健康', 5, 1),
+    (3, N'胺基酸螯合鋅錠', N'/images/products/vitamin_06.jpg', 550, 420, N'高吸收率，維持生長發育與生殖機能', 6, 1),
+    (3, N'海藻鈣+鎂+D3', N'/images/products/vitamin_07.jpg', 900, 720, N'完美吸收比例，維持骨骼與牙齒健康', 7, 1),
+
+    -- 便當盒系列 (7筆)
+    (4, N'304不鏽鋼分隔便當盒', N'/images/products/box_01.jpg', 450, 350, N'耐用好洗，不殘留異味，環保首選', 1, 1),
+    (4, N'白金矽膠摺疊便當盒', N'/images/products/box_02.jpg', 550, 420, N'可摺疊收納節省空間，外出攜帶超方便', 2, 1),
+    (4, N'耐熱玻璃保鮮盒 - 單格600ml', N'/images/products/box_03.jpg', 300, 199, N'微波、烤箱、電鍋皆適用，安全無毒', 3, 1),
+    (4, N'耐熱玻璃保鮮盒 - 雙格800ml', N'/images/products/box_04.jpg', 380, 250, N'飯菜分離不串味，備餐最佳容器', 4, 1),
+    (4, N'日式質感木製便當盒', N'/images/products/box_05.jpg', 650, 499, N'文青風格，適合冷食與輕食沙拉專用', 5, 1),
+    (4, N'微波專用加熱分隔餐盒', N'/images/products/box_06.jpg', 250, 150, N'食品級PP材質，附透氣孔方便微波', 6, 1),
+    (4, N'大容量運動雙層沙拉盒', N'/images/products/box_07.jpg', 400, 299, N'附獨立沙拉醬料盒與環保叉匙', 7, 1);
+
+PRINT '商品資料新增完成！';
+GO

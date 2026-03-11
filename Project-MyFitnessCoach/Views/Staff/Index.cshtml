@@ -1,0 +1,156 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.ViewModel.StaffListItemViewModel>
+@{
+    ViewData["Title"] = "員工管理";
+    var roles = ViewBag.Roles as IEnumerable<Project_MyFitnessCoach.Models.EfModels.Role>;
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">員工管理</h1>
+        <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#inviteModal">
+            <i class="fas fa-plus fa-sm text-white-50"></i> 邀請新員工
+        </button>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">員工列表</h6>
+        </div>
+        <div class="card-body" id="staffListContainer">
+            @await Html.PartialAsync("_StaffListPartial", Model)
+        </div>
+    </div>
+</div>
+
+<!-- 邀請 Modal -->
+<div class="modal fade" id="inviteModal" tabindex="-1" role="dialog" aria-labelledby="inviteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="inviteForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inviteModalLabel">邀請新員工</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>員工姓名</label>
+                        <input name="UserName" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label>電子郵件</label>
+                        <input name="Email" type="email" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label>分配角色</label>
+                        <div class="mt-2">
+                            @foreach (var role in roles)
+                            {
+                                <div class="custom-control custom-checkbox custom-control-inline">
+                                    <input type="checkbox" class="custom-control-input" id="role_@role.Id" name="RoleIds" value="@role.Id">
+                                    <label class="custom-control-label" for="role_@role.Id">@role.RoleName</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
+                    <button class="btn btn-primary" type="submit">送出邀請</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 編輯 Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" id="editModalContent">
+            <!-- 由 PartialView 填充 -->
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            // 提交邀請表單
+            $('#inviteForm').submit(function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '@Url.Action("Invite", "Staff")',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            $('#inviteModal').modal('hide');
+                            $('#inviteForm')[0].reset();
+                            refreshList();
+                        } else {
+                            alert(response.message);
+                        }
+                    }
+                });
+            });
+
+            // 打開編輯 Modal
+            $(document).on('click', '.btn-edit', function () {
+                var id = $(this).data('id');
+                $.get('@Url.Action("Edit", "Staff")/' + id, function (html) {
+                    $('#editModalContent').html(html);
+                    $('#editModal').modal('show');
+                });
+            });
+
+            // 提交編輯表單
+            $(document).on('submit', '#editForm', function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '@Url.Action("Edit", "Staff")',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            $('#editModal').modal('hide');
+                            refreshList();
+                        } else {
+                            alert(response.message);
+                        }
+                    }
+                });
+            });
+
+            // 刪除按鈕
+            $(document).on('click', '.btn-delete', function () {
+                if (confirm('確定要刪除這位員工嗎？')) {
+                    var id = $(this).data('id');
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Staff")/' + id,
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                alert(response.message);
+                                refreshList();
+                            } else {
+                                alert(response.message);
+                            }
+                        }
+                    });
+                }
+            });
+
+            function refreshList() {
+                $.get('@Url.Action("GetStaffList", "Staff")', function (html) {
+                    $('#staffListContainer').html(html);
+                });
+            }
+        });
+    </script>
+}

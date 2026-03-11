@@ -1,0 +1,100 @@
+@model Project_MyFitnessCoach.Models.ViewModels.ProductIndexItemViewModel
+
+@{
+    ViewData["Title"] = "編輯產品";
+}
+
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <h1 class="h3 mb-2 text-gray-800">編輯產品</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">產品資訊 (ID: @Model.Id)</h6>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="CategoryId" class="control-label"></label>
+                            <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.Categories"></select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Name" class="control-label"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="ImageUrl" class="control-label"></label>
+                            <input asp-for="ImageUrl" class="form-control" id="imageUrlInput" />
+                            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                        </div>
+                        <div class="mt-2 mb-3">
+                            <img id="imagePreview" src="@Model.ImageUrl" alt="圖片預覽" style="max-height: 200px; @(string.IsNullOrEmpty(Model.ImageUrl) ? "display: none;" : "")" class="img-thumbnail" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="OriginalPrice" class="control-label"></label>
+                            <input asp-for="OriginalPrice" class="form-control" />
+                            <span asp-validation-for="OriginalPrice" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="UnitPrice" class="control-label"></label>
+                            <input asp-for="UnitPrice" class="form-control" />
+                            <span asp-validation-for="UnitPrice" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="SortOrder" class="control-label"></label>
+                            <input asp-for="SortOrder" class="form-control" />
+                            <span asp-validation-for="SortOrder" class="text-danger"></span>
+                        </div>
+                        <div class="form-group form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save fa-sm text-white-50"></i> 儲存變更
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left fa-sm text-white-50"></i> 返回列表
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+@section scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            $('#imageUrlInput').on('change', function () {
+                var url = $(this).val();
+                if (url) {
+                    $('#imagePreview').attr('src', url).show();
+                } else {
+                    $('#imagePreview').hide();
+                }
+            });
+        });
+    </script>
+}

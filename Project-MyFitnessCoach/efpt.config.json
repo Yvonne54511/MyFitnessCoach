@@ -1,6 +1,6 @@
 ﻿{
    "CodeGenerationMode": 4,
-   "ContextClassName": "ResRevContext",
+   "ContextClassName": "MyFitnessCoachDbContext",
    "ContextNamespace": null,
    "FilterSchemas": false,
    "IncludeConnectionString": false,
@@ -8,10 +8,10 @@
    "MinimumProductVersion": "2.6.1378",
    "ModelNamespace": null,
    "OutputContextPath": null,
-   "OutputPath": "Models\/EfModels",
+   "OutputPath": "Models\\EfModels",
    "PluralRules": null,
    "PreserveCasingWithRegex": true,
-   "ProjectRootNamespace": "Date",
+   "ProjectRootNamespace": "Project_MyFitnessCoach",
    "Schemas": null,
    "SelectedHandlebarsLanguage": 2,
    "SelectedToBeGenerated": 0,
@@ -32,26 +32,30 @@
       },
       {
          "Name": "[dbo].[Functions]",
+         "Name": "[dbo].[PointOrders]",
          "ObjectType": 0
       },
       {
          "Name": "[dbo].[Instructors]",
+         "Name": "[dbo].[PointsRecordDetails]",
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[ProductCategories]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ProductOrderDetails]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ProductOrders]",
          "Name": "[dbo].[Members]",
          "ObjectType": 0
       },
       {
          "Name": "[dbo].[Nutrients]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[ReserveOrders]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[Reviews]",
+         "Name": "[dbo].[Products]",
          "ObjectType": 0
       },
       {

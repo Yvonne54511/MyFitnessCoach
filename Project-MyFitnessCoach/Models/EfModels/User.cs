@@ -12,31 +12,24 @@ public partial class User
 
     public string Account { get; set; }
 
-    public string Password { get; set; }
+    public string HashedPassword { get; set; }
 
     public string UserName { get; set; }
 
     public string Email { get; set; }
 
-    [NotMapped]
     public string Mobile { get; set; }
 
-    [NotMapped]
     public bool IsConfirmed { get; set; }
 
-    [NotMapped]
     public bool IsActive { get; set; }
 
-    [NotMapped]
     public string NewMemberConfirmCode { get; set; }
 
-    [NotMapped]
     public DateTime? NewMemberConfirmCodeExpiry { get; set; }
 
-    [NotMapped]
     public string ResetPasswordConfirmCode { get; set; }
 
-    [NotMapped]
     public DateTime? ResetPasswordConfirmCodeExpiry { get; set; }
 
     public virtual ICollection<Instructor> Instructors { get; set; } = new List<Instructor>();

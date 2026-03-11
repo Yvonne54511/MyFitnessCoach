@@ -1,0 +1,138 @@
+===3/4==
+[V]建立資料庫 3hr
+[V]連接資料庫
+	v 設定EfModels
+	v 設定連線字串
+	v 註冊 DbContext 和 DI	
+
+[]登入
+  v url:/Auth/Login/
+  v AuthController
+	v LoginDto:Account,Password
+	v LoginViewModel:Account,Password
+	- UserService:
+		驗證帳密
+	- UserRepository
+	   - MemberDto 
+	   
+	   
+	   GetById(int memberId))
+  v View
+  顯示密碼
+
+==3/5==
+
+[]註冊Register
+  - url:/Auth/Register/
+  - UserController (Register action)
+  - RegisterDto:Account,Password,Email,Name
+  - RegisterViewModel:Account,Password,ConfirmPassword,Email,Name
+  - UserService:
+		建立使用者、密碼加密
+  - UserRepository:
+		新增使用者、檢查帳號重複
+  - View
+
+[]email驗證Email Confirmation
+  - url:/Users/ConfirmEmail/
+  - UserService:
+		發送驗證信(SmtpClient)、產生驗證 Token
+  - UserRepository:
+		更新驗證狀態
+
+[]記住密碼 Remember Me
+  - LoginDto & LoginViewModel 增加 RememberMe (bool)
+  - UserService:
+		建立 Cookie / JWT Token (權限控管)
+
+[]登出功能 Logout (必備)
+  - url:/Users/Logout/
+  - UserController (Logout action)
+  - UserService: 清除 Cookie / Token
+
+[]修改密碼Change Password
+  - url:/Users/ChangePassword/
+  - UserController (ChangePassword action)
+  - ChangePasswordDto:OldPassword,NewPassword
+  - ChangePasswordViewModel:OldPassword,NewPassword,ConfirmNewPassword
+  - UserService:
+		驗證舊密碼、更新新密碼
+  - UserRepository:
+		更新密碼
+  - View
+
+[]忘記密碼Forget Password
+  - url:/Users/ForgetPassword/
+  - UserController (ForgetPassword action)
+  - ForgetPasswordDto:Email
+  - ForgetPasswordViewModel:Email
+  - UserService:
+		產生重設密碼連結、寄送 Email
+  - UserRepository:
+		查詢 User (by Email)、儲存重設 Token
+
+[]重設密碼Reset Password
+  - url:/Users/ResetPassword/
+  - UserController (ResetPassword action)
+  - ResetPasswordDto:Token,NewPassword
+  - ResetPasswordViewModel:NewPassword,ConfirmNewPassword
+  - UserService:
+		驗證 Token 有效性、重設密碼
+  - UserRepository:
+		更新密碼 (by Token)
+  - View
+
+[]外部登入External Login
+  - google登入
+  - UserController (ExternalLogin action)
+  - UserService:
+	 串接 Google OAuth、處理外部帳號連結
+  - UserRepository:
+	 新增/查詢外部登入記錄 (UserExternalLogin)
+
+[]修改個人資料 Edit Profile
+  - url:/Instructor/EditProfile/
+  - UserController (Profile action)
+  - InstructorProfileDto & InstructorProfileViewModel: Name, Email, Phone...
+  - UserService: 更新個人資料
+  - UserRepository: 更新 User 欄位
+  - View
+
+[]使用者管理User Management
+  - 查看使用者列表View User List
+	- url:/Users/Index/
+	- UserController (Index action)
+	- UserService: 取得所有使用者清單
+	- UserRepository: 查詢所有 User
+	- View (使用者表格)
+  - 編輯使用者Edit User
+	- url:/Users/Edit/{id}
+	- UserController (Edit action)
+	- UserEditDto & ViewModel: Id, Name, Email, Role, Status
+	- UserService: 更新使用者權限或狀態
+	- UserRepository: 取得/更新 User 資料
+	- View (編輯表單)
+  - 刪除使用者Delete User
+	- UserController (Delete action)
+	- UserService: 刪除使用者(或停用)
+	- UserRepository: 刪除/停用 User
+
+[]Dashboard
+  - url:/Home/Dashboard/
+  - HomeController
+  - UserService: 統計資訊(如今日運動、攝取熱量)
+  - View
+
+[]FoodRecord
+  - url:/Members/FoodRecord/
+  - FoodController
+  - FoodRecordDto: FoodId, Quantity, MealType, Date
+  - FoodRecordViewModel: FoodId, Quantity, MealType, Date
+  - FoodService: 記錄飲食、計算熱量
+  - FoodRepository: 儲存飲食紀錄
+  - View :(飲食紀錄表單)
+
+
+
+[] Cookies / Middleware
+    - 授權與身分驗證 (Authentication/Authorization)

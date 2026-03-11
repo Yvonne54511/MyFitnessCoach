@@ -1,88 +1,208 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Date</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Date.styles.css" asp-append-version="true" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="MyFitnessCoach Admin Dashboard">
+    <meta name="author" content="MyFitnessCoach">
+    <title>@(ViewData["Title"] ?? "MyFitnessCoach 後台")</title>
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900&display=swap" rel="stylesheet">
+    <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="~/css/layout-warm.css" rel="stylesheet">
+    @RenderSection("styles", required: false)
+    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Date</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            @if (User.IsInRole("Instructor"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Shift" asp-action="Index">排班設定</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Reservation" asp-action="Index">預約班表</a>
-                                </li>
-                            }
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Shift" asp-action="AllShifts">管理排班</a>
-                                </li>
-                            }
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Review" asp-action="Index">查看評論</a>
-                            </li>
-                        }
-                    </ul>
+<body id="page-top">
+    <div id="wrapper">
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" asp-controller="Dashboard" asp-action="Index">
+                <div class="sidebar-brand-text mx-3">@(ViewBag.Title ?? "後台管理")</div>
+            </a>
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading">人員管理</div>
+            <li class="nav-item active">
+                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                    <i class="bx bx-home-circle"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUser" aria-expanded="true" aria-controls="collapseUser">
+                    <i class="bx bx-user"></i>
+                    <span>個人資料維護</span>
+                </a>
+                <div id="collapseUser" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="#">帳密修改</a>
+                        <a class="collapse-item" href="#">資料維護-營養師</a>
+                        <a class="collapse-item" href="#">資料維護-會員</a>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTutor" aria-expanded="true" aria-controls="collapseTutor">
+                    <i class='bx bxs-user'></i>
+                    <span>營養師管理</span>
+                </a>
+                <div id="collapseTutor" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Custom Components:</h6>
+                        <a class="collapse-item" href="cards.html">營養師列表(怡潁)</a>
+                        <a class="collapse-item" href="cards.html">營養師班表排程(小朱)</a>
+                        <a class="collapse-item" href="cards.html">營養師班表查看(小朱)</a>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStaff" aria-expanded="true" aria-controls="collapseTutor">
+                    <i class='bx bxs-user'></i>
+                    <span>員工管理</span>
+                </a>
+                <div id="collapseStaff" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Custom Components:</h6>
+                        <a class="collapse-item" asp-controller="Staff" asp-action="Index">員工帳號管理</a>
+                        <a class="collapse-item" href="#">權限管理</a>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProduct" aria-expanded="true" aria-controls="collapseTutor">
+                    <i class='bx bxs-user'></i>
+                    <span>商品管理</span>
+                </a>
+                <div id="collapseProduct" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Custom Components:</h6>
+                        <a class="collapse-item" asp-controller="ProductCategories" asp-action="Index">類別管理(蛙)</a>
+                        <a class="collapse-item" asp-controller="Products" asp-action="Index">商品品項管理(蛙)</a>
+                        <a class="collapse-item" asp-controller="ProductOrders" asp-action="index">訂單管理(導演)</a>
 
-                    <ul class="navbar-nav">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Logout">登出 |</a>
+                    </div>
+                </div>
+            </li>
+            <div class="sidebar-heading">客戶管理</div>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePlan"
+                   aria-expanded="true" aria-controls="collapsePlan">
+                    <i class='bx bx-store'></i>
+                    <span>方案</span>
+                </a>
+                <div id="collapsePlan" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Custom Components:</h6>
+                        <a class="collapse-item" asp-controller="TopUpPlans" asp-action="Index">儲值方案管理(蛙)</a>
+                        <a class="collapse-item" asp-controller="PointOrders" asp-action="Index">儲值訂單管理(導演)</a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- 客戶-->
+            <div class="sidebar-heading">
+                客戶管理
+            </div>
+
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseClient"
+                   aria-expanded="true" aria-controls="collapseClient">
+                    <i class='bx bx-body'></i>
+                    <span>客戶數據</span>
+                </a>
+                <div id="collapseClient" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="#">點數紀錄查詢</a>
+                        <a class="collapse-item" asp-controller="FoodRecord" asp-action="ViewFoodRecord">客戶飲食紀錄查詢</a>
+                        <a class="collapse-item" href="#">客戶體態數據查詢</a>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseOther"
+                   aria-expanded="true" aria-controls="collapseOther">
+                    <i class='bx bx-message-dots'></i>
+                    <span>其他</span>
+                </a>
+                <div id="collapseOther" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Custom Components:</h6>
+                        <a class="collapse-item" href="tables.html">評論區管理 - admin(小朱)</a>
+                        <a class="collapse-item" href="cards.html">評論區察看與舉報 - instructor(小朱)</a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+        </ul>
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <div class="sidebar-brand-text d-flex justify-content-center font-weight-bold">MyFitnessCoach Admin</div>
+                    <ul class="navbar-nav ml-auto">
+                        <div class="topbar-divider d-none d-sm-block"></div>
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">@User.Identity?.Name</span>
+                                <img class="img-profile rounded-circle" src="~/img/undraw_profile.svg">
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                                <a class="dropdown-item" asp-controller="Dashboard" asp-action="Index">
+                                    <i class="fas fa-chart-pie fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Dashboard
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    登出
+                                </a>
+                            </div>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">登入者: @User.Identity.Name</a>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Index">登入</a>
-                        </li>
-                    }
                     </ul>
+                </nav>
+                @RenderBody()
+            </div>
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; MyFitnessCoach 2026</span>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+    <a class="scroll-to-top rounded" href="#page-top"><i class="fas fa-angle-up"></i></a>
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">確認登出</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">若要結束目前後台工作階段，請按下登出。</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-primary">登出</button>
+                    </form>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Date - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    </div>
+    <script src="~/vendor/jquery/jquery.min.js"></script>
+    <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="~/js/sb-admin-2.min.js"></script>
+    @RenderSection("scripts", required: false)
 </body>
 </html>

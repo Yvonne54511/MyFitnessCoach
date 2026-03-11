@@ -11,7 +11,7 @@ public partial class UserWallet
 
     public int MemberId { get; set; }
 
-    public int CurrentBalance { get; set; }
+    public decimal CurrentBalance { get; set; }
 
     public DateTime LastUpdated { get; set; }
 
