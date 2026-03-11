@@ -11,7 +11,7 @@ public partial class Member
 
     public int UserId { get; set; }
 
-    public bool? Gender { get; set; }
+    public byte? Gender { get; set; }
 
     public DateTime? DateOfBirth { get; set; }
 
@@ -32,6 +32,10 @@ public partial class Member
     public int CancelCount { get; set; }
 
     public virtual ICollection<FoodRecord> FoodRecords { get; set; } = new List<FoodRecord>();
+
+    public virtual ICollection<PointOrder> PointOrders { get; set; } = new List<PointOrder>();
+
+    public virtual ICollection<ProductOrder> ProductOrders { get; set; } = new List<ProductOrder>();
 
     public virtual ICollection<ReserveOrder> ReserveOrders { get; set; } = new List<ReserveOrder>();
 

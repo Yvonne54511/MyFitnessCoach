@@ -26,11 +26,14 @@ BEGIN
 
     DECLARE @UserId INT = (SELECT [Id] FROM [dbo].[Users] WHERE [Account] = 'admin');
     
-    IF EXISTS (SELECT 1 FROM [dbo].[Roles] WHERE [Id] = 1)
+    DECLARE @AdminRoleId INT = (SELECT [Id] FROM [dbo].[Roles] WHERE [RoleName] = 'admin');
+    IF @AdminRoleId IS NULL SET @AdminRoleId = 5; -- Fallback to 5 if not found by name
+
+    IF EXISTS (SELECT 1 FROM [dbo].[Roles] WHERE [Id] = @AdminRoleId)
     BEGIN
-        IF NOT EXISTS (SELECT 1 FROM [dbo].[UserRoles] WHERE [UserId] = @UserId AND [RoleId] = 1)
+        IF NOT EXISTS (SELECT 1 FROM [dbo].[UserRoles] WHERE [UserId] = @UserId AND [RoleId] = @AdminRoleId)
         BEGIN
-            INSERT INTO [dbo].[UserRoles] ([UserId], [RoleId]) VALUES (@UserId, 1);
+            INSERT INTO [dbo].[UserRoles] ([UserId], [RoleId]) VALUES (@UserId, @AdminRoleId);
             PRINT 'Admin role assigned to "admin" account.';
         END
     END

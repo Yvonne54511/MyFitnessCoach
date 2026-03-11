@@ -53,6 +53,29 @@ namespace Project_MyFitnessCoach.Controllers
                 new(ClaimTypes.Email, result.User.Email)
             };
 
+            if (result.InstructorId.HasValue)
+            {
+                claims.Add(new Claim("InstructorId", result.InstructorId.Value.ToString()));
+            }
+
+            // å¯«å…¥è§’è‰² Claims
+            foreach (var role in result.Roles)
+            {
+                string standardizedRole = role.Trim();
+                if (string.Equals(standardizedRole, "admin", StringComparison.OrdinalIgnoreCase)) 
+                    standardizedRole = "Admin";
+                else if (string.Equals(standardizedRole, "instructor", StringComparison.OrdinalIgnoreCase)) 
+                    standardizedRole = "Instructor";
+
+                claims.Add(new Claim(ClaimTypes.Role, standardizedRole));
+            }
+
+            // å¯«å…¥åŠŸèƒ½æ¬Šé™ Claims (è‡ªå®šç¾©é¡žåž‹ Permission)
+            foreach (var func in result.Functions)
+            {
+                claims.Add(new Claim("Permission", func));
+            }
+
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
@@ -68,6 +91,16 @@ namespace Project_MyFitnessCoach.Controllers
             if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
+            }
+
+            if (result.Roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
+            {
+                return RedirectToAction("AllShifts", "Shift");
+            }
+
+            if (result.Roles.Any(r => r.Equals("Instructor", StringComparison.OrdinalIgnoreCase)))
+            {
+                return RedirectToAction("Index", "Shift");
             }
 
             return RedirectToAction("Index", "Dashboard");
@@ -103,7 +136,7 @@ namespace Project_MyFitnessCoach.Controllers
         {
             if (string.IsNullOrWhiteSpace(code) || !_accountService.IsResetPasswordCodeValid(code))
             {
-                TempData["ResetPasswordError"] = "­«³]±K½X³sµ²µL®Ä©Î¤w¹L´Á";
+                TempData["ResetPasswordError"] = "ï¿½ï¿½ï¿½]ï¿½Kï¿½Xï¿½sï¿½ï¿½ï¿½Lï¿½Ä©Î¤wï¿½Lï¿½ï¿½";
                 return RedirectToAction(nameof(ForgetPassword));
             }
 

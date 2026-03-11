@@ -1,4 +1,5 @@
 using Project_MyFitnessCoach.Models.Dtos;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Repos;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace Project_MyFitnessCoach.Services
 			var user = await _repository.GetByAccountAsync(dto.Account);
 			if (user == null) return Result.Failure("帳號不存在");
 
-			if (user.Password != dto.Password) return Result.Failure("密碼錯誤");
+			if (user.HashedPassword != dto.Password) return Result.Failure("密碼錯誤");
 
             // 抓取角色名稱清單，並去除多餘空格
             var roles = user.UserRoles?

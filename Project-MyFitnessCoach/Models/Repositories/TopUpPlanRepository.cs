@@ -52,11 +52,11 @@ namespace Project_MyFitnessCoach.Models.Repositories
             if (entity == null) return;
 
             entity.PlanName = dto.PlanName;
-            entity.Price = dto.Price;
-            entity.Points = dto.Points;
+            entity.Price = dto.Price ?? 0;
+            entity.Points = dto.Points ?? 0;
             entity.Description = dto.Description;
-            entity.IsActive = dto.IsActive;
-            entity.SortOrder = dto.SortOrder;
+            entity.IsActive = dto.IsActive ?? false;
+            entity.SortOrder = dto.SortOrder ?? 0;
 
             _context.SaveChanges();
         }

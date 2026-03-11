@@ -95,12 +95,12 @@ namespace Project_MyFitnessCoach.Controllers
                 {
                     PointOrderId = pointOrder.Id,
                     UserWalletId = wallet.Id,
-                    CreateAt = DateTime.Now.ToString("yyyy-MM-dd"), // 資料庫定義為 string(10)
-                    PointAmount = pointAmount.ToString(), // 資料庫定義為 string(10)
+                    CreateAt = DateTime.Now,
+                    PointAmount = pointAmount,
                     MerchandiseCategory = "Recharge", // 儲值
-                    ReserveOrderId = "N/A"
+                    ReserveOrderId = null
                 };
-                _context.PointOrders.Include(p => p.PointsRecordDetails).FirstOrDefault(p => p.Id == pointOrder.Id)?.PointsRecordDetails.Add(record);
+                _context.PointsRecordDetails.Add(record);
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();

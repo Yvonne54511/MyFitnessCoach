@@ -4,6 +4,7 @@ using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Models.Repositories;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.ViewModel;
+using Project_MyFitnessCoach.Repos;
 using Project_MyFitnessCoach.Repositories;
 using Project_MyFitnessCoach.Services;
 
@@ -34,14 +35,6 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<ITopUpPlanRepository, TopUpPlanRepository>();
             builder.Services.AddScoped<TopUpPlanService>();
 
-            builder.Services
-                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
-                {
-                    options.LoginPath = "/Account/Login";
-                    options.AccessDeniedPath = "/Account/Login";
-                });
-
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IAccountRepository, AccountRepository>();
@@ -53,7 +46,7 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<IUserService, UserService>();
 
             // 註冊 DbContext
-            builder.Services.AddDbContext<ResRevContext>(option =>
+            builder.Services.AddDbContext<MyFitnessCoachDbContext>(option =>
             {
                 option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
@@ -81,9 +74,9 @@ namespace Project_MyFitnessCoach
 			builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 				.AddCookie(options =>
 				{
-					options.Cookie.Name = "ReservationDemo";
-					options.LoginPath = "/Login/Index";
-					options.AccessDeniedPath = "/Login/Index"; // 新增：權限不足時引導回登入頁
+					options.Cookie.Name = "MyFitnessCoach.Auth";
+					options.LoginPath = "/Account/Login";
+					options.AccessDeniedPath = "/Account/Login"; // 新增：權限不足時引導回登入頁
 					options.Cookie.HttpOnly = true;
 					options.Cookie.SameSite = SameSiteMode.Lax; // 明確設定為 Lax
 					options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // 根據請求自動判斷 (HTTP 下不強制 Secure)
@@ -165,10 +158,16 @@ namespace Project_MyFitnessCoach
                     db.Users.Add(adminUser);
                     db.SaveChanges();
 
-                    // 分配角色 (Id 為 1 的角色)
-                    if (db.Roles.Any(r => r.Id == 1))
+                    // 分配角色 (名稱為 "admin" 的角色)
+                    var adminRole = db.Roles.FirstOrDefault(r => r.RoleName == "admin");
+                    if (adminRole != null)
                     {
-                        db.UserRoles.Add(new UserRole { UserId = adminUser.Id, RoleId = 1 });
+                        db.UserRoles.Add(new UserRole { UserId = adminUser.Id, RoleId = adminRole.Id });
+                        db.SaveChanges();
+                    }
+                    else if (db.Roles.Any(r => r.Id == 5)) // Fallback to Id 5 if name check fails but Id 5 exists
+                    {
+                        db.UserRoles.Add(new UserRole { UserId = adminUser.Id, RoleId = 5 });
                         db.SaveChanges();
                     }
                 }

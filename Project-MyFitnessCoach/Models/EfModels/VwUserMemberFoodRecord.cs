@@ -15,7 +15,7 @@ public partial class VwUserMemberFoodRecord
 
     public int MemberId { get; set; }
 
-    public bool? Gender { get; set; }
+    public byte? Gender { get; set; }
 
     public double? Weight { get; set; }
 

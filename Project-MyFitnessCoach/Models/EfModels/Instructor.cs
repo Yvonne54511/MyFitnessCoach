@@ -2,7 +2,6 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Project_MyFitnessCoach.Models.EfModels;
 
@@ -20,7 +19,6 @@ public partial class Instructor
 
     public int CancelCount { get; set; }
 
-    [NotMapped]
     public bool IsActive { get; set; }
 
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();

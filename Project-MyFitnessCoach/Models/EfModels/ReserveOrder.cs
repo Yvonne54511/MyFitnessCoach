@@ -29,6 +29,8 @@ public partial class ReserveOrder
 
     public virtual Member Member { get; set; }
 
+    public virtual ICollection<PointsRecordDetail> PointsRecordDetails { get; set; } = new List<PointsRecordDetail>();
+
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     public virtual Shift Shift { get; set; }

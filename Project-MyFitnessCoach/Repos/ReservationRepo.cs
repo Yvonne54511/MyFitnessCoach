@@ -17,9 +17,9 @@ namespace Project_MyFitnessCoach.Repos
 
     public class ReservationRepository : IReservationRepository
     {
-        private readonly ResRevContext _context;
+        private readonly MyFitnessCoachDbContext _context;
 
-        public ReservationRepository(ResRevContext context)
+        public ReservationRepository(MyFitnessCoachDbContext context)
         {
             _context = context;
         }

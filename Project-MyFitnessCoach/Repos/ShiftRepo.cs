@@ -40,9 +40,9 @@ namespace Project_MyFitnessCoach.Repos
     // 2. 實作類別 (Implementation)
     public class ShiftRepository : IShiftRepository
     {
-        private readonly ResRevContext _context;
+        private readonly MyFitnessCoachDbContext _context;
 
-        public ShiftRepository(ResRevContext context)
+        public ShiftRepository(MyFitnessCoachDbContext context)
         {
             _context = context;
         }

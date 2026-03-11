@@ -16,9 +16,9 @@ namespace Project_MyFitnessCoach.Repos
 
     public class AdminRepository : IAdminRepository
     {
-        private readonly ResRevContext _context;
+        private readonly MyFitnessCoachDbContext _context;
 
-        public AdminRepository(ResRevContext context)
+        public AdminRepository(MyFitnessCoachDbContext context)
         {
             _context = context;
         }

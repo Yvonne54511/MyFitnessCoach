@@ -24,7 +24,11 @@ namespace Project_MyFitnessCoach.Repositories
         public User? GetByAccount(string account)
         {
             return _db.Users
-                .AsNoTracking()
+                .Include(u => u.Instructors)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                        .ThenInclude(r => r.RoleFunctions)
+                            .ThenInclude(rf => rf.Function)
                 .FirstOrDefault(u => u.Account == account);
         }
 

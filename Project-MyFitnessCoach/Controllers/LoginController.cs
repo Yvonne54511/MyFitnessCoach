@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
+using Project_MyFitnessCoach.Models.DTOs;
 
 namespace Project_MyFitnessCoach.Controllers
 {

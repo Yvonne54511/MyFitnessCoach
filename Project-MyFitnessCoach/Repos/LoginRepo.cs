@@ -11,8 +11,8 @@ namespace Project_MyFitnessCoach.Repos
 
 	public class LoginRepository : ILoginRepository
 	{
-		private readonly ResRevContext _context;
-		public LoginRepository(ResRevContext context)
+		private readonly MyFitnessCoachDbContext _context;
+		public LoginRepository(MyFitnessCoachDbContext context)
 		{
 			_context = context;
 		}

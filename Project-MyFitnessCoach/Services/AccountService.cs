@@ -7,7 +7,7 @@ namespace Project_MyFitnessCoach.Services
 {
     public interface IAccountService
     {
-        (bool Success, string Message, User? User) Login(LoginViewModel model);
+        (bool Success, string Message, User? User, List<string> Roles, List<string> Functions, int? InstructorId) Login(LoginViewModel model);
         (bool Success, string Email, bool EmailSent) CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory);
         (bool Success, string Message) ResetPassword(ResetPasswordViewModel model);
         bool IsResetPasswordCodeValid(string code);
@@ -31,32 +31,74 @@ namespace Project_MyFitnessCoach.Services
             _passwordHasher = new PasswordHasher<User>();
         }
 
-        public (bool Success, string Message, User? User) Login(LoginViewModel model)
+        public (bool Success, string Message, User? User, List<string> Roles, List<string> Functions, int? InstructorId) Login(LoginViewModel model)
         {
             var user = _accountRepository.GetByAccount(model.Account);
 
             if (user == null || string.IsNullOrWhiteSpace(user.HashedPassword))
             {
-                return (false, "±b¸¹©Î±K½X¿ù»~", null);
+                return (false, "å¸³è™Ÿæˆ–å¯†ç¢¼éŒ¯èª¤", null, new List<string>(), new List<string>(), null);
             }
 
-            var result = _passwordHasher.VerifyHashedPassword(user, user.HashedPassword, model.Password);
-            if (result == PasswordVerificationResult.Failed)
+            string dbPassword = user.HashedPassword.Trim();
+            string inputPassword = model.Password.Trim();
+            bool isPasswordCorrect = false;
+
+            // 1. å…ˆå˜—è©¦æ˜æ–‡æ¯”å°
+            if (dbPassword == inputPassword)
             {
-                return (false, "±b¸¹©Î±K½X¿ù»~", null);
+                isPasswordCorrect = true;
+            }
+            // 2. å¦‚æœæ˜æ–‡å¤±æ•—ï¼Œä¸”çœ‹èµ·ä¾†åƒæ˜¯åŠ å¯†å­—ä¸² (Base64)ï¼Œå‰‡å˜—è©¦åŠ å¯†æ¯”å°
+            else if (dbPassword.Length > 20) 
+            {
+                try
+                {
+                    var result = _passwordHasher.VerifyHashedPassword(user, dbPassword, inputPassword);
+                    if (result != PasswordVerificationResult.Failed)
+                    {
+                        isPasswordCorrect = true;
+                    }
+                }
+                catch
+                {
+                    // å¦‚æœåŠ å¯†æ¯”å°å ±éŒ¯ (FormatException)ï¼Œä»£è¡¨é€™ä¸æ˜¯æ­£ç¢ºçš„ Base64ï¼Œå¿½ç•¥å³å¯
+                }
+            }
+
+            if (!isPasswordCorrect)
+            {
+                return (false, "å¸³è™Ÿæˆ–å¯†ç¢¼éŒ¯èª¤", null, new List<string>(), new List<string>(), null);
             }
 
             if (!user.IsConfirmed)
             {
-                return (false, "¦¹±b¸¹©|¥¼§¹¦¨±Ò¥Î", null);
+                return (false, "å¸³è™Ÿå°šæœªå®Œæˆé©—è­‰ç¨‹åº", null, new List<string>(), new List<string>(), null);
             }
 
             if (!user.IsActive)
             {
-                return (false, "¦¹±b¸¹¥Ø«e¥¼±Ò¥Î¡A½ĞÁpµ¸ºŞ²z­û", null);
+                return (false, "å¸³è™Ÿåœç”¨ä¸­ï¼Œè«‹è¯ç¹«ç®¡ç†å“¡", null, new List<string>(), new List<string>(), null);
             }
 
-            return (true, "µn¤J¦¨¥\", user);
+            // æŠ“å–è§’è‰²
+            var roles = user.UserRoles?
+                .Where(ur => ur.Role != null)
+                .Select(ur => ur.Role.RoleName.Trim())
+                .ToList() ?? new List<string>();
+
+            // æŠ“å–è©²è§’è‰²å°æ‡‰çš„æ‰€æœ‰åŠŸèƒ½æ¸…å–®
+            var functions = user.UserRoles?
+                .Where(ur => ur.Role != null)
+                .SelectMany(ur => ur.Role.RoleFunctions)
+                .Where(rf => rf.Function != null)
+                .Select(rf => rf.Function.FunctionName.Trim())
+                .Distinct() // å»é™¤é‡è¤‡åŠŸèƒ½
+                .ToList() ?? new List<string>();
+
+            int? instructorId = user.Instructors?.FirstOrDefault()?.Id;
+
+            return (true, "ç™»å…¥æˆåŠŸ", user, roles, functions, instructorId);
         }
 
         public (bool Success, string Email, bool EmailSent) CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory)
@@ -100,12 +142,12 @@ namespace Project_MyFitnessCoach.Services
             var user = _accountRepository.GetByResetPasswordCode(model.Code);
             if (user == null)
             {
-                return (false, "­«³]±K½X³sµ²¤£¦s¦b");
+                return (false, "ï¿½ï¿½ï¿½]ï¿½Kï¿½Xï¿½sï¿½ï¿½ï¿½ï¿½ï¿½sï¿½b");
             }
 
             if (!user.ResetPasswordConfirmCodeExpiry.HasValue || user.ResetPasswordConfirmCodeExpiry.Value < DateTime.Now)
             {
-                return (false, "­«³]±K½X³sµ²¤w¥¢®Ä¡A½Ğ­«·s¥Ó½Ğ");
+                return (false, "ï¿½ï¿½ï¿½]ï¿½Kï¿½Xï¿½sï¿½ï¿½ï¿½wï¿½ï¿½ï¿½Ä¡Aï¿½Ğ­ï¿½ï¿½sï¿½Ó½ï¿½");
             }
 
             user.HashedPassword = _passwordHasher.HashPassword(user, model.Password);
@@ -115,7 +157,7 @@ namespace Project_MyFitnessCoach.Services
             _accountRepository.Update(user);
             _accountRepository.SaveChanges();
 
-            return (true, "±K½X¤w­«³]§¹¦¨¡A½Ğ­«·sµn¤J");
+            return (true, "ï¿½Kï¿½Xï¿½wï¿½ï¿½ï¿½]ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Ğ­ï¿½ï¿½sï¿½nï¿½J");
         }
     }
 }

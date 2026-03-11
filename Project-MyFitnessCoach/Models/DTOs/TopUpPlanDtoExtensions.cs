@@ -25,11 +25,11 @@ namespace Project_MyFitnessCoach.Models.DTOs
             {
                 Id = dto.Id,
                 PlanName = dto.PlanName,
-                Price = dto.Price,
-                Points = dto.Points,
+                Price = dto.Price ?? 0,
+                Points = dto.Points ?? 0,
                 Description = dto.Description,
-                IsActive = dto.IsActive,
-                SortOrder = dto.SortOrder
+                IsActive = dto.IsActive ?? false,
+                SortOrder = dto.SortOrder ?? 0
             };
         }
 
