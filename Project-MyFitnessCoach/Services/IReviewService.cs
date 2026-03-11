@@ -10,6 +10,6 @@ namespace Project_MyFitnessCoach.Services
         Task<IEnumerable<ReviewDto>> GetInstructorReviewsAsync(int instructorId);
         Task DeleteReviewAsync(int id);
         Task SuspendMemberAsync(int memberId);
-        Task ReportReviewAsync(int id);
+        Task ReportReviewAsync(int id, int instructorUserId, string reason);
     }
 }

@@ -47,6 +47,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[Notifications]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Nutrients]",
          "ObjectType": 0
       },

@@ -66,10 +66,16 @@ namespace Project_MyFitnessCoach.Controllers
         [HttpPost]
         [Authorize(Roles = "Instructor")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ReportReview(int id)
+        public async Task<IActionResult> ReportReview(int id, string reason)
         {
-            await _service.ReportReviewAsync(id);
-            TempData["SuccessMessage"] = "評論已舉報。";
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int instructorUserId))
+            {
+                return Forbid();
+            }
+
+            await _service.ReportReviewAsync(id, instructorUserId, reason);
+            TempData["SuccessMessage"] = "評論已舉報，管理員將會收到通知。";
             return RedirectToAction(nameof(InstructorIndex));
         }
     }
