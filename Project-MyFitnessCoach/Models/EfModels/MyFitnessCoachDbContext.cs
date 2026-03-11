@@ -27,6 +27,8 @@ public partial class MyFitnessCoachDbContext : DbContext
 
     public virtual DbSet<MemberViolation> MemberViolations { get; set; }
 
+    public virtual DbSet<Notification> Notifications { get; set; }
+
     public virtual DbSet<Nutrient> Nutrients { get; set; }
 
     public virtual DbSet<PointOrder> PointOrders { get; set; }
@@ -180,6 +182,24 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_MemberViolations_Members");
         });
+modelBuilder.Entity<Notification>(entity =>
+{
+    entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC07305420B5");
+
+    entity.Property(e => e.Content).IsRequired(); // 改回 Content
+    entity.Property(e => e.CreatedAt)
+        .HasPrecision(0)
+        .HasDefaultValueSql("(getdate())");
+    entity.Property(e => e.NotifyType)
+        .IsRequired()
+        .HasMaxLength(50);
+    entity.Property(e => e.Title)
+        .IsRequired()
+        .HasMaxLength(100);
+
+    // 使用 UserId 作為外部鍵，與資料庫對齊
+    entity.Property(e => e.UserId).HasColumnName("UserId");
+});
 
         modelBuilder.Entity<Nutrient>(entity =>
         {
