@@ -175,5 +175,82 @@ namespace Project_MyFitnessCoach.Controllers
             ViewBag.Error = result.Message;
             return View("ActivateError");
         }
+
+        // --- Role & Function Management ---
+
+        [HttpGet]
+        public async Task<IActionResult> RolesFunction()
+        {
+            var roles = await _userService.GetAllRolesAsync();
+            var functions = await _userService.GetAllFunctionsAsync();
+            var mappings = await _userService.GetRoleFunctionsAsync();
+
+            var viewModel = new RolesFunctionViewModel
+            {
+                Roles = roles.ToList(),
+                Functions = functions.ToList(),
+                Matrix = roles.Select(r => new RoleFunctionMatrixRow
+                {
+                    RoleId = r.Id,
+                    RoleName = r.RoleName,
+                    FunctionStatus = functions.ToDictionary(
+                        f => f.Id,
+                        f => mappings.Any(m => m.RoleId == r.Id && m.FunctionId == f.Id)
+                    )
+                }).ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TogglePermission(int roleId, int functionId, bool isEnabled)
+        {
+            var result = await _userService.ToggleRoleFunctionAsync(roleId, functionId, isEnabled);
+            return Json(new { success = result.IsSuccess, message = result.Message });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddAssociation(AddRoleFunctionViewModel model)
+        {
+            if (!ModelState.IsValid) return Json(new { success = false, message = "請選擇角色與功能" });
+
+            var result = await _userService.AddRoleFunctionsAsync(model.RoleId, model.FunctionIds);
+            return Json(new { success = result.IsSuccess, message = result.Message });
+        }
+
+        // Role CRUD
+        [HttpPost]
+        public async Task<IActionResult> SaveRole(RoleDto dto)
+        {
+            var result = dto.Id > 0 
+                ? await _userService.UpdateRoleAsync(dto) 
+                : await _userService.CreateRoleAsync(dto);
+            return Json(new { success = result.IsSuccess, message = result.Message });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteRole(int id)
+        {
+            var result = await _userService.DeleteRoleAsync(id);
+            return Json(new { success = result.IsSuccess, message = result.Message });
+        }
+
+        // Function CRUD
+        [HttpPost]
+        public async Task<IActionResult> SaveFunction(FunctionDto dto)
+        {
+            var result = dto.Id > 0 
+                ? await _userService.UpdateFunctionAsync(dto) 
+                : await _userService.CreateFunctionAsync(dto);
+            return Json(new { success = result.IsSuccess, message = result.Message });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteFunction(int id)
+        {
+            var result = await _userService.DeleteFunctionAsync(id);
+            return Json(new { success = result.IsSuccess, message = result.Message });
+        }
     }
 }

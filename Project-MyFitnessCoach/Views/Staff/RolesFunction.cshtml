@@ -1,0 +1,411 @@
+@using Project_MyFitnessCoach.Models.ViewModel
+@model RolesFunctionViewModel
+
+@{
+    ViewData["Title"] = "後台權限管理";
+}
+
+<style>
+    :root {
+        --primary-warm: #fdf5e6; /* Old Lace */
+        --secondary-warm: #faebd7; /* Antique White */
+        --accent-coffee: #6f4e37; /* Coffee */
+        --accent-warm-brown: #8b4513; /* Saddle Brown */
+        --text-dark: #3e2723;
+        --border-color: #d7ccc8;
+    }
+
+    body {
+        background-color: var(--primary-warm);
+        color: var(--text-dark);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .card {
+        background-color: #fff;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        background-color: var(--secondary-warm);
+        border-bottom: 1px solid var(--border-color);
+        color: var(--accent-warm-brown);
+        font-weight: bold;
+        padding: 12px 20px;
+    }
+
+    .btn-coffee {
+        background-color: var(--accent-coffee);
+        color: white;
+        border: none;
+    }
+
+    .btn-coffee:hover {
+        background-color: var(--accent-warm-brown);
+        color: white;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead th {
+        background-color: #f8f1e9;
+        border-bottom: 2px solid var(--border-color);
+        color: var(--accent-warm-brown);
+    }
+
+    /* Toggle Switch Style */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: var(--accent-coffee);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    .form-section {
+        background-color: var(--secondary-warm);
+        padding: 25px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4 text-center" style="color: var(--accent-warm-brown); font-weight: 700;">後台權限管理系統</h2>
+
+    <div class="row">
+        <!-- 角色清單 (左上) -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-user-tag me-2"></i>角色清單</span>
+                    <button class="btn btn-sm btn-coffee" onclick="openRoleModal(0)">新增角色</button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>角色名稱</th>
+                                    <th>描述</th>
+                                    <th>啟用</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var role in Model.Roles)
+                                {
+                                    <tr>
+                                        <td>@role.RoleName</td>
+                                        <td>@role.Description</td>
+                                        <td>@(role.IsActive ? "是" : "否")</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="openRoleModal(@role.Id, '@role.RoleName', '@role.Description', @(role.IsActive.ToString().ToLower()))">編輯</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能清單 (右上) -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-cogs me-2"></i>功能清單</span>
+                    <button class="btn btn-sm btn-coffee" onclick="openFunctionModal(0)">新增功能</button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>功能名稱</th>
+                                    <th>API 路徑</th>
+                                    <th>描述</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var func in Model.Functions)
+                                {
+                                    <tr>
+                                        <td>@func.FunctionName</td>
+                                        <td><code class="small">@func.api_path</code></td>
+                                        <td>@func.Description</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="openFunctionModal(@func.Id, '@func.FunctionName', '@func.Description', '@func.api_path', @(func.IsActive.ToString().ToLower()))">編輯</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 權限關聯矩陣 (中間) -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-key me-2"></i>角色功能權限關聯表 (矩陣視圖)
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered text-center align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 150px; background-color: #fdf5e6;">角色 \ 功能</th>
+                                    @foreach (var func in Model.Functions)
+                                    {
+                                        <th title="@func.Description">@func.FunctionName</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in Model.Matrix)
+                                {
+                                    <tr>
+                                        <td class="fw-bold" style="background-color: #fdf5e6;">@row.RoleName</td>
+                                        @foreach (var func in Model.Functions)
+                                        {
+                                            <td>
+                                                <label class="switch">
+                                                    <input type="checkbox" 
+                                                           class="permission-toggle" 
+                                                           data-role-id="@row.RoleId" 
+                                                           data-function-id="@func.Id"
+                                                           @(row.FunctionStatus.ContainsKey(func.Id) && row.FunctionStatus[func.Id] ? "checked" : "")>
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增關聯區塊 (下方) -->
+    <div class="row mt-4 mb-5">
+        <div class="col-12">
+            <div class="form-section shadow-sm">
+                <h4 class="mb-4" style="color: var(--accent-warm-brown);"><i class="fas fa-plus-circle me-2"></i>快速新增角色功能關聯</h4>
+                <form id="associationForm">
+                    <div class="row align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">選擇角色</label>
+                            <select class="form-select border-brown" name="RoleId" required>
+                                <option value="">-- 請選擇角色 --</option>
+                                @foreach (var role in Model.Roles)
+                                {
+                                    <option value="@role.Id">@role.RoleName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">選擇功能 (可複選)</label>
+                            <div class="d-flex flex-wrap gap-3 p-2 border rounded bg-white">
+                                @foreach (var func in Model.Functions)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="FunctionIds" value="@func.Id" id="chkFunc_@func.Id">
+                                        <label class="form-check-label" for="chkFunc_@func.Id">@func.FunctionName</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-coffee w-100 py-2 fw-bold">
+                                <i class="fas fa-save me-2"></i>建立權限關聯
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Role Modal (Bootstrap) -->
+<div class="modal fade" id="roleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="roleForm">
+                <input type="hidden" name="Id" id="roleId">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title">角色設定</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">角色名稱</label>
+                        <input type="text" class="form-control" name="RoleName" id="roleName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">描述</label>
+                        <textarea class="form-control" name="Description" id="roleDesc"></textarea>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="IsActive" id="roleActive" value="true" checked>
+                        <label class="form-check-label">是否啟用</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-coffee">儲存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Function Modal -->
+<div class="modal fade" id="funcModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="funcForm">
+                <input type="hidden" name="Id" id="funcId">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title">功能設定</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">功能名稱</label>
+                        <input type="text" class="form-control" name="FunctionName" id="fName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">API 路徑</label>
+                        <input type="text" class="form-control" name="api_path" id="fPath" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">描述</label>
+                        <textarea class="form-control" name="Description" id="fDesc"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-coffee">儲存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Permission Toggle Logic
+        $('.permission-toggle').change(function() {
+            const roleId = $(this).data('role-id');
+            const functionId = $(this).data('function-id');
+            const isEnabled = $(this).is(':checked');
+            
+            $.post('/Staff/TogglePermission', { roleId, functionId, isEnabled }, function(res) {
+                if (!res.success) {
+                    alert('權限更新失敗: ' + res.message);
+                    $(this).prop('checked', !isEnabled); // Revert
+                }
+            });
+        });
+
+        // Add Association Logic
+        $('#associationForm').submit(function(e) {
+            e.preventDefault();
+            const formData = $(this).serialize();
+            $.post('/Staff/AddAssociation', formData, function(res) {
+                if (res.success) {
+                    location.reload();
+                } else {
+                    alert(res.message);
+                }
+            });
+        });
+
+        // Role Modal Logic
+        function openRoleModal(id, name = '', desc = '', active = true) {
+            $('#roleId').val(id);
+            $('#roleName').val(name);
+            $('#roleDesc').val(desc);
+            $('#roleActive').prop('checked', active);
+            new bootstrap.Modal(document.getElementById('roleModal')).show();
+        }
+
+        $('#roleForm').submit(function(e) {
+            e.preventDefault();
+            $.post('/Staff/SaveRole', $(this).serialize(), function(res) {
+                if (res.success) location.reload();
+                else alert(res.message);
+            });
+        });
+
+        // Function Modal Logic
+        function openFunctionModal(id, name = '', desc = '', path = '', active = true) {
+            $('#funcId').val(id);
+            $('#fName').val(name);
+            $('#fDesc').val(desc);
+            $('#fPath').val(path);
+            new bootstrap.Modal(document.getElementById('funcModal')).show();
+        }
+
+        $('#funcForm').submit(function(e) {
+            e.preventDefault();
+            $.post('/Staff/SaveFunction', $(this).serialize(), function(res) {
+                if (res.success) location.reload();
+                else alert(res.message);
+            });
+        });
+    </script>
+}
