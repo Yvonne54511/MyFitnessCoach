@@ -1,0 +1,150 @@
+@using Project_MyFitnessCoach
+@using Project_MyFitnessCoach.Models
+@using Project_MyFitnessCoach.Models.Dtos
+@using Project_MyFitnessCoach.Models.ViewModels
+@model IEnumerable<AllShiftsViewModel>
+
+@{
+    ViewData["Title"] = "所有營養師排班表";
+    var instructors = ViewBag.Instructors as List<InstructorDto>;
+    var criteria = ViewBag.Criteria as ShiftQueryCriteria;
+}
+
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>@ViewData["Title"]</h2>
+            <p class="text-muted">此頁面僅供管理員查看並管理所有營養師的排班時段。</p>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form id="filterForm" method="get" asp-action="AllShifts" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">營養師</label>
+                    <select name="InstructorId" class="form-select live-filter">
+                        <option value="">-- 全部 --</option>
+                        @if (instructors != null)
+                        {
+                            foreach (var instructor in instructors)
+                            {
+                                <option value="@instructor.InstructorId" selected="@(criteria?.InstructorId == instructor.InstructorId)">
+                                    @instructor.InstructorName
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">開始日期</label>
+                    <input type="date" name="StartDate" class="form-control live-filter" value="@(criteria?.StartDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">結束日期</label>
+                    <input type="date" name="EndDate" class="form-control live-filter" value="@(criteria?.EndDate?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">預約狀態</label>
+                    <select name="IsBooked" class="form-select live-filter">
+                        <option value="">-- 全部 --</option>
+                        <option value="true" selected="@(criteria?.IsBooked == true)">已預約</option>
+                        <option value="false" selected="@(criteria?.IsBooked == false)">開放中</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    @* 隱藏提交按鈕，因為現在是即時更新，但保留重置按鈕 *@
+                    <a asp-action="AllShifts" class="btn btn-secondary">重置</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body" id="tableContainer">
+            @* 初始載入表格 *@
+            @await Html.PartialAsync("_AllShiftsTable", Model)
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            // 1. 防止表單預設提交行為 (例如按 Enter)
+            $('#filterForm').on('submit', function(e) {
+                e.preventDefault();
+                updateTable();
+            });
+
+            // 2. 即時篩選功能 - 僅監聽 change 事件
+            $('.live-filter').on('change', function() {
+                updateTable();
+            });
+
+            function updateTable() {
+                var formData = $('#filterForm').serialize();
+                
+                // 不再使用 opacity 0.5，避免快閃。改用比較靜態的方式。
+                // 如果想要讀取效果，可以考慮在角落顯示一個微小的 spinner。
+
+                $.ajax({
+                    url: '@Url.Action("AllShifts", "Shift")',
+                    type: 'GET',
+                    data: formData,
+                    // 強制標註這是 AJAX 請求
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    success: function(html) {
+                        // 只替換表格內容，這部分在瀏覽器 DOM 操作中是非常快的
+                        $('#tableContainer').html(html);
+                    },
+                    error: function() {
+                        console.error('篩選請求失敗');
+                    }
+                });
+            }
+
+            // 3. 更改預約狀態功能 (使用事件委派)
+            $(document).on('change', '.status-updater', function() {
+                var shiftId = $(this).data('shift-id');
+                var isBooked = $(this).val() === 'true';
+                var $select = $(this);
+                var originalValue = !isBooked;
+
+                Swal.fire({
+                    title: '確定要更改預約狀態嗎？',
+                    text: "這將會直接影響前端顯示！",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: '是的，更改它',
+                    cancelButtonText: '取消'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('@Url.Action("UpdateShiftStatus", "Shift")', { shiftId: shiftId, isBooked: isBooked }, function(res) {
+                            if (res.success) {
+                                Swal.fire('更新成功！', '', 'success');
+                                // 更新 badge
+                                var badgeHtml = isBooked ? 
+                                    '<span class="badge bg-danger">已預約</span>' : 
+                                    '<span class="badge bg-success">開放中</span>';
+                                $('#status-badge-' + shiftId).html(badgeHtml);
+                            } else {
+                                Swal.fire('錯誤', res.message || '更新失敗', 'error');
+                                $select.val(originalValue.toString());
+                            }
+                        }).fail(function() {
+                            Swal.fire('錯誤', '網路請求失敗', 'error');
+                            $select.val(originalValue.toString());
+                        });
+                    } else {
+                        $select.val(originalValue.toString());
+                    }
+                });
+            });
+        });
+    </script>
+}

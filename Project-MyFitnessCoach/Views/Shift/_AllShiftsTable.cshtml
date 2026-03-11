@@ -1,0 +1,68 @@
+@using Project_MyFitnessCoach
+@using Project_MyFitnessCoach.Models
+@using Project_MyFitnessCoach.Models.ViewModels
+@model IEnumerable<AllShiftsViewModel>
+
+<div class="table-responsive">
+    <table class="table table-hover table-striped" id="shiftsTable">
+        <thead class="table-dark">
+            <tr>
+                <th>營養師姓名</th>
+                <th>日期</th>
+                <th>時段</th>
+                <th>預約狀態</th>
+                <th>修改狀態</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var shift in Model)
+                {
+                    <tr>
+                        <td>@shift.InstructorName</td>
+                        <td>@shift.ScheduleDate.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            @{
+                                string badgeClass = "bg-secondary";
+                                string customStyle = "color: white;";
+                                if (shift.TimeSlot.Contains("早")) { badgeClass = "bg-warning text-dark"; customStyle = ""; }
+                                else if (shift.TimeSlot.Contains("午")) { badgeClass = ""; customStyle = "background-color: #FF8C00; color: white;"; }
+                                else if (shift.TimeSlot.Contains("晚")) { badgeClass = ""; customStyle = "background-color: #00008B; color: white;"; }
+                            }
+                            <span class="badge @badgeClass" style="@customStyle">
+                                @shift.TimeSlot
+                            </span>
+                        </td>
+                        <td>
+                            <div id="status-badge-@shift.Id">
+                                @if (shift.IsBooked)
+                                {
+                                    <span class="badge bg-danger">已預約</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">開放中</span>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm status-updater" 
+                                    data-shift-id="@shift.Id"
+                                    style="width: 120px;">
+                                <option value="false" selected="@(!shift.IsBooked)">開放中</option>
+                                <option value="true" selected="@(shift.IsBooked)">已預約</option>
+                            </select>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center text-muted">目前暫無排班資料</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
