@@ -58,7 +58,6 @@
                             <th>日期</th>
                             <th>時段</th>
                             <th>預約客戶</th>
-                            <th>狀態</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -85,9 +84,6 @@
                                         @(string.IsNullOrEmpty(shift.MemberName) ? "未知客戶" : shift.MemberName)
                                     </td>
                                     <td>
-                                        <span class="badge bg-danger">已預約</span>
-                                    </td>
-                                    <td>
                                         <a asp-action="Edit" asp-route-id="@shift.Id" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-info-circle"></i> 詳細資訊
                                         </a>
@@ -98,7 +94,7 @@
                         else
                         {
                             <tr class="text-center">
-                                <td colspan="5" class="text-center text-muted">目前暫無被預約的時段</td>
+                                <td colspan="4" class="text-center text-muted">目前暫無被預約的時段</td>
                             </tr>
                         }
                     </tbody>

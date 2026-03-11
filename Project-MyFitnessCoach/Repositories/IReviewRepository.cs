@@ -12,5 +12,6 @@ namespace Project_MyFitnessCoach.Repositories
         Task DeleteReviewAsync(int id);
         Task UpdateUserStatusAsync(int userId, bool isActive);
         Task<int?> GetUserIdByMemberIdAsync(int memberId);
+        Task IncrementMemberWarningCountAsync(int memberId, string reason);
     }
 }

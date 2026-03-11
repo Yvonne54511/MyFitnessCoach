@@ -63,5 +63,33 @@ namespace Project_MyFitnessCoach.Repositories
                 await _db.SaveChangesAsync();
             }
         }
+
+        public async Task IncrementMemberWarningCountAsync(int memberId, string reason)
+        {
+            var violation = await _db.MemberViolations
+                .FirstOrDefaultAsync(v => v.MemberId == memberId);
+
+            if (violation == null)
+            {
+                // 若尚無紀錄則建立
+                violation = new MemberViolation
+                {
+                    MemberId = memberId,
+                    WarningCount = 1,
+                    Reason = reason,
+                    LastWarningAt = DateTime.Now
+                };
+                _db.MemberViolations.Add(violation);
+            }
+            else
+            {
+                // 已有紀錄則次數 +1
+                violation.WarningCount++;
+                violation.Reason = reason;
+                violation.LastWarningAt = DateTime.Now;
+            }
+
+            await _db.SaveChangesAsync();
+        }
     }
 }

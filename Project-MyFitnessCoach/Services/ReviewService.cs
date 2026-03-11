@@ -48,7 +48,15 @@ namespace Project_MyFitnessCoach.Services
 
         public async Task DeleteReviewAsync(int id)
         {
-            await _repo.DeleteReviewAsync(id);
+            var review = await _repo.GetReviewByIdAsync(id);
+            if (review != null)
+            {
+                int memberId = review.MemberId;
+                // 1. 刪除評論
+                await _repo.DeleteReviewAsync(id);
+                // 2. 增加會員違規次數 (+1)
+                await _repo.IncrementMemberWarningCountAsync(memberId, "惡意評論被管理員刪除");
+            }
         }
 
         public async Task SuspendMemberAsync(int memberId)
