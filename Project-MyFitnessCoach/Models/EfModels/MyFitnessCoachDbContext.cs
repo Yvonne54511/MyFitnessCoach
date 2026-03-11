@@ -257,6 +257,7 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasMaxLength(500);
             entity.Property(e => e.CreateAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18, 0)");
+            entity.Property(e => e.Memo).HasMaxLength(50);
             entity.Property(e => e.Mobile)
                 .IsRequired()
                 .HasMaxLength(20)
