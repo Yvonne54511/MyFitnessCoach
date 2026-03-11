@@ -81,20 +81,30 @@ namespace Project_MyFitnessCoach.Controllers
             var shifts = await _adminService.GetAllInstructorShiftsAsync(criteria);
             var instructors = await _adminService.GetInstructorsAsync();
             
-            // Map DTOs to ViewModels
-            var vms = shifts.Select(s => new AllShiftsViewModel
-            {
-                Id = s.Id,
-                InstructorName = s.InstructorName,
-                ScheduleDate = s.ScheduleDate,
-                TimeSlot = s.TimeSlot,
-                IsBooked = s.IsBooked
+            var now = DateTime.Now;
+
+            // Map DTOs to ViewModels with CanEdit logic
+            var vms = shifts.Select(s => {
+                // 將 TimeSlot 轉為概略時間
+                int hour = s.TimeSlot.Contains("早") ? 8 : (s.TimeSlot.Contains("午") ? 13 : 18);
+                var shiftDateTime = s.ScheduleDate.ToDateTime(new TimeOnly(hour, 0));
+
+                return new AllShiftsViewModel
+                {
+                    Id = s.Id,
+                    InstructorName = s.InstructorName,
+                    ScheduleDate = s.ScheduleDate,
+                    TimeSlot = s.TimeSlot,
+                    IsBooked = s.IsBooked,
+                    // 修正：只有在排班時間「尚未到達」之前，才能修改狀態 (開放預約或取消預約)
+                    // 如果 DateTime.Now > shiftDateTime，則 CanEdit = false (鎖定歷史紀錄)
+                    CanEdit = now <= shiftDateTime 
+                };
             }).ToList();
 
             ViewBag.Instructors = instructors;
             ViewBag.Criteria = criteria;
 
-            // Check if it's an AJAX request (common way is via X-Requested-With header)
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 return PartialView("_AllShiftsTable", vms);

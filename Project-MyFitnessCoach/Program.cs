@@ -70,6 +70,10 @@ namespace Project_MyFitnessCoach
 			// 註冊 LoginRepository（新增：介面與實作）
 			builder.Services.AddScoped<ILoginRepository, LoginRepository>();
 
+            // 註冊 Review 模組
+            builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
+
 			// 註冊使用Cookie驗證服務
 			builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 				.AddCookie(options =>

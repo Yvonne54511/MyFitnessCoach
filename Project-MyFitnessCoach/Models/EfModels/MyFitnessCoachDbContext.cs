@@ -25,6 +25,8 @@ public partial class MyFitnessCoachDbContext : DbContext
 
     public virtual DbSet<Member> Members { get; set; }
 
+    public virtual DbSet<MemberViolation> MemberViolations { get; set; }
+
     public virtual DbSet<Nutrient> Nutrients { get; set; }
 
     public virtual DbSet<PointOrder> PointOrders { get; set; }
@@ -161,6 +163,22 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Members_Users");
+        });
+
+        modelBuilder.Entity<MemberViolation>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__MemberVi__3214EC07F6B20A50");
+
+            entity.HasIndex(e => e.MemberId, "UQ_MemberViolations_MemberId").IsUnique();
+
+            entity.Property(e => e.LastWarningAt).HasPrecision(0);
+            entity.Property(e => e.Reason).HasMaxLength(500);
+            entity.Property(e => e.SuspendedAt).HasPrecision(0);
+
+            entity.HasOne(d => d.Member).WithOne(p => p.MemberViolation)
+                .HasForeignKey<MemberViolation>(d => d.MemberId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MemberViolations_Members");
         });
 
         modelBuilder.Entity<Nutrient>(entity =>

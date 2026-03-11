@@ -54,6 +54,7 @@
                         @if (User.IsInRole("Instructor"))
                         {
                             <a class="collapse-item" asp-controller="Shift" asp-action="Index">營養師班表排程(小朱)</a>
+                            <a class="collapse-item" asp-controller="Reservation" asp-action="Index">預約班表查看(小朱)</a>
                         }
                         @if (User.IsInRole("Admin"))
                         {
@@ -135,8 +136,8 @@
                 <div id="collapseOther" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" href="tables.html">評論區管理 - admin(小朱)</a>
-                        <a class="collapse-item" href="cards.html">評論區察看與舉報 - instructor(小朱)</a>
+                        <a class="collapse-item" asp-controller="Review" asp-action="AdminIndex">評論區管理 - admin(小朱)</a>
+                        <a class="collapse-item" asp-controller="Review" asp-action="InstructorIndex">評論區察看與舉報 - instructor(小朱)</a>
                     </div>
                 </div>
             </li>

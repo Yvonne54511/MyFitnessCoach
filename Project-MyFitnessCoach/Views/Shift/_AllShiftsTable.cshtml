@@ -49,10 +49,15 @@
                         <td>
                             <select class="form-select form-select-sm status-updater" 
                                     data-shift-id="@shift.Id"
-                                    style="width: 120px;">
+                                    style="width: 120px;"
+                                    disabled="@(!shift.CanEdit)">
                                 <option value="false" selected="@(!shift.IsBooked)">開放中</option>
                                 <option value="true" selected="@(shift.IsBooked)">已預約</option>
                             </select>
+                            @if (!shift.CanEdit)
+                            {
+                                <small class="text-muted d-block mt-1"><i class="fas fa-lock me-1"></i>時間已過</small>
+                            }
                         </td>
                     </tr>
                 }

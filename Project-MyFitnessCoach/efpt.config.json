@@ -43,6 +43,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[MemberViolations]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Nutrients]",
          "ObjectType": 0
       },

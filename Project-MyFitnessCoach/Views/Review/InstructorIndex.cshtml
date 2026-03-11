@@ -1,12 +1,51 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.Dtos.ReviewDto>
 @{
-    ViewData["Title"] = "我的評論";
+    ViewData["Title"] = "我的評論與舉報";
 }
 
-<div class="container mt-4">
-    <h2>@ViewData["Title"]</h2>
-    <p class="text-muted">這裡是您收到的評論紀錄 (功能開發中)。</p>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-3">@TempData["SuccessMessage"]</div>
+}
 
-    <div class="alert alert-secondary">
-        目前暫無評論。
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">@ViewData["Title"]</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>時間</th>
+                            <th>學員</th>
+                            <th>評分</th>
+                            <th>評論內容</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@item.MemberName</td>
+                                <td class="text-warning">
+                                    @for (int i = 0; i < item.Rating; i++) { <i class="fas fa-star"></i> }
+                                </td>
+                                <td>@item.Comment</td>
+                                <td>
+                                    <form asp-action="ReportReview" method="post" onsubmit="return confirm('確定舉報此評論？');">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button class="btn btn-warning btn-sm">舉報</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>

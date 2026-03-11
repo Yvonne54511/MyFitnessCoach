@@ -79,6 +79,18 @@ namespace Project_MyFitnessCoach.Repos
 
             if (shift == null) return false;
 
+            // --- 新增時間檢查 ---
+            var now = DateTime.Now;
+            int hour = shift.TimeSlot.Contains("早") ? 8 : (shift.TimeSlot.Contains("午") ? 13 : 18);
+            var shiftDateTime = shift.ScheduleDate.ToDateTime(new TimeOnly(hour, 0));
+
+            // 如果現在時間已經「超過」排班時間，不允許修改狀態 (鎖定歷史紀錄)
+            if (now > shiftDateTime)
+            {
+                return false;
+            }
+            // --------------------
+
             // 2. 更新狀態
             shift.IsBooked = isBooked;
 
