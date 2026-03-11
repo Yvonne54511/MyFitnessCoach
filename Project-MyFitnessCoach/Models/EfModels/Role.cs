@@ -11,6 +11,8 @@ public partial class Role
 
     public string RoleName { get; set; }
 
+    public string Description { get; set; }
+
     public bool IsActive { get; set; }
 
     public virtual ICollection<RoleFunction> RoleFunctions { get; set; } = new List<RoleFunction>();

@@ -24,6 +24,8 @@ namespace Project_MyFitnessCoach.Repositories
         public async Task<User?> GetByAccountAsync(string account)
         {
             return await _db.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Account == account);
         }

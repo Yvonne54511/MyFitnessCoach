@@ -11,6 +11,12 @@
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900&display=swap" rel="stylesheet">
     <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
     <link href="~/css/layout-warm.css" rel="stylesheet">
+    <style>
+        /* 當 sidebar 縮小時隱藏登入資訊卡片 */
+        .sidebar.toggled .sidebar-login-info {
+            display: none !important;
+        }
+    </style>
     @RenderSection("styles", required: false)
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -138,6 +144,32 @@
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                var account = User.FindFirst("Account")?.Value;
+                var roles = User.FindAll(System.Security.Claims.ClaimTypes.Role).Select(r => r.Value);
+                var roleMapping = new Dictionary<string, string>
+                {
+                    { "member", "會員" },
+                    { "Instructor", "營養師" },
+                    { "purchasor", "採購人員" },
+                    { "marketor", "行銷人員" },
+                    { "admin", "系統管理員" }
+                };
+                var chineseRoles = string.Join(", ", roles.Select(r => roleMapping.ContainsKey(r) ? roleMapping[r] : r));
+
+                <div class="sidebar-card sidebar-login-info d-none d-lg-flex flex-column align-items-start" style="padding: 1rem; margin: 0 1rem 1rem 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 0.35rem;">
+                    <div class="text-white-50 small mb-2">登入資訊</div>
+                    <div class="text-white small mb-1">
+                        <i class="fas fa-user-circle fa-fw mr-1"></i> @account
+                    </div>
+                    <div class="text-white small">
+                        <i class="fas fa-user-tag fa-fw mr-1"></i> @chineseRoles
+                    </div>
+                </div>
+            }
+
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>

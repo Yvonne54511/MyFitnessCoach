@@ -1,0 +1,75 @@
+
+Roles:Description
+visitor:未登入訪客，僅能瀏覽網頁
+member:登入會員，可使用飲食、身體數據紀錄，預約營養師，及購買商城
+instructor:營養師
+purchasor:採購人員，負責上下架商品及訂單管理
+marketor:行銷人員，負責擬定促銷方案及相關訂單
+admin:系統管理員
+
+FunctionName:Description,api_path
+
+edit_Password : 修改後台人員自己的登入密碼,/Account/ResetPassword
+
+edit_IntructorDetails : 修改營養師自己的個人簡介與資料,/Account/InstructorDetails
+
+edit_InstructorShifts : 安排或修改營養師自己的排班表,/Shift/Index
+
+view_InstructorShifts : 查看所有營養師的排班狀況,/Shift/AllShifts
+
+edit_UserAccounts : 管理（新增、修改、停權等）所有使用者的帳號資料/Staff/Index
+
+edit_RoleFunctions : 權限設定，管理角色使用的系統功能/Staff/RoleFunctions
+
+edit_UserRoles : 指派或修改使用者角色/Staff/UserRoles
+
+edit_ProductCategories : 管理商城裡的商品分類/ProductCategories/Index
+
+edit_ProductItems : 管理商城裡的商品/Products/Index
+
+edit_ProductOrders : 處理商城裡的一般商品買賣訂單/ProductOrders/index
+
+edit_Plans : 擬定或修改行銷促銷方案/TopUpPlans/Index
+
+edit_PlanOrders : 處理跟促銷方案或課程購買有關的訂單/PointOrders/Index
+
+view_PointRecords : 查看會員的點數獲得與使用紀錄/Member/ViewPointsRecord
+
+view_ClientFoodRecords : 查看會員每天的飲食日記/Member/ViewFoodRecords
+
+view_ClientBodyData : 查看會員紀錄的身體數據變化/Member/ViewFoodRecords
+
+edit_Comments_admin : 系統管理員針對留言版禁言及評論刪除/Review/AdminIndex
+
+edit_Comments_instructor : 營養師留言版舉發/Review/InstructorIndex
+
+
+
+
+FunctionName(RoleName)
+edit_Password(instructor,purchasor,marketor,admin)
+edit_IntructorDetails(instructor)
+
+
+edit_InstructorShifts(instructor)
+view_InstructorShifts(admin)
+
+edit_UserAccounts(admin)
+edit_RoleFunctions(admin)
+edit_UserRoles(admin)
+
+edit_ProductCategories(admin,purchasor)
+edit_ProductItems(admin,purchasor)
+edit_ProductOrders(admin,purchasor)
+
+edit_Plans(admin,marketor)
+edit_PlanOrders(admin,marketor)
+
+view_PointRecords(admin,marketor)
+view_ClientFoodRecords(admin,instructor)
+view_ClientBodyData(admin,instructor)
+
+edit_Comments_admin(admin)
+edit_Comments_instructor(instructor)
+
+

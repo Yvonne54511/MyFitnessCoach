@@ -77,7 +77,7 @@ namespace Project_MyFitnessCoach
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Account}/{action=Login}/{id?}");
 
             // --- Seed Admin User ---
             using (var scope = app.Services.CreateScope())
