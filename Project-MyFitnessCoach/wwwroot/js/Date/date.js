@@ -130,7 +130,7 @@
         `;
 
         // 佈局修正：每兩週一行
-        html += `<div class="row row-cols-1 row-cols-lg-2 g-4">`;
+        html += `<div class="row row-cols-1 row-cols-xl-2 g-4">`;
 
         treeData.children.forEach(weekNode => {
             const weekColorClass = weekNode.checked ? 'text-danger fw-bold' : 'text-success';
@@ -159,7 +159,7 @@
                     </div>
                 `;
 
-                html += `<div class="d-flex justify-content-around flex-grow-1">`;
+                html += `<div class="slot-container flex-grow-1">`;
                 dayNode.children.forEach(slotNode => {
                     const textColor = slotNode.isBooked ? 'text-danger fw-bold' : 'text-secondary';
                     const displayText = slotNode.isBooked ? `${slotNode.label} ${L.savedMark}` : slotNode.label;
