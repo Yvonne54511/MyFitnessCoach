@@ -23,6 +23,8 @@ public partial class MyFitnessCoachDbContext : DbContext
 
     public virtual DbSet<Instructor> Instructors { get; set; }
 
+    public virtual DbSet<KeyWord> KeyWords { get; set; }
+
     public virtual DbSet<Member> Members { get; set; }
 
     public virtual DbSet<MemberViolation> MemberViolations { get; set; }
@@ -50,8 +52,6 @@ public partial class MyFitnessCoachDbContext : DbContext
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<RoleFunction> RoleFunctions { get; set; }
-
-    public virtual DbSet<SensitiveWord> SensitiveWords { get; set; }
 
     public virtual DbSet<Shift> Shifts { get; set; }
 
@@ -156,6 +156,18 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasConstraintName("FK_Instructors_Users");
         });
 
+        modelBuilder.Entity<KeyWord>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__KeyWords__3214EC07C45EE3E6");
+
+            entity.HasIndex(e => e.Word, "UQ__KeyWords__95B5010876EA63D2").IsUnique();
+
+            entity.Property(e => e.Weight).HasDefaultValue(1);
+            entity.Property(e => e.Word)
+                .IsRequired()
+                .HasMaxLength(50);
+        });
+
         modelBuilder.Entity<Member>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Members__3214EC074D698E42");
@@ -194,16 +206,20 @@ public partial class MyFitnessCoachDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC07C0082E5C");
 
-            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.Content)
+                .IsRequired()
+                .HasMaxLength(100);
             entity.Property(e => e.CreatedAt)
                 .HasPrecision(0)
-                .HasDefaultValueSql("(getdate())");
+                .HasDefaultValueSql("(getdate())")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__Notificat__Creat__6E01572D");
+            entity.Property(e => e.IsRead).HasAnnotation("Relational:DefaultConstraintName", "DF__Notificat__IsRea__6D0D32F4");
             entity.Property(e => e.NotifyType)
                 .IsRequired()
                 .HasMaxLength(50);
             entity.Property(e => e.Title)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(20);
 
             entity.HasOne(d => d.Sender).WithMany(p => p.NotificationSenders)
                 .HasForeignKey(d => d.SenderId)
@@ -430,17 +446,6 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_RoleFunctions_Role");
-        });
-
-        modelBuilder.Entity<SensitiveWord>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Sensitiv__3214EC079B37B0E1");
-
-            entity.HasIndex(e => e.Word, "UQ_SensitiveWords_Word").IsUnique();
-
-            entity.Property(e => e.Word)
-                .IsRequired()
-                .HasMaxLength(50);
         });
 
         modelBuilder.Entity<Shift>(entity =>
