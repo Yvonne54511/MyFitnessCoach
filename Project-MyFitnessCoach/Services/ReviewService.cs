@@ -28,7 +28,7 @@ namespace Project_MyFitnessCoach.Services
             var entities = (await _repo.GetAllReviewsAsync()).ToList();
             var sensitiveWords = await _db.SensitiveWords.Select(s => s.Word).ToListAsync();
 
-            // 取得檢舉類型的通知 (Report1)，只選取需要的欄位以避開資料庫中不存在的 ReferenceId
+            // 取得檢舉類型的通知 (Report1)
             var reports = await _db.Notifications
                 .Where(n => n.NotifyType == "Report1")
                 .Select(n => new { n.NotifyType, n.Content })

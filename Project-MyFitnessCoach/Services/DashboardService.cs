@@ -1,11 +1,15 @@
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModel;
 using Project_MyFitnessCoach.Repositories;
+using System.Collections.Generic;
 
 namespace Project_MyFitnessCoach.Services
 {
     public interface IDashboardService
     {
         DashboardSummaryViewModel GetSummary();
+        IEnumerable<InstructorRatingDto> GetInstructorRatings();
+        GlobalRatingDto GetGlobalRating();
     }
 
     public class DashboardService : IDashboardService
@@ -28,6 +32,16 @@ namespace Project_MyFitnessCoach.Services
                 ActiveFunctions = _dashboardRepository.GetActiveFunctions(),
                 ActiveInstructors = _dashboardRepository.GetActiveInstructors()
             };
+        }
+
+        public IEnumerable<InstructorRatingDto> GetInstructorRatings()
+        {
+            return _dashboardRepository.GetInstructorRatings();
+        }
+
+        public GlobalRatingDto GetGlobalRating()
+        {
+            return _dashboardRepository.GetGlobalRating();
         }
     }
 }
