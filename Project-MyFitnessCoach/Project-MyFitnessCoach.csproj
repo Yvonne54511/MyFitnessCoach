@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Folder Include="Models\EfModels\" />
+    <Folder Include="wwwroot\img\instructors\" />
   </ItemGroup>
 
 </Project>

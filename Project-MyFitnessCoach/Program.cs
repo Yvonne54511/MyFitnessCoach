@@ -62,6 +62,8 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
+            builder.Services.AddScoped<IInstructorService, InstructorService>();
 
             var app = builder.Build();
 

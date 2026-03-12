@@ -15,11 +15,125 @@ namespace Project_MyFitnessCoach.Controllers
     {
         private readonly IUserService _userService;
         private readonly PermissionService _permissionService;
+        private readonly IInstructorService _instructorService;
+        private readonly IWebHostEnvironment _environment;
 
-        public StaffController(IUserService userService, PermissionService permissionService)
+        public StaffController(IUserService userService, PermissionService permissionService, IInstructorService instructorService, IWebHostEnvironment environment)
         {
             _userService = userService;
             _permissionService = permissionService;
+            _instructorService = instructorService;
+            _environment = environment;
+        }
+
+        public async Task<IActionResult> InstructorList()
+        {
+            var instructors = await _instructorService.GetAllInstructorsAsync();
+            return View(instructors);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CreateInstructor()
+        {
+            ViewBag.Users = await _instructorService.GetAvailableUsersAsync();
+            return PartialView("_CreateInstructorPartial", new InstructorDto());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateInstructor(InstructorDto dto, IFormFile? imageFile)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                        var filePath = Path.Combine(_environment.WebRootPath, "img", "instructors", fileName);
+                        
+                        var folderPath = Path.GetDirectoryName(filePath);
+                        if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath!);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+                        dto.ImageUrl = "/img/instructors/" + fileName;
+                    }
+
+                    await _instructorService.CreateInstructorAsync(dto);
+                    return Json(new { success = true, message = "新增成功" });
+                }
+                
+                var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                return Json(new { success = false, message = "資料驗證失敗: " + errors });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "伺服器發生錯誤: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditInstructor(int id)
+        {
+            var dto = await _instructorService.GetInstructorByIdAsync(id);
+            if (dto == null) return NotFound();
+
+            return PartialView("_EditInstructorPartial", dto);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditInstructor(InstructorDto dto, IFormFile? imageFile)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                        var filePath = Path.Combine(_environment.WebRootPath, "img", "instructors", fileName);
+                        
+                        var folderPath = Path.GetDirectoryName(filePath);
+                        if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath!);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+                        dto.ImageUrl = "/img/instructors/" + fileName;
+                    }
+
+                    await _instructorService.UpdateInstructorAsync(dto);
+                    return Json(new { success = true, message = "更新成功" });
+                }
+                
+                var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                return Json(new { success = false, message = "資料驗證失敗: " + errors });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "伺服器發生錯誤: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteInstructor(int id)
+        {
+            await _instructorService.DeleteInstructorAsync(id);
+            return Json(new { success = true, message = "刪除成功" });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleInstructorActive(int id)
+        {
+            await _instructorService.ToggleIsActiveAsync(id);
+            return Json(new { success = true, message = "狀態已變更" });
         }
 
         public async Task<IActionResult> Index(string? name = null, string? role = null, int? id = null)

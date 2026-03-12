@@ -11,6 +11,10 @@ namespace Project_MyFitnessCoach.Repositories
         Task<User?> GetByResetPasswordCodeAsync(string code);
         void Update(User user);
         Task SaveChangesAsync();
+
+        Task<Instructor?> GetInstructorByUserIdAsync(int userId);
+        void AddInstructor(Instructor instructor);
+        void UpdateInstructor(Instructor instructor);
     }
 
     public class AccountRepository : IAccountRepository
@@ -54,6 +58,23 @@ namespace Project_MyFitnessCoach.Repositories
         public async Task SaveChangesAsync()
         {
             await _db.SaveChangesAsync();
+        }
+
+        public async Task<Instructor?> GetInstructorByUserIdAsync(int userId)
+        {
+            return await _db.Instructors
+                .Include(i => i.User)
+                .FirstOrDefaultAsync(i => i.UserId == userId);
+        }
+
+        public void AddInstructor(Instructor instructor)
+        {
+            _db.Instructors.Add(instructor);
+        }
+
+        public void UpdateInstructor(Instructor instructor)
+        {
+            _db.Instructors.Update(instructor);
         }
     }
 }

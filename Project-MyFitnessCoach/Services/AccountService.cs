@@ -13,6 +13,9 @@ namespace Project_MyFitnessCoach.Services
         Task<AccountResultDto> ResetPasswordAsync(ResetPasswordDto dto);
         Task<bool> IsResetPasswordCodeValidAsync(string code);
         Task<AccountResultDto> ChangePasswordAsync(int userId, string oldPassword, string newPassword);
+
+        Task<InstructorDto?> GetInstructorDetailsAsync(int userId);
+        Task<AccountResultDto> UpdateInstructorDetailsAsync(InstructorDto dto);
     }
 
     public class MemberAccountService : IMemberAccountService
@@ -32,6 +35,49 @@ namespace Project_MyFitnessCoach.Services
             _emailService = emailService;
             _logger = logger;
             _passwordHasher = passwordHasher;
+        }
+
+        public async Task<InstructorDto?> GetInstructorDetailsAsync(int userId)
+        {
+            var user = await _accountRepository.GetByIdAsync(userId);
+            if (user == null) return null;
+
+            var instructor = await _accountRepository.GetInstructorByUserIdAsync(userId);
+            return new InstructorDto
+            {
+                UserId = user.Id,
+                UserName = user.UserName ?? user.Account,
+                ImageUrl = instructor?.ImageUrl ?? string.Empty,
+                Description = instructor?.Description ?? string.Empty,
+                HourWage = instructor?.HourWage ?? 0
+            };
+        }
+
+        public async Task<AccountResultDto> UpdateInstructorDetailsAsync(InstructorDto dto)
+        {
+            var instructor = await _accountRepository.GetInstructorByUserIdAsync(dto.UserId);
+            if (instructor == null)
+            {
+                instructor = new Instructor
+                {
+                    UserId = dto.UserId,
+                    ImageUrl = dto.ImageUrl,
+                    Description = dto.Description,
+                    HourWage = dto.HourWage,
+                    IsActive = true
+                };
+                _accountRepository.AddInstructor(instructor);
+            }
+            else
+            {
+                instructor.ImageUrl = dto.ImageUrl;
+                instructor.Description = dto.Description;
+                instructor.HourWage = dto.HourWage;
+                _accountRepository.UpdateInstructor(instructor);
+            }
+
+            await _accountRepository.SaveChangesAsync();
+            return new AccountResultDto { IsSuccess = true, Message = "資料更新成功" };
         }
 
         public async Task<AccountResultDto> ChangePasswordAsync(int userId, string oldPassword, string newPassword)

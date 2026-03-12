@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModel;
 using Project_MyFitnessCoach.Services;
@@ -13,10 +15,12 @@ namespace Project_MyFitnessCoach.Controllers
     public class AccountController : Controller
     {
         private readonly IMemberAccountService _accountService;
+        private readonly IWebHostEnvironment _environment;
 
-        public AccountController(IMemberAccountService accountService)
+        public AccountController(IMemberAccountService accountService, IWebHostEnvironment environment)
         {
             _accountService = accountService;
+            _environment = environment;
         }
 
         [Authorize]
@@ -51,6 +55,65 @@ namespace Project_MyFitnessCoach.Controllers
 
             TempData["ChangePasswordSuccess"] = "密碼修改成功！";
             return View();
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> InstructorDetails()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var dto = await _accountService.GetInstructorDetailsAsync(userId);
+            if (dto == null)
+            {
+                return NotFound();
+            }
+
+            return View(dto);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> InstructorDetails(InstructorDto dto, IFormFile? imageFile)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            dto.UserId = userId;
+
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                var wwwRootPath = _environment.WebRootPath;
+                var filePath = Path.Combine(wwwRootPath, "img", "instructors", fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(stream);
+                }
+
+                dto.ImageUrl = "/img/instructors/" + fileName;
+            }
+
+            var result = await _accountService.UpdateInstructorDetailsAsync(dto);
+            if (result.IsSuccess)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
+
+            return RedirectToAction(nameof(InstructorDetails));
         }
 
         [HttpGet]
