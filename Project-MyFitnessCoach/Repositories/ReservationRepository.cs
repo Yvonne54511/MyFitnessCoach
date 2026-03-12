@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Project_MyFitnessCoach.Repos
+namespace Project_MyFitnessCoach.Repositories
 {
     public interface IReservationRepository
     {

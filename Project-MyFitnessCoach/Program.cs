@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
-using Project_MyFitnessCoach.Models.Repositories;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.ViewModel;
-using Project_MyFitnessCoach.Repos;
 using Project_MyFitnessCoach.Repositories;
 using Project_MyFitnessCoach.Services;
 
@@ -69,6 +67,18 @@ namespace Project_MyFitnessCoach
 			builder.Services.AddScoped<LoginService>();
 			// 註冊 LoginRepository（新增：介面與實作）
 			builder.Services.AddScoped<ILoginRepository, LoginRepository>();
+
+            // 註冊 Review 模組
+            builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+            builder.Services.AddScoped<ReviewService>();
+
+            // 註冊 Notification 模組
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+            builder.Services.AddScoped<NotificationService>();
+
+            // 註冊 SensitiveWord 模組
+            builder.Services.AddScoped<ISensitiveWordRepository, SensitiveWordRepository>();
+            builder.Services.AddScoped<ISensitiveWordService, SensitiveWordService>();
 
 			// 註冊使用Cookie驗證服務
 			builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

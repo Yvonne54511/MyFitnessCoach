@@ -43,6 +43,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[MemberViolations]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Notifications]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Nutrients]",
          "ObjectType": 0
       },
@@ -115,11 +123,19 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[vw_RoleFunctions]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[dbo].[vw_UserMemberFoodRecord]",
          "ObjectType": 3
       },
       {
          "Name": "[dbo].[vw_UserRoleFunction]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[vw_UserRoleFunctions]",
          "ObjectType": 3
       }
    ],

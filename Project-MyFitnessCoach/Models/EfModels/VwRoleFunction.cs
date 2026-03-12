@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace Project_MyFitnessCoach.Models.EfModels;
 
-public partial class SensitiveWord
+public partial class VwRoleFunction
 {
-    public int Id { get; set; }
+    public string RoleName { get; set; }
 
-    public string Word { get; set; }
+    public string FunctionName { get; set; }
 }
