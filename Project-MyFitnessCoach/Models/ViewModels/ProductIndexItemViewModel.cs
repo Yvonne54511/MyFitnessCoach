@@ -18,9 +18,11 @@ namespace Project_MyFitnessCoach.Models.ViewModels
 		public string? ImageUrl { get; set; }
 
 		[Display(Name = "原價")]
+		[Range(0, 1000000, ErrorMessage = "{0} 必須在 {1} 與 {2} 之間")]
 		public decimal OriginalPrice { get; set; }
 
 		[Display(Name = "單價")]
+		[Range(0, 1000000, ErrorMessage = "{0} 必須在 {1} 與 {2} 之間")]
 		public decimal UnitPrice { get; set; }
 
 		[Display(Name = "描述")]
