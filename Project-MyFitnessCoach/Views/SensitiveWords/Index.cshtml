@@ -1,0 +1,54 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.ViewModels.SensitiveWordViewModel>
+
+@{
+    ViewData["Title"] = "敏感字詞管理";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800">敏感字詞管理</h1>
+    <p class="mb-4">管理系統中的敏感字詞清單，過濾評論內容。</p>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">敏感字詞列表</h6>
+            <a asp-action="Create" class="btn btn-primary btn-sm shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> 新增敏感字詞
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>敏感字詞</th>
+                            <th style="width: 150px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="badge badge-danger p-2">@item.Word</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-info btn-circle btn-sm mr-2" title="編輯">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('確定要刪除此敏感字詞嗎？');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-circle btn-sm" title="刪除">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

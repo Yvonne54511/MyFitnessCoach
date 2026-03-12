@@ -26,6 +26,4 @@ public partial class Review
     public virtual Member Member { get; set; }
 
     public virtual ReserveOrder ReserveOrder { get; set; }
-
-    public virtual ICollection<SensitiveWord> SensitiveWords { get; set; } = new List<SensitiveWord>();
 }

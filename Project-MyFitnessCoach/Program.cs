@@ -78,6 +78,10 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
 
+            // 註冊 SensitiveWord 模組
+            builder.Services.AddScoped<ISensitiveWordRepository, SensitiveWordRepository>();
+            builder.Services.AddScoped<ISensitiveWordService, SensitiveWordService>();
+
 			// 註冊使用Cookie驗證服務
 			builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 				.AddCookie(options =>

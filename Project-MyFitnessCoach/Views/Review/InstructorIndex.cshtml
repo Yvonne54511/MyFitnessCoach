@@ -34,7 +34,7 @@
                                 <td class="text-warning">
                                     @for (int i = 0; i < item.Rating; i++) { <i class="fas fa-star"></i> }
                                 </td>
-                                <td>@item.Comment</td>
+                                <td>@Html.Raw(item.Comment)</td>
                                 <td>
                                     @* Bootstrap 4 使用 data-toggle 而非 data-bs-toggle *@
                                     <button class="btn btn-warning btn-sm report-btn" 
@@ -93,6 +93,19 @@
                 
                 $('#modalReviewId').val(reviewId);
                 $('#modalMemberName').text(memberName);
+            });
+
+            // 敏感字詞點擊切換邏輯
+            $(document).on('click', '.sensitive-toggle', function() {
+                var $this = $(this);
+                var original = $this.data('original');
+                var masked = $this.data('masked');
+                
+                if ($this.text() === masked) {
+                    $this.text(original).removeClass('text-danger').addClass('text-success');
+                } else {
+                    $this.text(masked).removeClass('text-success').addClass('text-danger');
+                }
             });
         });
     </script>

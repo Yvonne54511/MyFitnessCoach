@@ -26,6 +26,7 @@ namespace Project_MyFitnessCoach.Services
         public async Task<IEnumerable<ReviewDto>> GetAdminReviewsAsync()
         {
             var entities = (await _repo.GetAllReviewsAsync()).ToList();
+            var sensitiveWords = await _db.SensitiveWords.Select(s => s.Word).ToListAsync();
 
             // 取得檢舉類型的通知 (Report1)
             var reports = await _db.Notifications
@@ -33,22 +34,31 @@ namespace Project_MyFitnessCoach.Services
                 .ToListAsync();
 
             return entities.Select(e => {
-                // 搜尋包含此 Review ID 的通知。比對方式：包含 "?id=X" 或 "id=X"
                 var report = reports.FirstOrDefault(n => n.Content != null && 
                     (n.Content.Contains($"?id={e.Id}") || n.Content.Contains($"id={e.Id}")));
                 
                 string displayReason = report?.Content;
                 if (!string.IsNullOrEmpty(displayReason))
                 {
-                    // 移除 [Url:...] 標籤，只顯示營養師輸入的 Reason
                     int urlIdx = displayReason.IndexOf(" [Url:");
                     if (urlIdx >= 0)
                     {
                         displayReason = displayReason.Substring(0, urlIdx).Trim();
                     }
-                    
-                    // 如果 Reason 為空（僅有 URL），給予預設值
                     if (string.IsNullOrEmpty(displayReason)) displayReason = "檢舉人未填寫具體原因";
+                }
+
+                // 執行自動過濾 (包裝成可點擊的 HTML)
+                string maskedComment = e.Comment;
+                foreach (var word in sensitiveWords)
+                {
+                    if (!string.IsNullOrEmpty(maskedComment) && !string.IsNullOrEmpty(word))
+                    {
+                        string stars = new string('*', word.Length);
+                        // 使用 span 包裝，並存儲原始字與遮罩字
+                        string replacement = $"<span class='sensitive-toggle text-danger' style='cursor:pointer; font-weight:bold;' data-original='{word}' data-masked='{stars}' title='點擊查看/隱藏'>{stars}</span>";
+                        maskedComment = maskedComment.Replace(word, replacement);
+                    }
                 }
 
                 return new ReviewDto
@@ -59,8 +69,8 @@ namespace Project_MyFitnessCoach.Services
                     MemberId = e.MemberId,
                     MemberName = e.Member?.User?.UserName ?? "未知會員",
                     Rating = e.Rating,
-                    Comment = e.Comment,
-                    ReportMessage = displayReason, // 這是 Modal 要顯示的重點
+                    Comment = maskedComment, // 這裡使用了過濾後的文字
+                    ReportMessage = displayReason,
                     CreatedAt = e.CreatedAt,
                     IsUserActive = e.Member?.User?.IsActive ?? true
                 };
@@ -70,14 +80,29 @@ namespace Project_MyFitnessCoach.Services
         public async Task<IEnumerable<ReviewDto>> GetInstructorReviewsAsync(int instructorId)
         {
             var entities = await _repo.GetReviewsByInstructorIdAsync(instructorId);
-            return entities.Select(e => new ReviewDto
-            {
-                Id = e.Id,
-                MemberId = e.MemberId,
-                MemberName = e.Member?.User?.UserName ?? "未知會員",
-                Rating = e.Rating,
-                Comment = e.Comment,
-                CreatedAt = e.CreatedAt
+            var sensitiveWords = await _db.SensitiveWords.Select(s => s.Word).ToListAsync();
+
+            return entities.Select(e => {
+                string maskedComment = e.Comment;
+                foreach (var word in sensitiveWords)
+                {
+                    if (!string.IsNullOrEmpty(maskedComment) && !string.IsNullOrEmpty(word))
+                    {
+                        string stars = new string('*', word.Length);
+                        string replacement = $"<span class='sensitive-toggle text-danger' style='cursor:pointer; font-weight:bold;' data-original='{word}' data-masked='{stars}' title='點擊查看/隱藏'>{stars}</span>";
+                        maskedComment = maskedComment.Replace(word, replacement);
+                    }
+                }
+
+                return new ReviewDto
+                {
+                    Id = e.Id,
+                    MemberId = e.MemberId,
+                    MemberName = e.Member?.User?.UserName ?? "未知會員",
+                    Rating = e.Rating,
+                    Comment = maskedComment,
+                    CreatedAt = e.CreatedAt
+                };
             });
         }
 

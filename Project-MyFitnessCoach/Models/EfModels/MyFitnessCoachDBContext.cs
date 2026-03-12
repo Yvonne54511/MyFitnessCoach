@@ -182,24 +182,31 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_MemberViolations_Members");
         });
-modelBuilder.Entity<Notification>(entity =>
-{
-    entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC07305420B5");
 
-    entity.Property(e => e.Content).IsRequired(); // 改回 Content
-    entity.Property(e => e.CreatedAt)
-        .HasPrecision(0)
-        .HasDefaultValueSql("(getdate())");
-    entity.Property(e => e.NotifyType)
-        .IsRequired()
-        .HasMaxLength(50);
-    entity.Property(e => e.Title)
-        .IsRequired()
-        .HasMaxLength(100);
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC07305420B5");
 
-    // 使用 UserId 作為外部鍵，與資料庫對齊
-    entity.Property(e => e.UserId).HasColumnName("UserId");
-});
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.CreatedAt)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.NotifyType)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.Title)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.HasOne(d => d.Sender).WithMany(p => p.NotificationSenders)
+                .HasForeignKey(d => d.SenderId)
+                .HasConstraintName("FK_Notifications_Users_Sender");
+
+            entity.HasOne(d => d.User).WithMany(p => p.NotificationUsers)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Notifications_Users_Receiver");
+        });
 
         modelBuilder.Entity<Nutrient>(entity =>
         {
@@ -427,11 +434,6 @@ modelBuilder.Entity<Notification>(entity =>
             entity.Property(e => e.Word)
                 .IsRequired()
                 .HasMaxLength(50);
-
-            entity.HasOne(d => d.Review).WithMany(p => p.SensitiveWords)
-                .HasForeignKey(d => d.ReviewId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_SensitiveWords_Reviews");
         });
 
         modelBuilder.Entity<Shift>(entity =>
