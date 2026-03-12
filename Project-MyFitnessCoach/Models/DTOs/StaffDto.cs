@@ -42,4 +42,30 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public bool IsSuccess { get; set; }
         public string Message { get; set; }
     }
+
+    public class RoleDto
+    {
+        public int Id { get; set; }
+        public string RoleName { get; set; }
+        public string Description { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    public class FunctionDto
+    {
+        public int Id { get; set; }
+        public string FunctionName { get; set; }
+        public string Description { get; set; }
+        public string api_path { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    public class RoleFunctionDto
+    {
+        public int RoleId { get; set; }
+        public string RoleName { get; set; }
+        public int FunctionId { get; set; }
+        public string FunctionName { get; set; }
+        public bool IsEnabled { get; set; }
+    }
 }

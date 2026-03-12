@@ -1,3 +1,4 @@
+using Project_MyFitnessCoach.Models.DTOs;
 using System.ComponentModel.DataAnnotations;
 
 namespace Project_MyFitnessCoach.Models.ViewModel
@@ -69,5 +70,28 @@ namespace Project_MyFitnessCoach.Models.ViewModel
         [Display(Name = "確認密碼")]
         [Compare("Password", ErrorMessage = "密碼與確認密碼不符")]
         public string ConfirmPassword { get; set; }
+    }
+
+    public class RolesFunctionViewModel
+    {
+        public List<RoleDto> Roles { get; set; } = new List<RoleDto>();
+        public List<FunctionDto> Functions { get; set; } = new List<FunctionDto>();
+        public List<RoleFunctionMatrixRow> Matrix { get; set; } = new List<RoleFunctionMatrixRow>();
+    }
+
+    public class RoleFunctionMatrixRow
+    {
+        public int RoleId { get; set; }
+        public string RoleName { get; set; }
+        public Dictionary<int, bool> FunctionStatus { get; set; } = new Dictionary<int, bool>(); // Key: FunctionId, Value: IsEnabled
+    }
+
+    public class AddRoleFunctionViewModel
+    {
+        [Required(ErrorMessage = "請選擇角色")]
+        public int RoleId { get; set; }
+
+        [Required(ErrorMessage = "請選擇功能")]
+        public List<int> FunctionIds { get; set; } = new List<int>();
     }
 }

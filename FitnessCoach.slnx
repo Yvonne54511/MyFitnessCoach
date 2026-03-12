@@ -1,6 +1,9 @@
 <Solution>
   <Folder Name="/ReadMe/">
     <File Path="//172.22.35.100/shares/MyFitnessCoach_Db.sql" />
+    <File Path="codeExplain/Account.md" />
+    <File Path="codeExplain/EmailService.txt" />
+    <File Path="codeExplain/Staff.md" />
     <File Path="ReadMe/Yvonne.txt" />
     <File Path="Yvonne2.txt" />
     <File Path="Roles&amp;Function.txt" />
