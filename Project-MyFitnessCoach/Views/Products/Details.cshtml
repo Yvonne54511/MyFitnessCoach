@@ -1,20 +1,20 @@
 @model Project_MyFitnessCoach.Models.ViewModels.ProductIndexItemViewModel
 
 @{
-    ViewData["Title"] = "產品詳情";
+    ViewData["Title"] = "商品詳情";
 }
 
 <div class="container-fluid">
 
     <!-- Page Heading -->
-    <h1 class="h3 mb-2 text-gray-800">產品詳情</h1>
+    <h1 class="h3 mb-2 text-gray-800">商品詳情</h1>
 
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">產品資訊 (ID: @Model.Id)</h6>
+            <h6 class="m-0 font-weight-bold text-primary">商品資訊 (ID: @Model.Id)</h6>
             <div>
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-info btn-sm shadow-sm">
-                    <i class="fas fa-edit fa-sm text-white-50"></i> 編輯
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm shadow-sm">
+                    <i class="fas fa-edit fa-sm text-white-50"></i> 編輯商品
                 </a>
             </div>
         </div>
@@ -23,53 +23,56 @@
                 <div class="col-md-4 text-center">
                     @if (!string.IsNullOrEmpty(Model.ImageUrl))
                     {
-                        <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid rounded shadow-sm" style="max-height: 300px;" />
+                        <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid rounded-lg shadow-sm border" style="max-height: 350px; object-fit: contain;" />
                     }
                     else
                     {
-                        <div class="bg-light p-5 rounded">
-                            <i class="fas fa-image fa-3x text-gray-300"></i>
-                            <p class="mt-2 text-gray-500">無圖片</p>
+                        <div class="no-image-placeholder p-5 rounded-lg border-dashed">
+                            <i class="fas fa-image fa-3x text-soft"></i>
+                            <p class="mt-2 text-soft">無商品圖片</p>
                         </div>
                     }
-                    <div class="mt-3">
+                    <div class="mt-4">
                         @if (Model.IsActive)
                         {
-                            <span class="badge badge-success px-3 py-2">啟用中</span>
+                            <span class="badge badge-success px-4 py-2">上架中</span>
                         }
                         else
                         {
-                            <span class="badge badge-danger px-3 py-2">已下架</span>
+                            <span class="badge badge-danger px-4 py-2">已下架</span>
                         }
                     </div>
                 </div>
-                <div class="col-md-8">
-                    <dl class="row">
-                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Name)</dt>
-                        <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
+                <div class="col-md-8 pl-md-5">
+                    <h4 class="mb-4 font-weight-bold text-dark border-bottom pb-2">基本資料</h4>
+                    <dl class="row info-list">
+                        <dt class="col-sm-3 text-soft font-weight-bold">@Html.DisplayNameFor(model => model.Name)</dt>
+                        <dd class="col-sm-9 text-dark font-weight-bold">@Html.DisplayFor(model => model.Name)</dd>
 
-                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.CategoryName)</dt>
-                        <dd class="col-sm-9">@Html.DisplayFor(model => model.CategoryName)</dd>
+                        <dt class="col-sm-3 text-soft font-weight-bold">@Html.DisplayNameFor(model => model.CategoryName)</dt>
+                        <dd class="col-sm-9"><span class="badge badge-light p-2 border">@Html.DisplayFor(model => model.CategoryName)</span></dd>
 
-                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.OriginalPrice)</dt>
-                        <dd class="col-sm-9">@Html.DisplayFor(model => model.OriginalPrice)</dd>
+                        <dt class="col-sm-3 text-soft font-weight-bold">@Html.DisplayNameFor(model => model.OriginalPrice)</dt>
+                        <dd class="col-sm-9 text-soft"><del>NT$ @Html.DisplayFor(model => model.OriginalPrice)</del></dd>
 
-                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.UnitPrice)</dt>
-                        <dd class="col-sm-9">@Html.DisplayFor(model => model.UnitPrice)</dd>
+                        <dt class="col-sm-3 text-soft font-weight-bold">@Html.DisplayNameFor(model => model.UnitPrice)</dt>
+                        <dd class="col-sm-9 text-primary h5 font-weight-bold">NT$ @Html.DisplayFor(model => model.UnitPrice)</dd>
 
-                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.SortOrder)</dt>
+                        <dt class="col-sm-3 text-soft font-weight-bold">@Html.DisplayNameFor(model => model.SortOrder)</dt>
                         <dd class="col-sm-9">@Html.DisplayFor(model => model.SortOrder)</dd>
 
-                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Description)</dt>
+                        <dt class="col-sm-3 text-soft font-weight-bold">@Html.DisplayNameFor(model => model.Description)</dt>
                         <dd class="col-sm-9">
-                            <p class="text-muted">@(string.IsNullOrEmpty(Model.Description) ? "無描述" : Model.Description)</p>
+                            <div class="p-3 bg-light rounded border-left border-primary" style="min-height: 100px;">
+                                @(string.IsNullOrEmpty(Model.Description) ? "尚未填寫商品描述" : Model.Description)
+                            </div>
                         </dd>
                     </dl>
                 </div>
             </div>
 
-            <div class="form-group mt-4 border-top pt-3">
-                <a asp-action="Index" class="btn btn-secondary">
+            <div class="form-group mt-5 border-top pt-4">
+                <a asp-action="Index" class="btn btn-secondary px-4">
                     <i class="fas fa-arrow-left fa-sm text-white-50"></i> 返回列表
                 </a>
             </div>
@@ -77,3 +80,93 @@
     </div>
 
 </div>
+
+@section styles {
+    <style>
+        :root {
+            --bg-start: #fff8dc;
+            --bg-end: #ffe3b3;
+            --text-main: #3f2d1f;
+            --text-soft: #7a614d;
+            --accent: #f2a531;
+            --accent-dark: #e47b22;
+            --border: rgba(228, 123, 34, 0.18);
+            --panel: rgba(255, 255, 255, 0.88);
+            --font-main: "Trebuchet MS", "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: #fcf8f3;
+            color: var(--text-main);
+            font-family: var(--font-main);
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(165, 104, 29, 0.08);
+            background: var(--panel);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+
+        .text-primary {
+            color: var(--accent-dark) !important;
+        }
+
+        .text-soft {
+            color: var(--text-soft) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border: none;
+            border-radius: 12px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(228, 123, 34, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(228, 123, 34, 0.3);
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+        }
+
+        .info-list dt {
+            margin-bottom: 1.5rem;
+        }
+
+        .badge-success {
+            background-color: #ecf8e7;
+            color: #4d9b54;
+            border: 1px solid rgba(77, 155, 84, 0.2);
+        }
+
+        .badge-danger {
+            background-color: #ffe7e1;
+            color: #c85f47;
+            border: 1px solid rgba(200, 95, 71, 0.2);
+        }
+
+        .border-left-primary {
+            border-left: 0.25rem solid var(--accent-dark) !important;
+        }
+
+        .no-image-placeholder {
+            background-color: #fdfaf5;
+            border: 2px dashed var(--accent);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+    </style>
+}

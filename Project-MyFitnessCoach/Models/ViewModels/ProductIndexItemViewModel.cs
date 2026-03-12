@@ -10,7 +10,7 @@ namespace Project_MyFitnessCoach.Models.ViewModels
 		[Display(Name = "分類編號")]
 		public int CategoryId { get; set; }
 
-		[Display(Name = "產品名稱")]
+		[Display(Name = "商品名稱")]
 		[Required(ErrorMessage = "{0} 為必填")]
 		public string Name { get; set; } = string.Empty;
 

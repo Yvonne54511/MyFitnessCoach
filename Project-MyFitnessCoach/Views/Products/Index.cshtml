@@ -1,23 +1,23 @@
 @model IEnumerable<Project_MyFitnessCoach.Models.ViewModels.ProductIndexItemViewModel>
 
 @{
-    ViewData["Title"] = "產品列表";
+    ViewData["Title"] = "商品列表";
 }
 
 <div class="container-fluid">
 
     <!-- Page Heading -->
-    <h1 class="h3 mb-2 text-gray-800">產品管理</h1>
+    <h1 class="h3 mb-2 text-gray-800">商品管理</h1>
     <p class="mb-4">
-        這裡可以管理所有的產品，包含新增、修改、下架以及查詢功能。
+        這裡可以管理所有的商品，包含新增、修改、下架以及查詢功能。
     </p>
 
     <!-- DataTales Example -->
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">產品列表</h6>
+            <h6 class="m-0 font-weight-bold text-primary">商品列表</h6>
             <a asp-action="Create" class="btn btn-primary btn-sm shadow-sm">
-                <i class="fas fa-plus fa-sm text-white-50"></i> 新增產品
+                <i class="fas fa-plus fa-sm text-white-50"></i> 新增商品
             </a>
         </div>
         <div class="card-body">
@@ -109,7 +109,7 @@
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
-            <div class="modal-body">您確定要下架產品「<span id="deleteItemName"></span>」嗎？</div>
+            <div class="modal-body">您確定要下架商品「<span id="deleteItemName"></span>」嗎？</div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
                 <form id="deleteForm" method="post" asp-action="Delete">
@@ -124,37 +124,138 @@
 @section styles {
     <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
     <style>
+        :root {
+            --bg-start: #fff8dc;
+            --bg-end: #ffe3b3;
+            --text-main: #3f2d1f;
+            --text-soft: #7a614d;
+            --accent: #f2a531;
+            --accent-dark: #e47b22;
+            --border: rgba(228, 123, 34, 0.18);
+            --panel: rgba(255, 255, 255, 0.88);
+            --font-main: "Trebuchet MS", "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: #fcf8f3;
+            color: var(--text-main);
+            font-family: var(--font-main);
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(165, 104, 29, 0.08);
+            background: var(--panel);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+
+        .text-primary {
+            color: var(--accent-dark) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border: none;
+            border-radius: 12px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(228, 123, 34, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(228, 123, 34, 0.3);
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+        }
+
+        .table thead th {
+            background-color: rgba(242, 165, 49, 0.1);
+            color: var(--text-main);
+            border-bottom: 2px solid var(--accent);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            padding: 1rem;
+        }
+
+        .table td {
+            vertical-align: middle;
+            color: var(--text-soft);
+            border-top: 1px solid var(--border);
+        }
+
         .img-product-list {
             width: 80px;
             height: 60px;
             object-fit: cover;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
             cursor: zoom-in;
+            border-radius: 8px;
+            border: 2px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+
         .img-product-list:hover {
             transform: scale(3.5);
             position: relative;
             z-index: 1050;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            border-radius: 4px;
+            box-shadow: 0 10px 20px rgba(165, 104, 29, 0.3);
         }
+
         .no-image-placeholder {
             width: 80px;
             height: 60px;
-            background-color: #f8f9fc;
-            border: 1px dashed #dddfeb;
-            color: #b7b9cc;
+            background-color: #fdfaf5;
+            border: 1px dashed var(--accent);
+            color: var(--text-soft);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.8rem;
+            border-radius: 8px;
         }
-        #dataTable td {
-            vertical-align: middle;
+
+        .badge-success {
+            background-color: #ecf8e7;
+            color: #4d9b54;
+            border: 1px solid rgba(77, 155, 84, 0.2);
+            padding: 0.5em 0.8em;
+            border-radius: 8px;
         }
-        /* 防止 DataTables 的響應式容器裁切掉放大的圖片 */
+
+        .badge-danger {
+            background-color: #ffe7e1;
+            color: #c85f47;
+            border: 1px solid rgba(200, 95, 71, 0.2);
+            padding: 0.5em 0.8em;
+            border-radius: 8px;
+        }
+
+        /* DataTables Customization */
+        .page-item.active .page-link {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .page-link {
+            color: var(--accent-dark);
+        }
+
         .table-responsive {
             overflow: visible !important;
+        }
+
+        h1.text-gray-800 {
+            color: var(--text-main) !important;
+            font-weight: 700;
         }
     </style>
 }
