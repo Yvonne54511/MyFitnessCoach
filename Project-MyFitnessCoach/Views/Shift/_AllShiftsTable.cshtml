@@ -4,14 +4,14 @@
 @model IEnumerable<AllShiftsViewModel>
 
 <div class="table-responsive">
-    <table class="table table-hover table-striped" id="shiftsTable">
+    <table class="table table-hover table-striped align-middle text-center mb-0" id="shiftsTable">
         <thead class="table-dark">
             <tr>
-                <th>營養師姓名</th>
-                <th>日期</th>
-                <th>時段</th>
-                <th>預約狀態</th>
-                <th>修改狀態</th>
+                <th class="py-3">營養師姓名</th>
+                <th class="py-3">日期</th>
+                <th class="py-3">時段</th>
+                <th class="py-3">預約狀態</th>
+                <th class="py-3">修改狀態</th>
             </tr>
         </thead>
         <tbody>
@@ -20,9 +20,9 @@
                 foreach (var shift in Model)
                 {
                     <tr>
-                        <td>@shift.InstructorName</td>
-                        <td>@shift.ScheduleDate.ToString("yyyy-MM-dd")</td>
-                        <td>
+                        <td class="fw-bold text-dark align-middle">@shift.InstructorName</td>
+                        <td class="align-middle">@shift.ScheduleDate.ToString("yyyy-MM-dd")</td>
+                        <td class="align-middle">
                             @{
                                 string badgeClass = "bg-secondary";
                                 string customStyle = "color: white;";
@@ -34,30 +34,32 @@
                                 @shift.TimeSlot
                             </span>
                         </td>
-                        <td>
-                            <div id="status-badge-@shift.Id">
+                        <td class="align-middle">
+                            <div id="status-badge-@shift.Id" class="d-inline-block">
                                 @if (shift.IsBooked)
                                 {
-                                    <span class="badge bg-danger">已預約</span>
+                                    <span class="badge bg-danger"><i class='bx bx-lock-alt'></i> 已預約</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-success">開放中</span>
+                                    <span class="badge bg-success"><i class='bx bx-door-open'></i> 開放中</span>
                                 }
                             </div>
                         </td>
-                        <td>
-                            <select class="form-select form-select-sm status-updater" 
-                                    data-shift-id="@shift.Id"
-                                    style="width: 120px;"
-                                    disabled="@(!shift.CanEdit)">
-                                <option value="false" selected="@(!shift.IsBooked)">開放中</option>
-                                <option value="true" selected="@(shift.IsBooked)">已預約</option>
-                            </select>
-                            @if (!shift.CanEdit)
-                            {
-                                <small class="text-muted d-block mt-1"><i class="fas fa-lock me-1"></i>時間已過</small>
-                            }
+                        <td class="align-middle">
+                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                <select class="form-select form-select-sm status-updater m-0" 
+                                        data-shift-id="@shift.Id"
+                                        style="width: 120px;"
+                                        disabled="@(!shift.CanEdit)">
+                                    <option value="false" selected="@(!shift.IsBooked)">開放中</option>
+                                    <option value="true" selected="@(shift.IsBooked)">已預約</option>
+                                </select>
+                                @if (!shift.CanEdit)
+                                {
+                                    <small class="text-muted mt-1" style="font-size: 0.75rem;"><i class='bx bx-lock'></i> 時間已過</small>
+                                }
+                            </div>
                         </td>
                     </tr>
                 }
@@ -65,7 +67,9 @@
             else
             {
                 <tr>
-                    <td colspan="5" class="text-center text-muted">目前暫無排班資料</td>
+                    <td colspan="5" class="text-center text-muted py-5">
+                        <i class='bx bx-info-circle fs-2 d-block mb-2'></i> 目前暫無排班資料
+                    </td>
                 </tr>
             }
         </tbody>
