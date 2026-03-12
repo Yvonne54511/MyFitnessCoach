@@ -53,44 +53,6 @@ namespace Project_MyFitnessCoach.Controllers
             return View(vm);
         }
 
-        // GET: KeyWords/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var dto = await _service.GetByIdAsync(id.Value);
-            if (dto == null) return NotFound();
-
-            var vm = new KeyWordViewModel { 
-                Id = dto.Id, 
-                Word = dto.Word,
-                Category = dto.Category,
-                Weight = dto.Weight
-            };
-            return View(vm);
-        }
-
-        // POST: KeyWords/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, KeyWordViewModel vm)
-        {
-            if (id != vm.Id) return NotFound();
-
-            if (ModelState.IsValid)
-            {
-                var dto = new KeyWordDto { 
-                    Id = vm.Id, 
-                    Word = vm.Word,
-                    Category = vm.Category,
-                    Weight = vm.Weight
-                };
-                await _service.UpdateAsync(dto);
-                return RedirectToAction(nameof(Index));
-            }
-            return View(vm);
-        }
-
         // POST: KeyWords/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -100,26 +62,19 @@ namespace Project_MyFitnessCoach.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // 新增：AJAX 更新類別或權重
+        // AJAX 更新類別
         [HttpPost]
         public async Task<IActionResult> UpdateCategory(int id, int category)
         {
-            var dto = await _service.GetByIdAsync(id);
-            if (dto == null) return NotFound();
-
-            dto.Category = category;
-            await _service.UpdateAsync(dto);
+            await _service.UpdateCategoryAsync(id, category);
             return Ok();
         }
 
+        // AJAX 更新權重
         [HttpPost]
         public async Task<IActionResult> UpdateWeight(int id, int weight)
         {
-            var dto = await _service.GetByIdAsync(id);
-            if (dto == null) return NotFound();
-
-            dto.Weight = weight;
-            await _service.UpdateAsync(dto);
+            await _service.UpdateWeightAsync(id, weight);
             return Ok();
         }
     }

@@ -22,15 +22,14 @@
                         <div class="form-group">
                             <label asp-for="Category" class="control-label"></label>
                             <select asp-for="Category" class="form-control">
-                                <option value="1">正向 (1)</option>
-                                <option value="0" selected>中性 (0)</option>
+                                <option value="1" selected>正向 (1)</option>
                                 <option value="-1">負向 (-1)</option>
                             </select>
                             <span asp-validation-for="Category" class="text-danger"></span>
                         </div>
                         <div class="form-group">
                             <label asp-for="Weight" class="control-label"></label>
-                            <input asp-for="Weight" class="form-control" type="number" value="1" />
+                            <input asp-for="Weight" class="form-control" type="number" value="1" min="1" max="5" />
                             <span asp-validation-for="Weight" class="text-danger"></span>
                         </div>
                         <div class="form-group mt-4">

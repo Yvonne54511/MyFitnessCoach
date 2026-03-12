@@ -8,12 +8,24 @@
     <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
-        .category-btn {
-            width: 80px;
+        .category-select {
+            width: 120px;
         }
-        .weight-input {
-            width: 70px;
-            text-align: center;
+        .weight-slider-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 150px;
+        }
+        .weight-slider {
+            flex-grow: 1;
+            cursor: pointer;
+        }
+        .weight-value {
+            font-weight: bold;
+            width: 25px;
+            color: #4e73df;
         }
         .swal2-popup {
             font-size: 0.9rem !important;
@@ -49,19 +61,14 @@
                             var badgeStyle = "";
                             if (item.Category == 1)
                             {
-                                // 正向：綠色 (HSL: 120)，亮度隨權重增加而降低 (50% -> 20%)
-                                int lightness = Math.Max(20, 50 - (item.Weight * 3));
+                                // 調整倍率為 8，讓 1-5 的顏色層次分明 (50% -> 10%)
+                                int lightness = Math.Max(10, 50 - (item.Weight * 8));
                                 badgeStyle = $"background-color: hsl(120, 70%, {lightness}%); color: white;";
-                            }
-                            else if (item.Category == -1)
-                            {
-                                // 負向：紅色 (HSL: 0)，亮度隨權重增加而降低 (50% -> 20%)
-                                int lightness = Math.Max(20, 50 - (item.Weight * 3));
-                                badgeStyle = $"background-color: hsl(0, 80%, {lightness}%); color: white;";
                             }
                             else
                             {
-                                badgeStyle = "background-color: #6c757d; color: white;";
+                                int lightness = Math.Max(10, 50 - (item.Weight * 8));
+                                badgeStyle = $"background-color: hsl(0, 80%, {lightness}%); color: white;";
                             }
 
                             <tr data-id="@item.Id">
@@ -69,14 +76,20 @@
                                     <span class="badge p-2 word-badge" style="@badgeStyle"><i class='bx bx-tag-alt'></i> @item.Word</span>
                                 </td>
                                 <td>
-                                    <select class="form-control form-control-sm category-select mx-auto" style="width: 120px;" onchange="updateCategory(@item.Id, this.value, this)">
+                                    <select class="form-control form-control-sm category-select mx-auto" onchange="updateCategory(@item.Id, this.value, this)">
                                         <!option value="1" @(item.Category == 1 ? "selected" : "")>正向 (1)</!option>
-                                        <!option value="0" @(item.Category == 0 ? "selected" : "")>中性 (0)</!option>
                                         <!option value="-1" @(item.Category == -1 ? "selected" : "")>負向 (-1)</!option>
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control form-control-sm weight-input mx-auto" value="@item.Weight" onchange="updateWeight(@item.Id, this.value, this)" />
+                                    <div class="weight-slider-container" id="sliderContainer-@item.Id">
+                                        <input type="range" class="weight-slider custom-range" 
+                                               min="1" max="5" step="1" 
+                                               value="@item.Weight" 
+                                               oninput="previewWeight(@item.Id, this.value)"
+                                               onchange="updateWeight(@item.Id, this.value)" />
+                                        <span class="weight-value" id="weightVal-@item.Id">@item.Weight</span>
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="d-flex justify-content-center">
@@ -152,28 +165,31 @@
             });
         }
 
-        function updateBadgeColor(rowId) {
+        function previewWeight(id, weight) {
+            $('#weightVal-' + id).text(weight);
+            updateBadgeColor(id, null, weight);
+        }
+
+        function updateBadgeColor(rowId, forceCategory = null, forceWeight = null) {
             var $row = $('tr[data-id="' + rowId + '"]');
-            var category = parseInt($row.find('.category-select').val());
-            var weight = parseInt($row.find('.weight-input').val());
+            var category = forceCategory !== null ? parseInt(forceCategory) : parseInt($row.find('.category-select').val());
+            var weight = forceWeight !== null ? parseInt(forceWeight) : parseInt($row.find('.weight-slider').val());
             var $badge = $row.find('.word-badge');
 
             var style = "";
             if (category === 1) {
-                var lightness = Math.max(20, 50 - (weight * 3));
+                var lightness = Math.max(10, 50 - (weight * 8));
                 style = "background-color: hsl(120, 70%, " + lightness + "%); color: white;";
-            } else if (category === -1) {
-                var lightness = Math.max(20, 50 - (weight * 3));
-                style = "background-color: hsl(0, 80%, " + lightness + "%); color: white;";
             } else {
-                style = "background-color: #6c757d; color: white;";
+                var lightness = Math.max(10, 50 - (weight * 8));
+                style = "background-color: hsl(0, 80%, " + lightness + "%); color: white;";
             }
             $badge.attr('style', style);
         }
 
         function updateCategory(id, category, element) {
             $.post('@Url.Action("UpdateCategory", "KeyWords")', { id: id, category: category }, function() {
-                updateBadgeColor(id);
+                updateBadgeColor(id, category);
                 Toast.fire({
                     icon: 'success',
                     title: '類別已更新'
@@ -183,9 +199,9 @@
             });
         }
 
-        function updateWeight(id, weight, element) {
+        function updateWeight(id, weight) {
             $.post('@Url.Action("UpdateWeight", "KeyWords")', { id: id, weight: weight }, function() {
-                updateBadgeColor(id);
+                updateBadgeColor(id, null, weight);
                 Toast.fire({
                     icon: 'success',
                     title: '權重已更新'

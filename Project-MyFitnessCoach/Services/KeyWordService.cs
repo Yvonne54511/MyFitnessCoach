@@ -9,7 +9,8 @@ namespace Project_MyFitnessCoach.Services
         Task<IEnumerable<KeyWordDto>> GetAllAsync();
         Task<KeyWordDto> GetByIdAsync(int id);
         Task CreateAsync(KeyWordDto dto);
-        Task UpdateAsync(KeyWordDto dto);
+        Task UpdateCategoryAsync(int id, int category);
+        Task UpdateWeightAsync(int id, int weight);
         Task DeleteAsync(int id);
     }
 
@@ -55,16 +56,14 @@ namespace Project_MyFitnessCoach.Services
             await _repository.CreateAsync(entity);
         }
 
-        public async Task UpdateAsync(KeyWordDto dto)
+        public async Task UpdateCategoryAsync(int id, int category)
         {
-            var entity = await _repository.GetByIdAsync(dto.Id);
-            if (entity != null)
-            {
-                entity.Word = dto.Word.Trim();
-                entity.Category = dto.Category;
-                entity.Weight = dto.Weight;
-                await _repository.UpdateAsync(entity);
-            }
+            await _repository.UpdateCategoryAsync(id, category);
+        }
+
+        public async Task UpdateWeightAsync(int id, int weight)
+        {
+            await _repository.UpdateWeightAsync(id, weight);
         }
 
         public async Task DeleteAsync(int id)

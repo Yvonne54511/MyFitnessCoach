@@ -8,7 +8,8 @@ namespace Project_MyFitnessCoach.Repositories
         Task<IEnumerable<KeyWord>> GetAllAsync();
         Task<KeyWord> GetByIdAsync(int id);
         Task CreateAsync(KeyWord keyWord);
-        Task UpdateAsync(KeyWord keyWord);
+        Task UpdateCategoryAsync(int id, int category);
+        Task UpdateWeightAsync(int id, int weight);
         Task DeleteAsync(int id);
     }
 
@@ -37,10 +38,24 @@ namespace Project_MyFitnessCoach.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(KeyWord keyWord)
+        public async Task UpdateCategoryAsync(int id, int category)
         {
-            _context.Entry(keyWord).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            var entity = await _context.KeyWords.FindAsync(id);
+            if (entity != null)
+            {
+                entity.Category = category;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task UpdateWeightAsync(int id, int weight)
+        {
+            var entity = await _context.KeyWords.FindAsync(id);
+            if (entity != null)
+            {
+                entity.Weight = weight;
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task DeleteAsync(int id)
