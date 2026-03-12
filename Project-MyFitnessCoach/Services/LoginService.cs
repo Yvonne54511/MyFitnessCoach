@@ -1,6 +1,6 @@
 using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.DTOs;
-using Project_MyFitnessCoach.Repos;
+using Project_MyFitnessCoach.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

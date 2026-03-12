@@ -6,6 +6,17 @@ using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Repositories
 {
+    public interface IReviewRepository
+    {
+        Task<IEnumerable<Review>> GetAllReviewsAsync();
+        Task<IEnumerable<Review>> GetReviewsByInstructorIdAsync(int instructorId);
+        Task<Review?> GetReviewByIdAsync(int id);
+        Task DeleteReviewAsync(int id);
+        Task UpdateUserStatusAsync(int userId, bool isActive);
+        Task<int?> GetUserIdByMemberIdAsync(int memberId);
+        Task IncrementMemberWarningCountAsync(int memberId, string reason);
+    }
+
     public class ReviewRepository : IReviewRepository
     {
         private readonly MyFitnessCoachDbContext _db;
@@ -71,7 +82,6 @@ namespace Project_MyFitnessCoach.Repositories
 
             if (violation == null)
             {
-                // 若尚無紀錄則建立
                 violation = new MemberViolation
                 {
                     MemberId = memberId,
@@ -83,7 +93,6 @@ namespace Project_MyFitnessCoach.Repositories
             }
             else
             {
-                // 已有紀錄則次數 +1
                 violation.WarningCount++;
                 violation.Reason = reason;
                 violation.LastWarningAt = DateTime.Now;

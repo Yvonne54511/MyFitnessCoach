@@ -6,6 +6,14 @@ using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Repositories
 {
+    public interface INotificationRepository
+    {
+        Task CreateAsync(Notification notification);
+        Task<List<Notification>> GetByUserIdAsync(int userId);
+        Task MarkAsReadAsync(int id);
+        Task<int> GetUnreadCountAsync(int userId);
+    }
+
     public class NotificationRepository : INotificationRepository
     {
         private readonly MyFitnessCoachDbContext _db;
@@ -24,7 +32,7 @@ namespace Project_MyFitnessCoach.Repositories
         public async Task<List<Notification>> GetByUserIdAsync(int userId)
         {
             return await _db.Notifications
-                .Where(n => n.UserId == userId) // 改回 UserId
+                .Where(n => n.UserId == userId)
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
         }
@@ -42,7 +50,7 @@ namespace Project_MyFitnessCoach.Repositories
         public async Task<int> GetUnreadCountAsync(int userId)
         {
             return await _db.Notifications
-                .CountAsync(n => n.UserId == userId && !n.IsRead); // 改回 UserId
+                .CountAsync(n => n.UserId == userId && !n.IsRead);
         }
     }
 }

@@ -1,8 +1,11 @@
-using Project_MyFitnessCoach.Models.DTOs;
+using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.EfModels;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using Project_MyFitnessCoach.Models.DTOs;
 
-namespace Project_MyFitnessCoach.Models.Repositories
+namespace Project_MyFitnessCoach.Repositories
 {
     public interface ITopUpPlanRepository
     {

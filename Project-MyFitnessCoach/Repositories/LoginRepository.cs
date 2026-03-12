@@ -1,8 +1,9 @@
-﻿using Project_MyFitnessCoach.Models.Dtos;
+using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.EfModels;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
-namespace Project_MyFitnessCoach.Repos
+namespace Project_MyFitnessCoach.Repositories
 {
 	public interface ILoginRepository
 	{
