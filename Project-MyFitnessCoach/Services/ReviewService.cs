@@ -26,7 +26,7 @@ namespace Project_MyFitnessCoach.Services
         public async Task<IEnumerable<ReviewDto>> GetAdminReviewsAsync()
         {
             var entities = (await _repo.GetAllReviewsAsync()).ToList();
-            var sensitiveWords = await _db.SensitiveWords.Select(s => s.Word).ToListAsync();
+            var sensitiveWords = await _db.KeyWords.Where(k => k.Category == -1).Select(s => s.Word).ToListAsync();
 
             // 取得檢舉類型的通知 (Report1)
             var reports = await _db.Notifications
@@ -79,7 +79,7 @@ namespace Project_MyFitnessCoach.Services
         public async Task<IEnumerable<ReviewDto>> GetInstructorReviewsAsync(int instructorId)
         {
             var entities = await _repo.GetReviewsByInstructorIdAsync(instructorId);
-            var sensitiveWords = await _db.SensitiveWords.Select(s => s.Word).ToListAsync();
+            var sensitiveWords = await _db.KeyWords.Where(k => k.Category == -1).Select(s => s.Word).ToListAsync();
 
             return entities.Select(e => {
                 string maskedComment = e.Comment;
