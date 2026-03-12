@@ -1,11 +1,12 @@
 using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.EfModels;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Project_MyFitnessCoach.Repos
+namespace Project_MyFitnessCoach.Repositories
 {
     public interface IAdminRepository
     {
@@ -72,35 +73,28 @@ namespace Project_MyFitnessCoach.Repos
 
         public async Task<bool> UpdateShiftStatusAsync(int shiftId, bool isBooked)
         {
-            // 1. 找出排班資料，並包含相關的預約紀錄
             var shift = await _context.Shifts
                 .Include(s => s.ReserveOrders)
                 .FirstOrDefaultAsync(s => s.Id == shiftId);
 
             if (shift == null) return false;
 
-            // --- 新增時間檢查 ---
             var now = DateTime.Now;
             int hour = shift.TimeSlot.Contains("早") ? 8 : (shift.TimeSlot.Contains("午") ? 13 : 18);
             var shiftDateTime = shift.ScheduleDate.ToDateTime(new TimeOnly(hour, 0));
 
-            // 如果現在時間已經「超過」排班時間，不允許修改狀態 (鎖定歷史紀錄)
             if (now > shiftDateTime)
             {
                 return false;
             }
-            // --------------------
 
-            // 2. 更新狀態
             shift.IsBooked = isBooked;
 
-            // 3. 如果改為「開放中」(false)，則刪除關聯的預約紀錄
             if (!isBooked && shift.ReserveOrders.Any())
             {
                 _context.ReserveOrders.RemoveRange(shift.ReserveOrders);
             }
 
-            // 4. 存檔 (狀態更新與刪除紀錄會在同一個交易中執行)
             await _context.SaveChangesAsync();
             return true;
         }

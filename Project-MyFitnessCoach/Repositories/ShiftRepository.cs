@@ -1,4 +1,4 @@
-﻿using Project_MyFitnessCoach.Models.Dtos;
+using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.EfModels;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -6,38 +6,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Project_MyFitnessCoach.Repos
+namespace Project_MyFitnessCoach.Repositories
 {
-    // 1. 定義介面 (Interface)
     public interface IShiftRepository
     {
-        // 取得所有已預約的紀錄
         Task<List<ShiftDto>> GetAllAsync();
-
-        // 根據單一日期與時段，取得已存在的紀錄 (用來比對防重複)
         Task<ShiftDto?> GetByDateAndSlotAsync(DateOnly date, string slot);
-
-        // 根據多個日期取得已存在的紀錄（批次查詢）
         Task<List<ShiftDto>> GetByDatesAsync(List<DateOnly> dates);
-
-        // 批次新增
         Task AddRangeAsync(IEnumerable<ShiftDto> schedules);
-
-        // 批次刪除
         Task DeleteRangeAsync(IEnumerable<ShiftDto> schedules);
-
-        // 單筆新增
         Task AddAsync(ShiftDto schedule);
         Task<List<ShiftDto>> GetByDateRangeAsync(DateOnly start, DateOnly end);
-
         Task<List<ShiftDto>> GetByCriteriaAsync(ShiftQueryCriteria criteria);
-
-        // 新增：取得營養師資訊
         Task<Instructor?> GetInstructorByIdAsync(int id);
         Task UpdateInstructorAsync(Instructor instructor);
 	}
 
-    // 2. 實作類別 (Implementation)
     public class ShiftRepository : IShiftRepository
     {
         private readonly MyFitnessCoachDbContext _context;
@@ -47,7 +31,6 @@ namespace Project_MyFitnessCoach.Repos
             _context = context;
         }
 
-        // 新增實作
         public async Task<Instructor?> GetInstructorByIdAsync(int id)
         {
             return await _context.Instructors.FindAsync(id);
@@ -74,7 +57,6 @@ namespace Project_MyFitnessCoach.Repos
 
         public async Task<ShiftDto?> GetByDateAndSlotAsync(DateOnly date, string slot)
         {
-            // Shift.ScheduleDate is DateOnly so compare directly
             return await _context.Shifts
                 .Where(x => x.ScheduleDate == date && x.TimeSlot == slot)
                 .Select(s => new ShiftDto
@@ -133,7 +115,6 @@ namespace Project_MyFitnessCoach.Repos
 
 			if (!dtoList.Any()) return;
 
-			// 篩選可能的符合項以減少拉整張表
 			var instructorIds = dtoList.Select(d => d.InstructorId).Distinct().ToList();
 			var dates = dtoList.Select(d => d.ScheduleDate).Distinct().ToList();
 

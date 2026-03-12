@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Models.ViewModels;
-using Project_MyFitnessCoach.Repos;
+using Project_MyFitnessCoach.Repositories;
 
 namespace Project_MyFitnessCoach.Services
 {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Services
 {
-    public class NotificationService : INotificationService
+    public class NotificationService
     {
         private readonly INotificationRepository _repo;
 
@@ -40,8 +40,6 @@ namespace Project_MyFitnessCoach.Services
                     break;
             }
 
-            // 由於資料庫無 Url 欄位，若有 URL，我們將其附加在 Content 結尾，格式為 [Url:...]
-            // 這樣 Service 讀取時可以用字串處理來抓取 ReviewId
             string finalContent = message;
             if (!string.IsNullOrEmpty(url))
             {
@@ -50,10 +48,10 @@ namespace Project_MyFitnessCoach.Services
 
             var notification = new Notification
             {
-                UserId = receiverId, // 改回 UserId
+                UserId = receiverId,
                 SenderId = senderId,
                 Title = title,
-                Content = finalContent, // 改回 Content
+                Content = finalContent,
                 NotifyType = typeName,
                 IsRead = false,
                 CreatedAt = DateTime.Now

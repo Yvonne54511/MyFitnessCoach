@@ -9,9 +9,9 @@ namespace Project_MyFitnessCoach.Controllers
     [Authorize]
     public class ReviewController : Controller
     {
-        private readonly IReviewService _service;
+        private readonly ReviewService _service;
 
-        public ReviewController(IReviewService service)
+        public ReviewController(ReviewService service)
         {
             _service = service;
         }

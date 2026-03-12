@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Services
 {
-    public class ReviewService : IReviewService
+    public class ReviewService
     {
         private readonly IReviewRepository _repo;
-        private readonly INotificationService _notificationService;
+        private readonly NotificationService _notificationService;
         private readonly MyFitnessCoachDbContext _db;
 
-        public ReviewService(IReviewRepository repo, INotificationService notificationService, MyFitnessCoachDbContext db)
+        public ReviewService(IReviewRepository repo, NotificationService notificationService, MyFitnessCoachDbContext db)
         {
             _repo = repo;
             _notificationService = notificationService;
@@ -28,9 +28,10 @@ namespace Project_MyFitnessCoach.Services
             var entities = (await _repo.GetAllReviewsAsync()).ToList();
             var sensitiveWords = await _db.SensitiveWords.Select(s => s.Word).ToListAsync();
 
-            // 取得檢舉類型的通知 (Report1)
+            // 取得檢舉類型的通知 (Report1)，只選取需要的欄位以避開資料庫中不存在的 ReferenceId
             var reports = await _db.Notifications
                 .Where(n => n.NotifyType == "Report1")
+                .Select(n => new { n.NotifyType, n.Content })
                 .ToListAsync();
 
             return entities.Select(e => {
@@ -48,14 +49,12 @@ namespace Project_MyFitnessCoach.Services
                     if (string.IsNullOrEmpty(displayReason)) displayReason = "檢舉人未填寫具體原因";
                 }
 
-                // 執行自動過濾 (包裝成可點擊的 HTML)
                 string maskedComment = e.Comment;
                 foreach (var word in sensitiveWords)
                 {
                     if (!string.IsNullOrEmpty(maskedComment) && !string.IsNullOrEmpty(word))
                     {
                         string stars = new string('*', word.Length);
-                        // 使用 span 包裝，並存儲原始字與遮罩字
                         string replacement = $"<span class='sensitive-toggle text-danger' style='cursor:pointer; font-weight:bold;' data-original='{word}' data-masked='{stars}' title='點擊查看/隱藏'>{stars}</span>";
                         maskedComment = maskedComment.Replace(word, replacement);
                     }
@@ -69,7 +68,7 @@ namespace Project_MyFitnessCoach.Services
                     MemberId = e.MemberId,
                     MemberName = e.Member?.User?.UserName ?? "未知會員",
                     Rating = e.Rating,
-                    Comment = maskedComment, // 這裡使用了過濾後的文字
+                    Comment = maskedComment,
                     ReportMessage = displayReason,
                     CreatedAt = e.CreatedAt,
                     IsUserActive = e.Member?.User?.IsActive ?? true

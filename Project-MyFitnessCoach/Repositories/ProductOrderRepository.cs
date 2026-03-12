@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.EfModels;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Project_MyFitnessCoach.Models.Repositories
+namespace Project_MyFitnessCoach.Repositories
 {
     public interface IProductOrderRepository
     {
@@ -109,7 +110,6 @@ namespace Project_MyFitnessCoach.Models.Repositories
             var order = await _context.ProductOrders.FindAsync(id);
             if (order != null)
             {
-                // 改為軟刪除：將狀態改為 3 (已取消/已刪除)
                 order.Status = 3;
                 await _context.SaveChangesAsync();
             }

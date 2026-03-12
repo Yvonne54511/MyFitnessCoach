@@ -11,9 +11,9 @@ namespace Project_MyFitnessCoach.Controllers
     [ApiController]
     public class NotificationController : ControllerBase
     {
-        private readonly INotificationService _service;
+        private readonly NotificationService _service;
 
-        public NotificationController(INotificationService service)
+        public NotificationController(NotificationService service)
         {
             _service = service;
         }

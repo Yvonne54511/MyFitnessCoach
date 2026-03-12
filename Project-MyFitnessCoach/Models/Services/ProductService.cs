@@ -1,6 +1,6 @@
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.EfModels;
-using Project_MyFitnessCoach.Models.Repositories;
+using Project_MyFitnessCoach.Repositories;
 
 namespace Project_MyFitnessCoach.Models.Services
 {

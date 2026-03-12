@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.EfModels;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Project_MyFitnessCoach.Models.Repositories
+namespace Project_MyFitnessCoach.Repositories
 {
 
 	public interface IProductRepository

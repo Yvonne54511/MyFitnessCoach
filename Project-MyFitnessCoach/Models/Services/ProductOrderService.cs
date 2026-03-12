@@ -1,5 +1,5 @@
 using Project_MyFitnessCoach.Models.DTOs;
-using Project_MyFitnessCoach.Models.Repositories;
+using Project_MyFitnessCoach.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
