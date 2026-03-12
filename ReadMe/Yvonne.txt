@@ -1,7 +1,7 @@
 todo
 *註冊頁很醜
 *記住密碼
-*忘記密碼要等一分鐘後再嘗試
+v忘記密碼要等一分鐘後再嘗試
 *新增頭貼
 *硬刪除
 訂單、評論-DeleteBehavior.ClientSetNull
