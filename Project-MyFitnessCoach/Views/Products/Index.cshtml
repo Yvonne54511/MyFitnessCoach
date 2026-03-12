@@ -98,31 +98,10 @@
 
 </div>
 
-<!-- Delete Confirmation Modal-->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">確認下架？</h5>
-                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">您確定要下架商品「<span id="deleteItemName"></span>」嗎？</div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
-                <form id="deleteForm" method="post" asp-action="Delete">
-                    <input type="hidden" name="id" id="deleteItemId" value="" />
-                    <button type="submit" class="btn btn-danger">確認下架</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
 @section styles {
     <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         :root {
             --bg-start: #fff8dc;
@@ -264,16 +243,54 @@
     <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="~/js/demo/datatables-demo.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         $(document).ready(function () {
             // 使用事件委派，確保 DataTables 翻頁後按鈕依然有效
             $(document).on('click', '.btn-delete', function () {
-                var id = $(this).data('id');
-                var name = $(this).data('name');
-                $('#deleteItemId').val(id);
-                $('#deleteItemName').text(name);
-                $('#deleteModal').modal('show');
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+
+                Swal.fire({
+                    title: '確認下架？',
+                    text: `您確定要下架商品「${name}」嗎？`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e47b22', // accent-dark
+                    cancelButtonColor: '#7a614d', // text-soft
+                    confirmButtonText: '確定下架',
+                    cancelButtonText: '取消',
+                    background: '#fffdfa',
+                    borderRadius: '20px'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // 建立一個臨時表單來提交 POST 請求
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '@Url.Action("Delete")';
+
+                        const idInput = document.createElement('input');
+                        idInput.type = 'hidden';
+                        idInput.name = 'id';
+                        idInput.value = id;
+                        form.appendChild(idInput);
+
+                        // 加入 CSRF Token (如果頁面上有)
+                        const token = $('input[name="__RequestVerificationToken"]').val();
+                        if (token) {
+                            const tokenInput = document.createElement('input');
+                            tokenInput.type = 'hidden';
+                            tokenInput.name = '__RequestVerificationToken';
+                            tokenInput.value = token;
+                            form.appendChild(tokenInput);
+                        }
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
             });
         });
     </script>
