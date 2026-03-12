@@ -34,5 +34,7 @@ namespace Project_MyFitnessCoach.Models.ViewModels
 
 		[Display(Name = "分類名稱")]
 		public string? CategoryName { get; set; }
+		[Display(Name = "商品圖片檔案")]
+		public Microsoft.AspNetCore.Http.IFormFile? ProductImage { get; set; }
 	}
 }

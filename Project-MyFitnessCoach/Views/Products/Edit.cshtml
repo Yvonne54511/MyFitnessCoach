@@ -14,9 +14,10 @@
             <h6 class="m-0 font-weight-bold text-primary">商品資訊 (ID: @Model.Id)</h6>
         </div>
         <div class="card-body">
-            <form asp-action="Edit" class="warm-form">
+            <form asp-action="Edit" class="warm-form" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
                 <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="ImageUrl" />
                 
                 <div class="row">
                     <div class="col-md-6 border-right">
@@ -39,7 +40,19 @@
                         </div>
 
                         <div class="field">
-                            <label asp-for="ImageUrl"></label>
+                            <label asp-for="ProductImage">更換商品圖片</label>
+                            <div class="file-upload-container">
+                                <label for="fileUploadInput" class="primary-button warm-button d-flex align-items-center justify-content-center cursor-pointer mb-0">
+                                    <i class="fas fa-cloud-upload-alt mr-2"></i> 上傳新圖片檔案
+                                </label>
+                                <input asp-for="ProductImage" type="file" id="fileUploadInput" class="d-none" accept="image/*" />
+                                <small id="fileNameDisplay" class="text-soft mt-2 d-block text-center font-italic"></small>
+                            </div>
+                            <span asp-validation-for="ProductImage" class="field-error"></span>
+                        </div>
+
+                        <div class="field">
+                            <label asp-for="ImageUrl">或是更新圖片網址</label>
                             <div class="input-frame">
                                 <i class="fas fa-link"></i>
                                 <input asp-for="ImageUrl" id="imageUrlInput" placeholder="請輸入圖片網址" />
@@ -214,12 +227,12 @@
 
         .warm-button {
             background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-            box-shadow: 0 8px 15px rgba(228,123,34,0.2);
+            box-shadow: 0 8px 15px rgba(228, 123, 34, 0.2);
         }
 
         .primary-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(228,123,34,0.3);
+            box-shadow: 0 10px 20px rgba(228, 123, 34, 0.3);
         }
 
         .field-error { color: #c85f47; font-size: .85rem; margin-top: 4px; display: block; }
@@ -229,6 +242,8 @@
             background-color: var(--accent-dark);
             border-color: var(--accent-dark);
         }
+        
+        .image-preview-container { min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 }
 
@@ -236,14 +251,42 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function () {
+            // 處理檔案上傳預覽
+            $('#fileUploadInput').on('change', function () {
+                var file = this.files[0];
+                if (file) {
+                    $('#fileNameDisplay').text('已選擇：' + file.name);
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#imagePreview').attr('src', e.target.result).show();
+                        $('#noPreview').hide();
+                        $('#imageUrlInput').val(''); // 清空網址欄位，以檔案為主
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    $('#fileNameDisplay').text('');
+                }
+            });
+
+            // 處理網址預覽
             $('#imageUrlInput').on('input change', function () {
                 var url = $(this).val();
                 if (url) {
                     $('#imagePreview').attr('src', url).show();
                     $('#noPreview').hide();
+                    $('#fileUploadInput').val(''); // 清空檔案欄位，以網址為主
                 } else {
-                    $('#imagePreview').hide();
-                    $('#noPreview').show();
+                    if (!$('#fileUploadInput').val()) {
+                        // 如果也沒有檔案，則恢復原始圖片（Model.ImageUrl）
+                        var originalUrl = '@Model.ImageUrl';
+                        if (originalUrl) {
+                            $('#imagePreview').attr('src', originalUrl).show();
+                            $('#noPreview').hide();
+                        } else {
+                            $('#imagePreview').hide();
+                            $('#noPreview').show();
+                        }
+                    }
                 }
             });
         });
