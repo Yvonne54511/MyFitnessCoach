@@ -157,25 +157,29 @@
                     <div class="sidebar-brand-text d-flex justify-content-center font-weight-bold">MyFitnessCoach Admin</div>
                     <ul class="navbar-nav ml-auto">
                         <!-- Notifications Dropdown -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="bx bx-bell bx-sm"></i>
-                                <span class="badge badge-danger badge-counter d-none" id="notif-count">0</span>
-                            </a>
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                 aria-labelledby="alertsDropdown" style="min-width: 320px; max-height: 400px; overflow-y: auto;">
-                                <h6 class="dropdown-header bg-warning border-0 text-white font-weight-bold">
-                                    <i class="bx bx-notification mr-2"></i>通知中心
-                                </h6>
-                                <div id="notif-list" style="max-height: 300px; overflow-y: auto;">
-                                    <div class="dropdown-item text-center small text-gray-500 py-3">讀取中...</div>
-                                </div>
-                                <a class="dropdown-item text-center small text-gray-500 py-2 border-top" href="#" id="mark-all-read">
-                                    全部標記為已讀
+                        @if (User?.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item dropdown no-arrow mx-1">
+                                <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="bx bx-bell bx-sm"></i>
+                                    <span class="badge badge-danger badge-counter d-none" id="notif-count">0</span>
                                 </a>
-                            </div>
-                        </li>
+                                <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                     aria-labelledby="alertsDropdown" style="min-width: 320px; max-height: 400px; overflow-y: auto;">
+                                    <h6 class="dropdown-header bg-warning border-0 text-white font-weight-bold">
+                                        <i class="bx bx-notification mr-2"></i>通知中心
+                                    </h6>
+                                    <div id="notif-list" style="max-height: 300px; overflow-y: auto;">
+                                        <div class="dropdown-item text-center small text-gray-500 py-3">讀取中...</div>
+                                    </div>
+                                    <a class="dropdown-item text-center small text-gray-500 py-2 border-top" href="#" id="mark-all-read">
+                                        全部標記為已讀
+                                    </a>
+                                </div>
+                            </li>
+                        }
+                        
 
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
