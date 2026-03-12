@@ -3,6 +3,9 @@ todo
 *記住密碼
 *忘記密碼要等一分鐘後再嘗試
 *新增頭貼
+*硬刪除
+訂單、評論-DeleteBehavior.ClientSetNull
+個資敏感-DeleteBehavior.Cascade
  
  ===3/10 更新內容===
 
