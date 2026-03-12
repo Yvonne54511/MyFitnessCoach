@@ -14,7 +14,7 @@ namespace Project_MyFitnessCoach.Models.ViewModels
 		[Required(ErrorMessage = "{0} 為必填")]
 		public string Name { get; set; } = string.Empty;
 
-		[Display(Name = "圖片網址")]
+		[Display(Name = "圖片")]
 		public string? ImageUrl { get; set; }
 
 		[Display(Name = "原價")]
