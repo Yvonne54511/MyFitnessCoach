@@ -1,6 +1,8 @@
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Repositories;
 using Project_MyFitnessCoach.Models.EfModels;
+using Project_MyFitnessCoach.Models.ViewModels;
+using Microsoft.EntityFrameworkCore;
 
 namespace Project_MyFitnessCoach.Models.Services
 {
@@ -9,15 +11,21 @@ namespace Project_MyFitnessCoach.Models.Services
         private readonly IRoleRepository _roleRepo;
         private readonly IFunctionRepository _funcRepo;
         private readonly IRoleFunctionRepository _rfRepo;
+        private readonly IUserRepository _userRepo;
+        private readonly MyFitnessCoachDbContext _context;
 
         public PermissionService(
             IRoleRepository roleRepo,
             IFunctionRepository funcRepo,
-            IRoleFunctionRepository rfRepo)
+            IRoleFunctionRepository rfRepo,
+            IUserRepository userRepo,
+            MyFitnessCoachDbContext context)
         {
             _roleRepo = roleRepo;
             _funcRepo = funcRepo;
             _rfRepo = rfRepo;
+            _userRepo = userRepo;
+            _context = context;
         }
 
         // Roles
@@ -94,5 +102,50 @@ namespace Project_MyFitnessCoach.Models.Services
         }
 
         public async Task DeleteRoleFunctionAsync(int id) => await _rfRepo.DeleteAsync(id);
+
+        public async Task<List<RolePermissionRowViewModel>> GetRolePermissionRowsAsync()
+        {
+            var roles = await _context.Roles
+                .Include(r => r.RoleFunctions).ThenInclude(rf => rf.Function)
+                .Include(r => r.UserRoles).ThenInclude(ur => ur.User)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return roles.Select(r => new RolePermissionRowViewModel
+            {
+                RoleId = r.Id,
+                RoleName = r.RoleName,
+                FunctionIds = r.RoleFunctions.Select(rf => rf.FunctionId).ToList(),
+                FunctionNames = string.Join(", ", r.RoleFunctions.Select(rf => rf.Function?.FunctionName)),
+                UserIds = r.UserRoles.Select(ur => ur.UserId).ToList(),
+                UserNames = string.Join(", ", r.UserRoles.Select(ur => ur.User?.UserName))
+            }).ToList();
+        }
+
+        public async Task UpdateRolePermissionsAsync(int roleId, List<int> functionIds, List<int> userIds)
+        {
+            var role = await _context.Roles
+                .Include(r => r.RoleFunctions)
+                .Include(r => r.UserRoles)
+                .FirstOrDefaultAsync(r => r.Id == roleId);
+
+            if (role == null) return;
+
+            // Update Functions
+            _context.RoleFunctions.RemoveRange(role.RoleFunctions);
+            foreach (var fId in functionIds)
+            {
+                _context.RoleFunctions.Add(new RoleFunction { RoleId = roleId, FunctionId = fId });
+            }
+
+            // Update Users
+            _context.UserRoles.RemoveRange(role.UserRoles);
+            foreach (var uId in userIds)
+            {
+                _context.UserRoles.Add(new UserRole { RoleId = roleId, UserId = uId });
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

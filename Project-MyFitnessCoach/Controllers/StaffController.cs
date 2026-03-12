@@ -187,9 +187,40 @@ namespace Project_MyFitnessCoach.Controllers
             {
                 Roles = await _permissionService.GetAllRolesAsync(),
                 Functions = await _permissionService.GetAllFunctionsAsync(),
-                RoleFunctions = await _permissionService.GetAllRoleFunctionsAsync()
+                RoleFunctions = await _permissionService.GetAllRoleFunctionsAsync(),
+                RolePermissionRows = await _permissionService.GetRolePermissionRowsAsync()
             };
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditRolePermission(int roleId)
+        {
+            var rows = await _permissionService.GetRolePermissionRowsAsync();
+            var row = rows.FirstOrDefault(r => r.RoleId == roleId);
+            if (row == null) return NotFound();
+
+            var staffList = await _userService.GetStaffListAsync();
+
+            var model = new EditRolePermissionViewModel
+            {
+                RoleId = row.RoleId,
+                RoleName = row.RoleName,
+                SelectedFunctionIds = row.FunctionIds,
+                SelectedUserIds = row.UserIds,
+                AllFunctions = await _permissionService.GetAllFunctionsAsync(),
+                AllStaff = staffList.ToList()
+            };
+
+            return PartialView("_EditRolePermissionPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateRolePermissions(int roleId, List<int> functionIds, List<int> userIds)
+        {
+            await _permissionService.UpdateRolePermissionsAsync(roleId, functionIds, userIds);
+            return Json(new { success = true, message = "權限更新成功" });
         }
 
         [HttpPost]
