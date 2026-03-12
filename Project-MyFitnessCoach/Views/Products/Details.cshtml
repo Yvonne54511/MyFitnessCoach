@@ -53,10 +53,10 @@
                         <dd class="col-sm-9"><span class="badge badge-light p-2 border">@Html.DisplayFor(model => model.CategoryName)</span></dd>
 
                         <dt class="col-sm-3 text-soft font-weight-bold">@Html.DisplayNameFor(model => model.OriginalPrice)</dt>
-                        <dd class="col-sm-9 text-soft"><del>NT$ @Html.DisplayFor(model => model.OriginalPrice)</del></dd>
+                        <dd class="col-sm-9 text-soft"><del>NT$ @Model.OriginalPrice.ToString("N0")</del></dd>
 
                         <dt class="col-sm-3 text-soft font-weight-bold">@Html.DisplayNameFor(model => model.UnitPrice)</dt>
-                        <dd class="col-sm-9 text-primary h5 font-weight-bold">NT$ @Html.DisplayFor(model => model.UnitPrice)</dd>
+                        <dd class="col-sm-9 text-primary h5 font-weight-bold">NT$ @Model.UnitPrice.ToString("N0")</dd>
 
                         <dt class="col-sm-3 text-soft font-weight-bold">@Html.DisplayNameFor(model => model.SortOrder)</dt>
                         <dd class="col-sm-9">@Html.DisplayFor(model => model.SortOrder)</dd>

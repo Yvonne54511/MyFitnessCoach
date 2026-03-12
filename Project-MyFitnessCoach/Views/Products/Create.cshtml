@@ -70,7 +70,7 @@
                             <label asp-for="OriginalPrice"></label>
                             <div class="input-frame">
                                 <i class="fas fa-dollar-sign"></i>
-                                <input asp-for="OriginalPrice" type="number" step="0.01" placeholder="0.00" />
+                                <input asp-for="OriginalPrice" type="number" step="1" placeholder="請輸入金額" value="" />
                             </div>
                             <span asp-validation-for="OriginalPrice" class="field-error"></span>
                         </div>
@@ -79,7 +79,7 @@
                             <label asp-for="UnitPrice"></label>
                             <div class="input-frame">
                                 <i class="fas fa-hand-holding-usd"></i>
-                                <input asp-for="UnitPrice" type="number" step="0.01" placeholder="0.00" />
+                                <input asp-for="UnitPrice" type="number" step="1" placeholder="請輸入金額" value="" />
                             </div>
                             <span asp-validation-for="UnitPrice" class="field-error"></span>
                         </div>

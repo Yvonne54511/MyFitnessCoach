@@ -64,8 +64,8 @@
                                         <div class="no-image-placeholder">無圖片</div>
                                     }
                                 </td>
-                                <td>@Html.DisplayFor(modelItem => item.OriginalPrice)</td>
-                                <td>@Html.DisplayFor(modelItem => item.UnitPrice)</td>
+                                <td>@item.OriginalPrice.ToString("N0")</td>
+                                <td>@item.UnitPrice.ToString("N0")</td>
                                 <td>
                                     @if (item.IsActive)
                                     {
