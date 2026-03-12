@@ -1,0 +1,354 @@
+@model Project_MyFitnessCoach.Models.ViewModels.PermissionViewModel
+@{
+    ViewData["Title"] = "角色功能權限管理";
+}
+
+<style>
+    .scrollable-table {
+        max-height: 280px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+    }
+
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 1;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        border-radius: 0.35rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+        background-color: #4e73df;
+        color: white;
+        font-weight: bold;
+        padding: 0.75rem 1.25rem;
+    }
+
+    .btn-action {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .section-title {
+        border-left: 5px solid #4e73df;
+        padding-left: 10px;
+        margin-bottom: 1.5rem;
+        color: #4e73df;
+        font-weight: 700;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <h2 class="section-title"><i class="fas fa-user-shield mr-2"></i>權限管理系統</h2>
+
+    <div class="row">
+        <!-- 角色清單 -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-users-cog mr-2"></i>角色清單 (Roles)</h6>
+                    <button class="btn btn-sm btn-light" data-toggle="modal" data-target="#addRoleModal">
+                        <i class="fas fa-plus fa-sm"></i> 新增角色
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="scrollable-table">
+                        <table class="table table-bordered table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>角色名稱</th>
+                                    <th>描述</th>
+                                    <th class="text-center">狀態</th>
+                                    <th class="text-end">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Roles)
+                                {
+                                    <tr>
+                                        <td><strong>@item.RoleName</strong></td>
+                                        <td><small class="text-muted">@item.Description</small></td>
+                                        <td class="text-center">
+                                            <span class="badge @(item.IsActive ? "badge-success" : "badge-secondary")">
+                                                @(item.IsActive ? "啟用" : "停用")
+                                            </span>
+                                        </td>
+                                        <td class="text-right">
+                                            <button class="btn btn-outline-primary btn-action" onclick="editRole(@item.Id, '@item.RoleName', '@item.Description', @item.IsActive.ToString().ToLower())">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form asp-controller="Staff" asp-action="DeleteRole" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('確定要刪除此角色嗎？')">
+                                                <button type="submit" class="btn btn-outline-danger btn-action">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能清單 -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-cogs mr-2"></i>功能清單 (Functions)</h6>
+                    <button class="btn btn-sm btn-light" data-toggle="modal" data-target="#addFunctionModal">
+                        <i class="fas fa-plus fa-sm"></i> 新增功能
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="scrollable-table">
+                        <table class="table table-bordered table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>功能名稱</th>
+                                    <th>API 路徑</th>
+                                    <th class="text-center">狀態</th>
+                                    <th class="text-end">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Functions)
+                                {
+                                    <tr>
+                                        <td><strong>@item.FunctionName</strong><br/><small class="text-muted">@item.Description</small></td>
+                                        <td><code>@item.ApiPath</code></td>
+                                        <td class="text-center">
+                                            <span class="badge @(item.IsActive ? "badge-success" : "badge-secondary")">
+                                                @(item.IsActive ? "啟用" : "停用")
+                                            </span>
+                                        </td>
+                                        <td class="text-right">
+                                            <button class="btn btn-outline-primary btn-action" onclick="editFunction(@item.Id, '@item.FunctionName', '@item.Description', '@item.ApiPath', @item.IsActive.ToString().ToLower())">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form asp-controller="Staff" asp-action="DeleteFunction" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('確定要刪除此功能嗎？')">
+                                                <button type="submit" class="btn btn-outline-danger btn-action">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 角色功能關聯表 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-link mr-2"></i>角色功能權限關聯 (Role-Function Mapping)</h6>
+                    <button class="btn btn-sm btn-light" data-toggle="modal" data-target="#addMappingModal">
+                        <i class="fas fa-plus fa-sm"></i> 分配權限
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="scrollable-table" style="max-height: 400px;">
+                        <table class="table table-bordered table-hover table-striped mb-0">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>角色名稱</th>
+                                    <th>功能名稱</th>
+                                    <th class="text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.RoleFunctions)
+                                {
+                                    <tr>
+                                        <td><span class="badge badge-info">@item.RoleName</span></td>
+                                        <td>@item.FunctionName</td>
+                                        <td class="text-right">
+                                            <form asp-controller="Staff" asp-action="DeleteRoleFunction" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('確定要移除此權限分配嗎？')">
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-unlink mr-1"></i> 移除
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add/Edit Role -->
+<div class="modal fade" id="addRoleModal" tabindex="-1" role="dialog" aria-labelledby="roleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form asp-controller="Staff" asp-action="CreateRole" id="roleForm" method="post">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="roleModalTitle">新增角色</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="roleId" value="0" />
+                    <div class="form-group">
+                        <label>角色名稱</label>
+                        <input type="text" name="RoleName" id="roleName" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label>角色描述</label>
+                        <textarea name="Description" id="roleDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" name="IsActive" id="roleIsActive" value="true" checked>
+                        <label class="custom-control-label" for="roleIsActive">是否啟用</label>
+                        <input type="hidden" name="IsActive" value="false" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">儲存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add/Edit Function -->
+<div class="modal fade" id="addFunctionModal" tabindex="-1" role="dialog" aria-labelledby="funcModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form asp-controller="Staff" asp-action="CreateFunction" id="functionForm" method="post">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="functionModalTitle">新增功能</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="functionId" value="0" />
+                    <div class="form-group">
+                        <label>功能名稱</label>
+                        <input type="text" name="FunctionName" id="functionName" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label>功能描述</label>
+                        <textarea name="Description" id="functionDescription" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>API 路徑</label>
+                        <input type="text" name="ApiPath" id="functionApiPath" class="form-control" placeholder="/Controller/Action" />
+                    </div>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" name="IsActive" id="functionIsActive" value="true" checked>
+                        <label class="custom-control-label" for="functionIsActive">是否啟用</label>
+                        <input type="hidden" name="IsActive" value="false" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">儲存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Mapping -->
+<div class="modal fade" id="addMappingModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form asp-controller="Staff" asp-action="CreateRoleFunction" method="post">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">分配權限</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>選擇角色</label>
+                        <select name="RoleId" class="form-control" required>
+                            <option value="">-- 請選擇角色 --</option>
+                            @foreach (var role in Model.Roles.Where(r => r.IsActive))
+                            {
+                                <option value="@role.Id">@role.RoleName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>選擇功能</label>
+                        <select name="FunctionId" class="form-control" required>
+                            <option value="">-- 請選擇功能 --</option>
+                            @foreach (var func in Model.Functions.Where(f => f.IsActive))
+                            {
+                                <option value="@func.Id">@func.FunctionName (@func.ApiPath)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-success">確認分配</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function editRole(id, name, desc, isActive) {
+            $('#roleId').val(id);
+            $('#roleName').val(name);
+            $('#roleDescription').val(desc);
+            $('#roleIsActive').prop('checked', isActive);
+            $('#roleModalTitle').text('編輯角色');
+            $('#roleForm').attr('action', '/Staff/EditRole');
+            $('#addRoleModal').modal('show');
+        }
+
+        $('#addRoleModal').on('hidden.bs.modal', function () {
+            $('#roleId').val(0);
+            $('#roleForm')[0].reset();
+            $('#roleModalTitle').text('新增角色');
+            $('#roleForm').attr('action', '/Staff/CreateRole');
+        });
+
+        function editFunction(id, name, desc, apiPath, isActive) {
+            $('#functionId').val(id);
+            $('#functionName').val(name);
+            $('#functionDescription').val(desc);
+            $('#functionApiPath').val(apiPath);
+            $('#functionIsActive').prop('checked', isActive);
+            $('#functionModalTitle').text('編輯功能');
+            $('#functionForm').attr('action', '/Staff/EditFunction');
+            $('#addFunctionModal').modal('show');
+        }
+
+        $('#addFunctionModal').on('hidden.bs.modal', function () {
+            $('#functionId').val(0);
+            $('#functionForm')[0].reset();
+            $('#functionModalTitle').text('新增功能');
+            $('#functionForm').attr('action', '/Staff/CreateFunction');
+        });
+    </script>
+}

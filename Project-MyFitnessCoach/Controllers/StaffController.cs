@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.ViewModel;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Services;
+using Project_MyFitnessCoach.Models.Services;
+using Project_MyFitnessCoach.Models.ViewModels;
 using System.Threading.Tasks;
 using System.Linq;
 
@@ -12,10 +14,12 @@ namespace Project_MyFitnessCoach.Controllers
     public class StaffController : Controller
     {
         private readonly IUserService _userService;
+        private readonly PermissionService _permissionService;
 
-        public StaffController(IUserService userService)
+        public StaffController(IUserService userService, PermissionService permissionService)
         {
             _userService = userService;
+            _permissionService = permissionService;
         }
 
         public async Task<IActionResult> Index(string? name = null, string? role = null, int? id = null)
@@ -175,5 +179,97 @@ namespace Project_MyFitnessCoach.Controllers
             ViewBag.Error = result.Message;
             return View("ActivateError");
         }
+
+        #region Role & Function Management (Moved from PermissionController)
+        public async Task<IActionResult> RoleFunctions()
+        {
+            var model = new PermissionViewModel
+            {
+                Roles = await _permissionService.GetAllRolesAsync(),
+                Functions = await _permissionService.GetAllFunctionsAsync(),
+                RoleFunctions = await _permissionService.GetAllRoleFunctionsAsync()
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateRole(RoleDto dto)
+        {
+            if (ModelState.IsValid)
+            {
+                await _permissionService.CreateRoleAsync(dto);
+            }
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditRole(RoleDto dto)
+        {
+            if (ModelState.IsValid)
+            {
+                await _permissionService.UpdateRoleAsync(dto);
+            }
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteRole(int id)
+        {
+            await _permissionService.DeleteRoleAsync(id);
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateFunction(FunctionDto dto)
+        {
+            if (ModelState.IsValid || !string.IsNullOrEmpty(dto.FunctionName))
+            {
+                await _permissionService.CreateFunctionAsync(dto);
+            }
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditFunction(FunctionDto dto)
+        {
+            if (ModelState.IsValid)
+            {
+                await _permissionService.UpdateFunctionAsync(dto);
+            }
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteFunction(int id)
+        {
+            await _permissionService.DeleteFunctionAsync(id);
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateRoleFunction(RoleFunctionDto dto)
+        {
+            if (dto.RoleId > 0 && dto.FunctionId > 0)
+            {
+                await _permissionService.CreateRoleFunctionAsync(dto);
+            }
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteRoleFunction(int id)
+        {
+            await _permissionService.DeleteRoleFunctionAsync(id);
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+        #endregion
     }
 }

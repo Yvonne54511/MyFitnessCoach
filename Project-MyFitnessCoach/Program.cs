@@ -36,6 +36,12 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<ITopUpPlanRepository, TopUpPlanRepository>();
             builder.Services.AddScoped<TopUpPlanService>();
 
+            // Permission Management
+            builder.Services.AddScoped<Project_MyFitnessCoach.Repositories.IRoleRepository, Project_MyFitnessCoach.Repositories.RoleRepository>();
+            builder.Services.AddScoped<Project_MyFitnessCoach.Repositories.IFunctionRepository, Project_MyFitnessCoach.Repositories.FunctionRepository>();
+            builder.Services.AddScoped<Project_MyFitnessCoach.Repositories.IRoleFunctionRepository, Project_MyFitnessCoach.Repositories.RoleFunctionRepository>();
+            builder.Services.AddScoped<PermissionService>();
+
             builder.Services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
