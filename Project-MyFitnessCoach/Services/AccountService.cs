@@ -147,7 +147,13 @@ namespace Project_MyFitnessCoach.Services
             var user = await _accountRepository.GetByEmailAsync(email);
             if (user == null)
             {
-                return new ResetPasswordRequestDto { IsSuccess = true, Email = email, EmailSent = false };
+                return new ResetPasswordRequestDto 
+                { 
+                    IsSuccess = false, 
+                    Email = email, 
+                    EmailSent = false,
+                    Message = "找不到帳號，請檢查電子郵件地址並再試一次"
+                };
             }
 
             user.ResetPasswordConfirmCode = Guid.NewGuid().ToString("N");
@@ -170,7 +176,7 @@ namespace Project_MyFitnessCoach.Services
 
             return new ResetPasswordRequestDto
             {
-                IsSuccess = true,
+                IsSuccess = emailSent,
                 Email = user.Email,
                 EmailSent = emailSent,
                 Message = emailSent ? "重設密碼信件已寄出" : "寄送失敗"

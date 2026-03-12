@@ -204,6 +204,12 @@ namespace Project_MyFitnessCoach.Controllers
                 model.Email,
                 code => Url.Action("ResetPassword", "Account", new { code }, Request.Scheme) ?? string.Empty);
 
+            if (!result.IsSuccess)
+            {
+                ModelState.AddModelError(string.Empty, result.Message);
+                return View(model);
+            }
+
             ViewBag.Email = result.Email;
             ViewBag.IsSent = true;
             ViewBag.EmailSent = result.EmailSent;
