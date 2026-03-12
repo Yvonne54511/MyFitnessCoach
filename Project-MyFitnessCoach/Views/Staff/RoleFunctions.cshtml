@@ -4,50 +4,351 @@
 }
 
 <style>
-    .scrollable-table {
-        max-height: 280px;
-        overflow-y: auto;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
+    .role-functions-page {
+        --rf-accent: var(--warm-accent, #f2a531);
+        --rf-accent-dark: var(--warm-accent-dark, #e47b22);
+        --rf-text: var(--warm-text, #3f2d1f);
+        --rf-text-soft: var(--warm-text-soft, #7a614d);
+        --rf-border: rgba(228, 123, 34, 0.18);
+        --rf-panel: rgba(255, 255, 255, 0.9);
+        --rf-panel-strong: rgba(255, 255, 255, 0.96);
+        --rf-shadow: 0 20px 45px rgba(165, 104, 29, 0.16);
+        --rf-danger: #c85f47;
+        color: var(--rf-text);
     }
 
-    .table thead th {
+    .role-functions-page .section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.75rem;
+        padding-left: 16px;
+        position: relative;
+        font-weight: 800;
+        color: var(--rf-text);
+    }
+
+    .role-functions-page .section-title::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 6px;
+        bottom: 6px;
+        width: 6px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, var(--rf-accent), var(--rf-accent-dark));
+    }
+
+    .role-functions-page .card {
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        background: var(--rf-panel);
+        box-shadow: var(--rf-shadow);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .role-functions-page .card-header {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 235, 0.92));
+        color: var(--rf-text);
+        font-weight: 700;
+        border-bottom: 1px solid var(--rf-border);
+        padding: 0.95rem 1.25rem;
+    }
+
+    .role-functions-page .card-header h6 {
+        font-size: 1rem;
+        letter-spacing: 0.2px;
+        color: var(--rf-text);
+    }
+
+    .role-functions-page .card-header i {
+        color: var(--rf-accent-dark);
+    }
+
+    .role-functions-page .card-header .text-white {
+        color: var(--rf-text) !important;
+    }
+
+    .role-functions-page .card-header .btn-light {
+        background: linear-gradient(135deg, var(--rf-accent), var(--rf-accent-dark));
+        border: none;
+        color: #fffaf2;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 0.35rem 0.9rem;
+        box-shadow: 0 12px 18px rgba(228, 123, 34, 0.22);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .role-functions-page .card-header .btn-light:hover,
+    .role-functions-page .card-header .btn-light:focus {
+        transform: translateY(-1px);
+        color: #fffaf2;
+        box-shadow: 0 16px 24px rgba(228, 123, 34, 0.26);
+    }
+
+    .role-functions-page .scrollable-table {
+        max-height: 300px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border: 1px solid var(--rf-border);
+        border-radius: 16px;
+        background: var(--rf-panel-strong);
+        padding-right: 12px;
+        scrollbar-gutter: stable;
+    }
+
+    .role-functions-page .scrollable-table.scrollable-table-lg {
+        max-height: 420px;
+    }
+
+    .role-functions-page .table {
+        color: var(--rf-text);
+        margin-bottom: 0;
+    }
+
+    .role-functions-page .table-bordered,
+    .role-functions-page .table-bordered th,
+    .role-functions-page .table-bordered td {
+        border-color: var(--rf-border);
+    }
+
+    .role-functions-page .table thead th {
         position: sticky;
         top: 0;
-        background-color: #f8f9fa;
         z-index: 1;
-        border-bottom: 2px solid #dee2e6;
-    }
-
-    .card {
-        border: none;
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-        border-radius: 0.35rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .card-header {
-        background-color: #4e73df;
-        color: white;
-        font-weight: bold;
-        padding: 0.75rem 1.25rem;
-    }
-
-    .btn-action {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.875rem;
-    }
-
-    .section-title {
-        border-left: 5px solid #4e73df;
-        padding-left: 10px;
-        margin-bottom: 1.5rem;
-        color: #4e73df;
+        background: rgba(255, 248, 235, 0.96);
+        color: var(--rf-text);
+        border-bottom: 1px solid var(--rf-border);
         font-weight: 700;
+        text-align: center;
+    }
+
+    .role-functions-page .table td,
+    .role-functions-page .table th {
+        vertical-align: middle;
+    }
+
+    .role-functions-page .table-fixed {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .role-functions-page .table-fixed th,
+    .role-functions-page .table-fixed td {
+        overflow-wrap: anywhere;
+    }
+
+    .role-functions-page .table-role col.col-role-name { width: 26%; }
+    .role-functions-page .table-role col.col-role-desc { width: 44%; }
+    .role-functions-page .table-role col.col-role-status { width: 12%; }
+    .role-functions-page .table-role col.col-role-actions { width: 18%; }
+
+    .role-functions-page .table-function col.col-function-name { width: 34%; }
+    .role-functions-page .table-function col.col-function-api { width: 30%; }
+    .role-functions-page .table-function col.col-function-status { width: 12%; }
+    .role-functions-page .table-function col.col-function-actions { width: 24%; }
+
+    .role-functions-page .table-mapping col.col-mapping-role { width: 26%; }
+    .role-functions-page .table-mapping col.col-mapping-function { width: 54%; }
+    .role-functions-page .table-mapping col.col-mapping-actions { width: 20%; }
+
+    .role-functions-page .table-role th:nth-child(4),
+    .role-functions-page .table-role td:nth-child(4),
+    .role-functions-page .table-function th:nth-child(4),
+    .role-functions-page .table-function td:nth-child(4),
+    .role-functions-page .table-mapping th:nth-child(3),
+    .role-functions-page .table-mapping td:nth-child(3) {
+        white-space: nowrap;
+    }
+
+    .role-functions-page .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(255, 248, 235, 0.5);
+    }
+
+    .role-functions-page .table-hover tbody tr:hover {
+        background-color: rgba(242, 165, 49, 0.08);
+    }
+
+    .role-functions-page code {
+        color: var(--rf-accent-dark);
+        background: rgba(242, 165, 49, 0.12);
+        border-radius: 6px;
+        padding: 0.12rem 0.35rem;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .role-functions-page .badge-success {
+        background-color: #5aa65f;
+    }
+
+    .role-functions-page .badge-secondary {
+        background-color: #a39a8f;
+    }
+
+    .role-functions-page .badge-info {
+        background-color: rgba(242, 165, 49, 0.18);
+        color: var(--rf-accent-dark);
+        border: 1px solid rgba(228, 123, 34, 0.22);
+    }
+
+    .role-functions-page .btn-action {
+        padding: 0.3rem 0.55rem;
+        font-size: 0.85rem;
+        border-radius: 10px;
+    }
+
+    .role-functions-page .btn-outline-primary {
+        color: var(--rf-accent-dark);
+        border-color: rgba(228, 123, 34, 0.45);
+        background: rgba(255, 255, 255, 0.7);
+    }
+
+    .role-functions-page .btn-outline-primary:hover,
+    .role-functions-page .btn-outline-primary:focus {
+        color: #fffaf2;
+        background: linear-gradient(135deg, var(--rf-accent), var(--rf-accent-dark));
+        border-color: transparent;
+        box-shadow: 0 10px 18px rgba(228, 123, 34, 0.2);
+    }
+
+    .role-functions-page .btn-outline-danger {
+        color: var(--rf-danger);
+        border-color: rgba(200, 95, 71, 0.5);
+        background: rgba(255, 255, 255, 0.7);
+    }
+
+    .role-functions-page .btn-outline-danger:hover,
+    .role-functions-page .btn-outline-danger:focus {
+        color: #fffaf2;
+        background: linear-gradient(135deg, #da7460, #b34e3b);
+        border-color: transparent;
+        box-shadow: 0 10px 18px rgba(200, 95, 71, 0.2);
+    }
+
+    .role-functions-page .btn-danger {
+        background: linear-gradient(135deg, #da7460, #b34e3b);
+        border-color: transparent;
+        color: #fffaf2;
+        box-shadow: 0 10px 18px rgba(200, 95, 71, 0.2);
+    }
+
+    .role-functions-page .btn-danger:hover,
+    .role-functions-page .btn-danger:focus {
+        background: linear-gradient(135deg, #c85f47, #a64533);
+        color: #fffaf2;
+    }
+
+    .role-functions-page .btn-primary,
+    #addRoleModal .btn-primary,
+    #addFunctionModal .btn-primary,
+    #addMappingModal .btn-success {
+        background: linear-gradient(135deg, var(--rf-accent), var(--rf-accent-dark));
+        border: none;
+        color: #fffaf2;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 0.45rem 1.1rem;
+        box-shadow: 0 14px 22px rgba(228, 123, 34, 0.22);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .role-functions-page .btn-primary:hover,
+    .role-functions-page .btn-primary:focus,
+    #addRoleModal .btn-primary:hover,
+    #addRoleModal .btn-primary:focus,
+    #addFunctionModal .btn-primary:hover,
+    #addFunctionModal .btn-primary:focus,
+    #addMappingModal .btn-success:hover,
+    #addMappingModal .btn-success:focus {
+        transform: translateY(-1px);
+        color: #fffaf2;
+        box-shadow: 0 16px 26px rgba(228, 123, 34, 0.26);
+    }
+
+    .role-functions-page .text-end {
+        text-align: right !important;
+    }
+
+    #addRoleModal,
+    #addFunctionModal,
+    #addMappingModal {
+        --rf-accent: var(--warm-accent, #f2a531);
+        --rf-accent-dark: var(--warm-accent-dark, #e47b22);
+        --rf-text: var(--warm-text, #3f2d1f);
+        --rf-border: rgba(228, 123, 34, 0.18);
+    }
+
+    #addRoleModal .modal-header.bg-primary,
+    #addFunctionModal .modal-header.bg-primary,
+    #addMappingModal .modal-header.bg-success {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 235, 0.92));
+        border-bottom: 1px solid var(--rf-border);
+    }
+
+    #addRoleModal .modal-header,
+    #addFunctionModal .modal-header,
+    #addMappingModal .modal-header,
+    #addRoleModal .modal-header .modal-title,
+    #addFunctionModal .modal-header .modal-title,
+    #addMappingModal .modal-header .modal-title {
+        color: var(--rf-text) !important;
+    }
+
+    #addRoleModal .close,
+    #addFunctionModal .close,
+    #addMappingModal .close {
+        color: var(--rf-text) !important;
+        opacity: 0.7;
+    }
+
+    @@media (max-width: 992px) {
+        .role-functions-page .scrollable-table {
+            max-height: 260px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .role-functions-page .scrollable-table {
+            max-height: 240px;
+            padding-right: 10px;
+        }
+
+        .role-functions-page .scrollable-table.scrollable-table-lg {
+            max-height: 300px;
+        }
+
+        .role-functions-page .table {
+            font-size: 0.85rem;
+        }
+
+        .role-functions-page .table td,
+        .role-functions-page .table th {
+            padding: 0.5rem;
+            white-space: normal;
+            word-break: break-word;
+            hyphens: auto;
+        }
+
+        .role-functions-page .table-role th:nth-child(4),
+        .role-functions-page .table-role td:nth-child(4),
+        .role-functions-page .table-function th:nth-child(4),
+        .role-functions-page .table-function td:nth-child(4),
+        .role-functions-page .table-mapping th:nth-child(3),
+        .role-functions-page .table-mapping td:nth-child(3) {
+            white-space: normal;
+        }
+
+        .role-functions-page .btn-action,
+        .role-functions-page .btn-danger.btn-sm {
+            padding: 0.25rem 0.45rem;
+            font-size: 0.78rem;
+        }
     }
 </style>
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 role-functions-page">
     <h2 class="section-title"><i class="fas fa-user-shield mr-2"></i>權限管理系統</h2>
 
     <div class="row">
@@ -55,20 +356,26 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow h-100">
                 <div class="card-header d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-users-cog mr-2"></i>角色清單 (Roles)</h6>
+                    <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-users-cog mr-2"></i>角色清單</h6>
                     <button class="btn btn-sm btn-light" data-toggle="modal" data-target="#addRoleModal">
                         <i class="fas fa-plus fa-sm"></i> 新增角色
                     </button>
                 </div>
                 <div class="card-body">
                     <div class="scrollable-table">
-                        <table class="table table-bordered table-hover mb-0">
+                        <table class="table table-bordered table-hover mb-0 table-fixed table-role">
+                            <colgroup>
+                                <col class="col-role-name" />
+                                <col class="col-role-desc" />
+                                <col class="col-role-status" />
+                                <col class="col-role-actions" />
+                            </colgroup>
                             <thead>
                                 <tr>
                                     <th>角色名稱</th>
                                     <th>描述</th>
                                     <th class="text-center">狀態</th>
-                                    <th class="text-end">操作</th>
+                                    <th class="text-end"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -105,20 +412,26 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow h-100">
                 <div class="card-header d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-cogs mr-2"></i>功能清單 (Functions)</h6>
+                    <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-cogs mr-2"></i>功能清單</h6>
                     <button class="btn btn-sm btn-light" data-toggle="modal" data-target="#addFunctionModal">
                         <i class="fas fa-plus fa-sm"></i> 新增功能
                     </button>
                 </div>
                 <div class="card-body">
                     <div class="scrollable-table">
-                        <table class="table table-bordered table-hover mb-0">
+                        <table class="table table-bordered table-hover mb-0 table-fixed table-function">
+                            <colgroup>
+                                <col class="col-function-name" />
+                                <col class="col-function-api" />
+                                <col class="col-function-status" />
+                                <col class="col-function-actions" />
+                            </colgroup>
                             <thead>
                                 <tr>
                                     <th>功能名稱</th>
                                     <th>API 路徑</th>
                                     <th class="text-center">狀態</th>
-                                    <th class="text-end">操作</th>
+                                    <th class="text-end"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -157,19 +470,24 @@
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-header d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-link mr-2"></i>角色功能權限關聯 (Role-Function Mapping)</h6>
+                    <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-link mr-2"></i>角色功能權限清單</h6>
                     <button class="btn btn-sm btn-light" data-toggle="modal" data-target="#addMappingModal">
                         <i class="fas fa-plus fa-sm"></i> 分配權限
                     </button>
                 </div>
                 <div class="card-body">
-                    <div class="scrollable-table" style="max-height: 400px;">
-                        <table class="table table-bordered table-hover table-striped mb-0">
-                            <thead class="thead-dark">
+                    <div class="scrollable-table scrollable-table-lg">
+                        <table class="table table-bordered table-hover table-striped mb-0 table-fixed table-mapping">
+                            <colgroup>
+                                <col class="col-mapping-role" />
+                                <col class="col-mapping-function" />
+                                <col class="col-mapping-actions" />
+                            </colgroup>
+                            <thead>
                                 <tr>
                                     <th>角色名稱</th>
                                     <th>功能名稱</th>
-                                    <th class="text-right">操作</th>
+                                    <th class="text-right"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -181,7 +499,7 @@
                                         <td class="text-right">
                                             <form asp-controller="Staff" asp-action="DeleteRoleFunction" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('確定要移除此權限分配嗎？')">
                                                 <button type="submit" class="btn btn-danger btn-sm">
-                                                    <i class="fas fa-unlink mr-1"></i> 移除
+                                                    移除
                                                 </button>
                                             </form>
                                         </td>
