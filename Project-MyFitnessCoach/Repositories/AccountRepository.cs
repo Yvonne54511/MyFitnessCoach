@@ -5,6 +5,7 @@ namespace Project_MyFitnessCoach.Repositories
 {
     public interface IAccountRepository
     {
+        Task<User?> GetByIdAsync(int id);
         Task<User?> GetByAccountAsync(string account);
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetByResetPasswordCodeAsync(string code);
@@ -19,6 +20,11 @@ namespace Project_MyFitnessCoach.Repositories
         public AccountRepository(MyFitnessCoachDbContext db)
         {
             _db = db;
+        }
+
+        public async Task<User?> GetByIdAsync(int id)
+        {
+            return await _db.Users.FindAsync(id);
         }
 
         public async Task<User?> GetByAccountAsync(string account)

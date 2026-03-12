@@ -12,6 +12,7 @@ namespace Project_MyFitnessCoach.Services
         Task<ResetPasswordRequestDto> CreateResetPasswordRequestAsync(string email, Func<string, string> resetUrlFactory);
         Task<AccountResultDto> ResetPasswordAsync(ResetPasswordDto dto);
         Task<bool> IsResetPasswordCodeValidAsync(string code);
+        Task<AccountResultDto> ChangePasswordAsync(int userId, string oldPassword, string newPassword);
     }
 
     public class MemberAccountService : IMemberAccountService
@@ -31,6 +32,27 @@ namespace Project_MyFitnessCoach.Services
             _emailService = emailService;
             _logger = logger;
             _passwordHasher = passwordHasher;
+        }
+
+        public async Task<AccountResultDto> ChangePasswordAsync(int userId, string oldPassword, string newPassword)
+        {
+            var user = await _accountRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return new AccountResultDto { IsSuccess = false, Message = "使用者不存在" };
+            }
+
+            var verification = _passwordHasher.VerifyHashedPassword(user, user.HashedPassword, oldPassword);
+            if (verification == PasswordVerificationResult.Failed)
+            {
+                return new AccountResultDto { IsSuccess = false, Message = "目前密碼錯誤" };
+            }
+
+            user.HashedPassword = _passwordHasher.HashPassword(user, newPassword);
+            _accountRepository.Update(user);
+            await _accountRepository.SaveChangesAsync();
+
+            return new AccountResultDto { IsSuccess = true, Message = "密碼修改成功" };
         }
 
         public async Task<LoginResultDto> LoginAsync(LoginDto dto)

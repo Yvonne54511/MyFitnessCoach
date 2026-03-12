@@ -7,7 +7,7 @@
     <meta name="description" content="MyFitnessCoach Admin Dashboard">
     <meta name="author" content="MyFitnessCoach">
     <title>@(ViewData["Title"] ?? "MyFitnessCoach 後台")</title>
-    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900&display=swap" rel="stylesheet">
     <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
     <link href="~/css/layout-warm.css" rel="stylesheet">
@@ -27,15 +27,19 @@
             <a class="sidebar-brand d-flex align-items-center justify-content-center" asp-controller="Dashboard" asp-action="Index">
                 <div class="sidebar-brand-text mx-3">@(ViewBag.Title ?? "後台管理")</div>
             </a>
-            
+            <br>
             <hr class="sidebar-divider">
-            <div class="sidebar-heading">人員管理</div>
             <li class="nav-item active">
                 <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
                     <i class="bx bx-home-circle"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
+            <br />
+
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">人員管理</div>
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUser" aria-expanded="true" aria-controls="collapseUser">
                     <i class="bx bx-user"></i>
@@ -43,81 +47,42 @@
                 </a>
                 <div id="collapseUser" class="collapse" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="/Account/ResetPassword">帳密修改</a>
+                        <a class="collapse-item" asp-controller="Account" asp-action="ChangePassword">帳密修改</a>
                         <a class="collapse-item" href="#">資料維護-營養師</a>
-                        <a class="collapse-item" href="#">資料維護-會員</a>
-                    </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTutor" aria-expanded="true" aria-controls="collapseTutor">
-                    <i class='bx bxs-user'></i>
-                    <span>營養師管理</span>
-                </a>
-                <div id="collapseTutor" class="collapse" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" href="cards.html">營養師列表(怡潁)</a>
-                        <a class="collapse-item" href="cards.html">營養師班表排程(小朱)</a>
-                        <a class="collapse-item" href="cards.html">營養師班表查看(小朱)</a>
                     </div>
                 </div>
             </li>
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStaff" aria-expanded="true" aria-controls="collapseTutor">
-                    <i class='bx bxs-user'></i>
-                    <span>員工管理</span>
+                    <i class="fa-solid fa-people-group"></i>
+                    <span>帳號管理</span>
                 </a>
                 <div id="collapseStaff" class="collapse" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" asp-controller="Staff" asp-action="Index">員工帳號管理</a>
+                        
+                        <a class="collapse-item" asp-controller="Staff" asp-action="Index">使用者帳號管理</a>
                         <a class="collapse-item" asp-controller="Staff" asp-action="RoleFunctions">權限管理</a>
                     </div>
                 </div>
             </li>
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProduct" aria-expanded="true" aria-controls="collapseTutor">
-                    <i class='bx bxs-user'></i>
-                    <span>商品管理</span>
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTutor" aria-expanded="true" aria-controls="collapseTutor">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span>班表管理</span>
                 </a>
-                <div id="collapseProduct" class="collapse" data-parent="#accordionSidebar">
+                <div id="collapseTutor" class="collapse" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" asp-controller="ProductCategories" asp-action="Index">類別管理(蛙)</a>
-                        <a class="collapse-item" asp-controller="Products" asp-action="Index">商品品項管理(蛙)</a>
-                        <a class="collapse-item" asp-controller="ProductOrders" asp-action="index">訂單管理(導演)</a>
-
+                        
+                        <a class="collapse-item" href="cards.html">營養師班表排程</a>
+                        <a class="collapse-item" href="cards.html">營養師班表查看</a>
                     </div>
                 </div>
             </li>
-            <div class="sidebar-heading">客戶管理</div>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePlan"
-                   aria-expanded="true" aria-controls="collapsePlan">
-                    <i class='bx bx-store'></i>
-                    <span>方案</span>
-                </a>
-                <div id="collapsePlan" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" asp-controller="TopUpPlans" asp-action="Index">儲值方案管理(蛙)</a>
-                        <a class="collapse-item" asp-controller="PointOrders" asp-action="Index">儲值訂單管理(導演)</a>
-                    </div>
-                </div>
-            </li>
-
-            <!-- 客戶-->
-            <div class="sidebar-heading">
-                客戶管理
-            </div>
-
-
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseClient"
                    aria-expanded="true" aria-controls="collapseClient">
                     <i class='bx bx-body'></i>
-                    <span>客戶數據</span>
+                    <span>客戶管理</span>
                 </a>
                 <div id="collapseClient" class="collapse" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
@@ -127,17 +92,50 @@
                     </div>
                 </div>
             </li>
+
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">商城</div>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProduct" aria-expanded="true" aria-controls="collapseTutor">
+                    <i class='bx bx-store'></i>
+                    <span>商品管理</span>
+                </a>
+                <div id="collapseProduct" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        
+                        <a class="collapse-item" asp-controller="ProductCategories" asp-action="Index">類別管理</a>
+                        <a class="collapse-item" asp-controller="Products" asp-action="Index">商品品項管理</a>
+                        <a class="collapse-item" asp-controller="ProductOrders" asp-action="index">訂單管理</a>
+                    </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePlan" aria-expanded="true" aria-controls="collapseTutor">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>方案管理</span>
+                </a>
+                <div id="collapsePlan" class="collapse" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    
+                        <a class="collapse-item" asp-controller="TopUpPlans" asp-action="Index">儲值方案管理</a>
+                        <a class="collapse-item" asp-controller="PointOrders" asp-action="Index">儲值方案訂單管理</a>
+                </div>
+            </li>
+            <!-- 客戶-->
+            <hr class="sidebar-divider">
+
+            <div class="sidebar-heading">其他</div>
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseOther"
                    aria-expanded="true" aria-controls="collapseOther">
                     <i class='bx bx-message-dots'></i>
-                    <span>其他</span>
+                    <span>評論管理</span>
                 </a>
                 <div id="collapseOther" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" href="tables.html">評論區管理 - admin(小朱)</a>
-                        <a class="collapse-item" href="cards.html">評論區察看與舉報 - instructor(小朱)</a>
+                        
+                        <a class="collapse-item" href="tables.html">評論區管理-管理員</a>
+                        <a class="collapse-item" href="cards.html">評論區察看與舉報-營養師</a>
                     </div>
                 </div>
             </li>
@@ -237,6 +235,8 @@
     <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
     <script src="~/js/sb-admin-2.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"></script>
     @RenderSection("scripts", required: false)
 </body>
 </html>

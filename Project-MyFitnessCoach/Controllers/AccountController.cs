@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModel;
@@ -16,6 +17,40 @@ namespace Project_MyFitnessCoach.Controllers
         public AccountController(IMemberAccountService accountService)
         {
             _accountService = accountService;
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var result = await _accountService.ChangePasswordAsync(userId, model.OldPassword, model.NewPassword);
+            if (!result.IsSuccess)
+            {
+                ModelState.AddModelError(string.Empty, result.Message);
+                return View(model);
+            }
+
+            TempData["ChangePasswordSuccess"] = "密碼修改成功！";
+            return View();
         }
 
         [HttpGet]
