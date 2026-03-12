@@ -1,0 +1,1 @@
+產品管理頁面的下架功能正常 但是編輯功能 勾選上架後 圖示沒有更新 資料庫IsActive也沒有從0變成1 幫我修正 可以參考ProductCategoriesController和TopUpPlansController

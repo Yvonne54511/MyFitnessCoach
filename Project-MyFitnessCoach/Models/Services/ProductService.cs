@@ -1,6 +1,5 @@
 using Project_MyFitnessCoach.Models.DTOs;
-using Project_MyFitnessCoach.Models.EfModels;
-using Project_MyFitnessCoach.Repositories;
+using Project_MyFitnessCoach.Models.Repositories;
 
 namespace Project_MyFitnessCoach.Models.Services
 {
@@ -13,14 +12,21 @@ namespace Project_MyFitnessCoach.Models.Services
 			_repository = repository;
 		}
 
-		public List<ProductDto> GetAllProducts()
+		public List<ProductDto> GetAllProducts(string? name = null, int? categoryId = null)
 		{
-			return _repository.GetAll();
-		}
+			var products = _repository.GetAll();
 
-		public List<ProductCategory> GetCategories()
-		{
-			return _repository.GetCategories();
+			if (!string.IsNullOrEmpty(name))
+			{
+				products = products.Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
+			}
+
+			if (categoryId.HasValue && categoryId.Value > 0)
+			{
+				products = products.Where(p => p.CategoryId == categoryId.Value).ToList();
+			}
+
+			return products;
 		}
 
 		public ProductDto GetProduct(int id)
