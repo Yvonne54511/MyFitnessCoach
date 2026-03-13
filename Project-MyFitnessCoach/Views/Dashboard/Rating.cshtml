@@ -179,7 +179,7 @@
                                             <div id="collapse-@group.Id-@instructor.InstructorId" class="collapse" 
                                                  aria-labelledby="heading-@group.Id-@instructor.InstructorId" 
                                                  data-parent="#sentimentAccordion-@instructor.InstructorId">
-                                                <div class="accordion-body bg-light p-0">
+                                                <div class="accordion-body bg-light p-0 review-scroll-container">
                                                     @if (group.Reviews != null && group.Reviews.Any())
                                                     {
                                                         <div class="list-group list-group-flush shadow-sm">
@@ -271,6 +271,21 @@
         }
         .list-group-item:hover {
             background-color: #f8f9fc !important;
+        }
+        
+        .review-scroll-container {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        
+        .review-scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .review-scroll-container::-webkit-scrollbar-thumb {
+            background-color: #dddfeb;
+            border-radius: 3px;
         }
     </style>
 }

@@ -13,6 +13,7 @@ namespace Project_MyFitnessCoach.Repositories
         Task<Review?> GetReviewByIdAsync(int id);
         Task DeleteReviewAsync(int id);
         Task UpdateUserStatusAsync(int userId, bool isActive);
+        Task SuspendMemberAsync(int memberId);
         Task<int?> GetUserIdByMemberIdAsync(int memberId);
         Task IncrementMemberWarningCountAsync(int memberId, string reason);
     }
@@ -74,7 +75,44 @@ namespace Project_MyFitnessCoach.Repositories
                 await _db.SaveChangesAsync();
             }
         }
+        public async Task SuspendMemberAsync(int memberId)
+        {
+            var member = await _db.Members
+                .Include(m => m.User)
+                .Include(m => m.MemberViolation)
+                .FirstOrDefaultAsync(m => m.Id == memberId);
 
+            if (member != null)
+            {
+                // 1. 設定使用者帳號為停用 (IsActive = 0)
+                if (member.User != null)
+                {
+                    member.User.IsActive = false;
+                }
+
+                // 2. 更新違規紀錄表 (MemberViolations)，將 IsSuspended 設為 1 (停權)
+                if (member.MemberViolation == null)
+                {
+                    var violation = new MemberViolation
+                    {
+                        MemberId = memberId,
+                        WarningCount = 0,
+                        IsSuspended = true,
+                        SuspendedAt = DateTime.Now,
+                        Reason = "管理員手動停權"
+                    };
+                    _db.MemberViolations.Add(violation);
+                }
+                else
+                {
+                    member.MemberViolation.IsSuspended = true;
+                    member.MemberViolation.SuspendedAt = DateTime.Now;
+                    member.MemberViolation.Reason = "管理員手動停權";
+                }
+
+                await _db.SaveChangesAsync();
+            }
+        }
         public async Task IncrementMemberWarningCountAsync(int memberId, string reason)
         {
             var violation = await _db.MemberViolations
