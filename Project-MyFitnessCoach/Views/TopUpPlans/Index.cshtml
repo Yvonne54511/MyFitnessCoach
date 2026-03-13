@@ -22,6 +22,7 @@
                         <tr>
                             <th>@Html.DisplayNameFor(model => model.Id)</th>
                             <th>@Html.DisplayNameFor(model => model.PlanName)</th>
+                            <th>@Html.DisplayNameFor(model => model.ImageUrl)</th>
                             <th>@Html.DisplayNameFor(model => model.Price)</th>
                             <th>@Html.DisplayNameFor(model => model.Points)</th>
                             <th>@Html.DisplayNameFor(model => model.SortOrder)</th>
@@ -35,13 +36,23 @@
                             <tr>
                                 <td>@Html.DisplayFor(modelItem => item.Id)</td>
                                 <td>@Html.DisplayFor(modelItem => item.PlanName)</td>
-                                <td>@Html.DisplayFor(modelItem => item.Price)</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.PlanName" class="img-product-list" />
+                                    }
+                                    else
+                                    {
+                                        <div class="no-image-placeholder">無圖片</div>
+                                    }
+                                </td>
+                                <td>@item.Price?.ToString("N0")</td>
                                 <td>@Html.DisplayFor(modelItem => item.Points)</td>
                                 <td>@Html.DisplayFor(modelItem => item.SortOrder)</td>
                                 <td>
                                     @if (item.IsActive == true)
                                     {
-                                        <span class="badge badge-success">啟用</span>
+                                        <span class="badge badge-success">上架中</span>
                                     }
                                     else
                                     {
@@ -93,6 +104,114 @@
 
 @section styles {
     <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-start: #fff8dc;
+            --bg-end: #ffe3b3;
+            --text-main: #3f2d1f;
+            --text-soft: #7a614d;
+            --accent: #f2a531;
+            --accent-dark: #e47b22;
+            --border: rgba(228, 123, 34, 0.18);
+            --panel: rgba(255, 255, 255, 0.88);
+            --font-main: "Trebuchet MS", "Microsoft JhengHei", sans-serif;
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(165, 104, 29, 0.08);
+            background: var(--panel);
+            backdrop-filter: blur(10px);
+        }
+
+        .text-primary {
+            color: var(--accent-dark) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border: none;
+            border-radius: 12px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(228, 123, 34, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(228, 123, 34, 0.3);
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+        }
+
+        .table thead th {
+            background-color: rgba(242, 165, 49, 0.1);
+            color: var(--text-main);
+            border-bottom: 2px solid var(--accent);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            padding: 1rem;
+        }
+
+        .table td {
+            vertical-align: middle;
+            color: var(--text-soft);
+            border-top: 1px solid var(--border);
+        }
+
+        .img-product-list {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: zoom-in;
+            border-radius: 8px;
+            border: 2px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .img-product-list:hover {
+            transform: scale(2.5);
+            position: relative;
+            z-index: 1050;
+            box-shadow: 0 10px 20px rgba(165, 104, 29, 0.3);
+        }
+
+        .no-image-placeholder {
+            width: 80px;
+            height: 80px;
+            background-color: #fdfaf5;
+            border: 1px dashed var(--accent);
+            color: var(--text-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            border-radius: 8px;
+        }
+
+        .badge-success {
+            background-color: #ecf8e7;
+            color: #4d9b54;
+            border: 1px solid rgba(77, 155, 84, 0.2);
+            padding: 0.5em 0.8em;
+            border-radius: 8px;
+        }
+
+        .badge-danger {
+            background-color: #ffe7e1;
+            color: #c85f47;
+            border: 1px solid rgba(200, 95, 71, 0.2);
+            padding: 0.5em 0.8em;
+            border-radius: 8px;
+        }
+
+        .table-responsive {
+            overflow: visible !important;
+        }
+    </style>
 }
 
 @section scripts {

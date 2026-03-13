@@ -11,6 +11,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
             {
                 Id = plan.Id,
                 PlanName = plan.PlanName,
+                ImageUrl = plan.ImageUrl,
                 Price = plan.Price,
                 Points = plan.Points,
                 Description = plan.Description,
@@ -25,6 +26,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
             {
                 Id = dto.Id,
                 PlanName = dto.PlanName,
+                ImageUrl = dto.ImageUrl,
                 Price = dto.Price ?? 0,
                 Points = dto.Points ?? 0,
                 Description = dto.Description,
@@ -39,6 +41,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
             {
                 Id = dto.Id,
                 PlanName = dto.PlanName,
+                ImageUrl = dto.ImageUrl,
                 Price = dto.Price,
                 Points = dto.Points,
                 Description = dto.Description,

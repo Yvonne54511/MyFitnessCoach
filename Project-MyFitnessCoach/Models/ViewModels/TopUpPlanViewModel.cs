@@ -12,6 +12,12 @@ namespace Project_MyFitnessCoach.Models.ViewModels
         [StringLength(50)]
         public string PlanName { get; set; }
 
+        [Display(Name = "圖片")]
+        public string ImageUrl { get; set; }
+
+        [Display(Name = "上傳圖片")]
+        public Microsoft.AspNetCore.Http.IFormFile? ProductImage { get; set; }
+
         [Display(Name = "價格")]
         [Required(ErrorMessage = "{0} 是必填欄位")]
         public decimal? Price { get; set; }

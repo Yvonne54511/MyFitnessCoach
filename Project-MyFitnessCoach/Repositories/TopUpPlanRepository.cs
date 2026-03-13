@@ -55,6 +55,7 @@ namespace Project_MyFitnessCoach.Repositories
             if (entity == null) return;
 
             entity.PlanName = dto.PlanName;
+            entity.ImageUrl = dto.ImageUrl;
             entity.Price = dto.Price ?? 0;
             entity.Points = dto.Points ?? 0;
             entity.Description = dto.Description;
