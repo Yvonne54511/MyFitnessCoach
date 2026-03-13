@@ -26,6 +26,7 @@
                         <option value="1" selected="@(ViewBag.CurrentStatus?.ToString() == "1")">已出貨</option>
                         <option value="2" selected="@(ViewBag.CurrentStatus?.ToString() == "2")">已送達</option>
                         <option value="3" selected="@(ViewBag.CurrentStatus?.ToString() == "3")">已取消</option>
+                        <option value="4" selected="@(ViewBag.CurrentStatus?.ToString() == "4")">申請退貨</option>
                     </select>
                 </div>
                 <div class="col-md-5">
@@ -81,6 +82,9 @@
                                         break;
                                     case 3:
                                         <span class="badge bg-danger text-white">已取消</span>
+                                        break;
+                                    case 4:
+                                        <span class="badge bg-info text-white">申請退貨</span>
                                         break;
                                     default:
                                         <span class="badge bg-secondary text-white">未知</span>

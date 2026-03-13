@@ -41,7 +41,7 @@ namespace Project_MyFitnessCoach.Models.Repositories
             var pendingThisMonth = await _context.ProductOrders.CountAsync(o => o.Status == 1 && o.CreateAt >= startOfMonth);
             var pendingLastMonth = await _context.ProductOrders.CountAsync(o => o.Status == 1 && o.CreateAt >= startOfLastMonth && o.CreateAt <= endOfLastMonth);
             
-            // 爭議中 (Status = 4)
+            // 爭議中/退貨申請 (Status = 4)
             var disputedThisMonth = await _context.ProductOrders.CountAsync(o => o.Status == 4 && o.CreateAt >= startOfMonth);
             var disputedLastMonth = await _context.ProductOrders.CountAsync(o => o.Status == 4 && o.CreateAt >= startOfLastMonth && o.CreateAt <= endOfLastMonth);
 

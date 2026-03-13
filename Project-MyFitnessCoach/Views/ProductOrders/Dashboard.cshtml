@@ -76,7 +76,7 @@
             </a>
         </div>
 
-        <!-- 爭議訂單 Card -->
+        <!-- 退貨申請 Card -->
         <div class="col-xl-4 col-md-6 mb-4">
             <a asp-controller="ProductOrders" asp-action="Index" asp-route-status="4" class="text-decoration-none">
                 <div class="card border-left-warning shadow h-100 py-2">
@@ -84,7 +84,7 @@
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                    爭議訂單</div>
+                                    退貨申請</div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.DisputedCount.ToString("N0")</div>
                                 <div class="mt-2 mb-0 text-muted text-xs">
                                     @if (Model.DisputedChangePercentage >= 0)

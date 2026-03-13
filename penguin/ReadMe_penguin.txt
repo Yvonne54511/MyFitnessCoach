@@ -9,3 +9,10 @@
 點數進出紀錄 PointRecordDetails
 使用者點數 UserWallets
 
+訂單狀態:
+0待處理
+1已出貨
+2已送達
+3已取消
+4未知
+
