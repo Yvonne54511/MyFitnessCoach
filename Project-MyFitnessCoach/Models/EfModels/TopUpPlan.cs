@@ -11,6 +11,8 @@ public partial class TopUpPlan
 
     public string PlanName { get; set; }
 
+    public string ImageUrl { get; set; }
+
     public decimal Price { get; set; }
 
     public int Points { get; set; }
