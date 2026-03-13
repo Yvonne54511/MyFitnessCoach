@@ -33,12 +33,29 @@
                         <tr><th>目前狀態</th><td>
                             @switch (Model.Status)
                             {
-                                case 0: <span class="badge bg-warning">待處理</span> break;
-                                case 1: <span class="badge bg-primary">已出貨</span> break;
-                                case 2: <span class="badge bg-success">已送達</span> break;
-                                case 3: <span class="badge bg-danger">已取消</span> break;
-                                case 4: <span class="badge bg-info">申請退貨</span> break;
-                                case 5: <span class="badge bg-dark" style="background-color: #6f42c1 !important;">退貨申請中</span> break;
+                                    case 0:
+                                        <span class="badge bg-warning text-white">待處理</span>
+                                        break;
+                                    case 1:
+
+                                        <span class="badge bg-primary text-white">已出貨</span>
+                                        break;
+                                    case 2:
+
+                                        <span class="badge bg-success text-white">已送達</span>
+                                        break;
+                                    case 3:
+
+                                        <span class="badge bg-danger text-white">已取消</span>
+                                        break;
+                                    case 4:
+
+                                        <span class="badge bg-info text-white">申請退貨</span>
+                                        break;
+                                    case 5:
+
+                                        <span class="badge bg-dark text-white" style="background-color: #6f42c1 !important;">退貨申請中</span>
+                                        break;
                             }
                         </td></tr>
                         <tr><th>會員帳號</th><td>@Model.MemberName</td></tr>
@@ -123,12 +140,12 @@
                         <p><strong>目前進度：</strong> @(Model.Status == 4 ? "申請退貨" : "退貨申請中")</p>
                         <p><strong>退貨原因：</strong> @(string.IsNullOrEmpty(Model.Memo) ? "未提供原因" : Model.Memo)</p>
                         <hr />
-                        <div class="d-flex justify-content-end">
-                            <form asp-action="UpdateStatus" method="post" class="me-2">
+                        <div class="d-flex justify-content-end" style="gap: 5px;">
+                            <form asp-action="UpdateStatus" method="post" class="mb-4">
                                 <input type="hidden" name="id" value="@Model.Id" />
                                 <input type="hidden" name="newStatus" value="5" />
                                 <button type="submit" class="btn btn-primary" onclick="return confirm('確定要開始處理退貨申請嗎？')">
-                                    <i class="fas fa-arrow-right me-1"></i> 開始處理退貨 (進入退貨申請中)
+                                    <i class="fas fa-arrow-right me-1"></i> 開始處理退貨 (進入退貨申請)
                                 </button>
                             </form>
                             <form asp-action="UpdateStatus" method="post">
