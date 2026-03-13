@@ -37,6 +37,7 @@
                                 case 1: <span class="badge bg-primary">已出貨</span> break;
                                 case 2: <span class="badge bg-success">已送達</span> break;
                                 case 3: <span class="badge bg-danger">已取消</span> break;
+                                case 4: <span class="badge bg-info">申請退貨</span> break;
                             }
                         </td></tr>
                         <tr><th>會員帳號</th><td>@Model.MemberName</td></tr>
@@ -60,6 +61,7 @@
                                 <option value="1" selected="@(Model.Status == 1)">已出貨</option>
                                 <option value="2" selected="@(Model.Status == 2)">已送達</option>
                                 <option value="3" selected="@(Model.Status == 3)">已取消</option>
+                                <option value="4" selected="@(Model.Status == 4)">申請退貨</option>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-primary">
@@ -90,6 +92,22 @@
                             }
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-sticky-note me-1"></i> 訂單備註
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.Memo))
+                    {
+                        <p class="mb-0">@Model.Memo</p>
+                    }
+                    else
+                    {
+                        <p class="mb-0 text-muted italic">無備註資訊</p>
+                    }
                 </div>
             </div>
 

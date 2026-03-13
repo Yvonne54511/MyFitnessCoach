@@ -146,6 +146,7 @@ namespace Project_MyFitnessCoach.Models.Repositories
                 Mobile = p.Mobile,
                 TaxNumber = p.TaxNumber,
                 Status = p.Status,
+                Memo = p.Memo,
                 OrderDetails = p.ProductOrderDetails.Select(d => new ProductOrderDetailDto
                 {
                     Id = d.Id,
