@@ -6,7 +6,7 @@ using Project_MyFitnessCoach.Models.ViewModels;
 
 namespace Project_MyFitnessCoach.Controllers
 {
-    [Function("edit_ProductCategories")]
+    
     public class ProductCategoriesController : Controller
     {
         private readonly CategoryService _service;
@@ -16,6 +16,7 @@ namespace Project_MyFitnessCoach.Controllers
             _service = service;
         }
 
+        [Function("edit_ProductCategories")]
         public IActionResult Index()
         {
             var categories = _service.GetAllCategories()

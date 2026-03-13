@@ -6,7 +6,7 @@ using Project_MyFitnessCoach.Models.ViewModels;
 
 namespace Project_MyFitnessCoach.Controllers
 {
-    [Function("edit_Plans")]
+    
     public class TopUpPlansController : Controller
     {
         private readonly TopUpPlanService _service;
@@ -18,6 +18,7 @@ namespace Project_MyFitnessCoach.Controllers
             _environment = environment;
         }
 
+        [Function("edit_Plans")]
         public IActionResult Index()
         {
             var plans = _service.GetAllPlans()

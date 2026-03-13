@@ -5,7 +5,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public int Id { get; set; }
         public int UserId { get; set; }
         public string UserName { get; set; }
-        public string ImageUrl { get; set; }
+        public string ImageUrl { get; set; } = string.Empty;
         public string Description { get; set; }
         public int HourWage { get; set; }
         public int CancelCount { get; set; }

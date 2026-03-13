@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Controllers
 {
-    [Function("edit_PlanOrders")]
+    
     public class PointOrdersController : Controller
     {
         private readonly MyFitnessCoachDbContext _context;
@@ -19,6 +19,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         // 點數儲值首頁 (列出所有儲值紀錄)
+        [Function("edit_PlanOrders")]
         public async Task<IActionResult> Index()
         {
             var pointOrders = await _context.PointOrders
