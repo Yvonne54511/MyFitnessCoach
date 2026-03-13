@@ -11,11 +11,11 @@ namespace Project_MyFitnessCoach.Repositories
         Task<IEnumerable<Review>> GetAllReviewsAsync();
         Task<IEnumerable<Review>> GetReviewsByInstructorIdAsync(int instructorId);
         Task<Review?> GetReviewByIdAsync(int id);
-        Task DeleteReviewAsync(int id);
+        Task BanReviewAsync(int id);
         Task UpdateUserStatusAsync(int userId, bool isActive);
-        Task SuspendMemberAsync(int memberId);
+        Task SuspendMemberAsync(int memberId, string reason);
         Task<int?> GetUserIdByMemberIdAsync(int memberId);
-        Task IncrementMemberWarningCountAsync(int memberId, string reason);
+        Task<int> IncrementMemberWarningCountAsync(int memberId, string reason);
     }
 
     public class ReviewRepository : IReviewRepository
@@ -32,6 +32,7 @@ namespace Project_MyFitnessCoach.Repositories
             return await _db.Reviews
                 .Include(r => r.Instructor).ThenInclude(i => i.User)
                 .Include(r => r.Member).ThenInclude(m => m.User)
+                .Include(r => r.Member).ThenInclude(m => m.MemberViolation)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
@@ -50,12 +51,12 @@ namespace Project_MyFitnessCoach.Repositories
             return await _db.Reviews.FindAsync(id);
         }
 
-        public async Task DeleteReviewAsync(int id)
+        public async Task BanReviewAsync(int id)
         {
             var review = await _db.Reviews.FindAsync(id);
             if (review != null)
             {
-                _db.Reviews.Remove(review);
+                review.IsBanned = true;
                 await _db.SaveChangesAsync();
             }
         }
@@ -75,7 +76,7 @@ namespace Project_MyFitnessCoach.Repositories
                 await _db.SaveChangesAsync();
             }
         }
-        public async Task SuspendMemberAsync(int memberId)
+        public async Task SuspendMemberAsync(int memberId, string reason)
         {
             var member = await _db.Members
                 .Include(m => m.User)
@@ -84,12 +85,6 @@ namespace Project_MyFitnessCoach.Repositories
 
             if (member != null)
             {
-                // 1. 設定使用者帳號為停用 (IsActive = 0)
-                if (member.User != null)
-                {
-                    member.User.IsActive = false;
-                }
-
                 // 2. 更新違規紀錄表 (MemberViolations)，將 IsSuspended 設為 1 (停權)
                 if (member.MemberViolation == null)
                 {
@@ -99,7 +94,7 @@ namespace Project_MyFitnessCoach.Repositories
                         WarningCount = 0,
                         IsSuspended = true,
                         SuspendedAt = DateTime.Now,
-                        Reason = "管理員手動停權"
+                        Reason = string.IsNullOrEmpty(reason) ? "管理員手動停權" : reason
                     };
                     _db.MemberViolations.Add(violation);
                 }
@@ -107,17 +102,18 @@ namespace Project_MyFitnessCoach.Repositories
                 {
                     member.MemberViolation.IsSuspended = true;
                     member.MemberViolation.SuspendedAt = DateTime.Now;
-                    member.MemberViolation.Reason = "管理員手動停權";
+                    member.MemberViolation.Reason = string.IsNullOrEmpty(reason) ? "管理員手動停權" : reason;
                 }
 
                 await _db.SaveChangesAsync();
             }
         }
-        public async Task IncrementMemberWarningCountAsync(int memberId, string reason)
+        public async Task<int> IncrementMemberWarningCountAsync(int memberId, string reason)
         {
             var violation = await _db.MemberViolations
                 .FirstOrDefaultAsync(v => v.MemberId == memberId);
 
+            int count = 0;
             if (violation == null)
             {
                 violation = new MemberViolation
@@ -128,15 +124,18 @@ namespace Project_MyFitnessCoach.Repositories
                     LastWarningAt = DateTime.Now
                 };
                 _db.MemberViolations.Add(violation);
+                count = 1;
             }
             else
             {
                 violation.WarningCount++;
                 violation.Reason = reason;
                 violation.LastWarningAt = DateTime.Now;
+                count = violation.WarningCount;
             }
 
             await _db.SaveChangesAsync();
+            return count;
         }
     }
 }

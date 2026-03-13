@@ -80,6 +80,10 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<IKeyWordRepository, KeyWordRepository>();
             builder.Services.AddScoped<IKeyWordService, KeyWordService>();
 
+            // 註冊 MemberViolation 模組
+            builder.Services.AddScoped<IMemberViolationRepository, MemberViolationRepository>();
+            builder.Services.AddScoped<IMemberViolationService, MemberViolationService>();
+
 			// 註冊使用Cookie驗證服務
 			builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 				.AddCookie(options =>

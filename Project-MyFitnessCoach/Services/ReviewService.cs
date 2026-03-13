@@ -72,7 +72,9 @@ namespace Project_MyFitnessCoach.Services
                     Comment = maskedComment,
                     ReportMessage = displayReason,
                     CreatedAt = e.CreatedAt,
-                    IsUserActive = e.Member?.User?.IsActive ?? true
+                    IsUserActive = e.Member?.User?.IsActive ?? true,
+                    IsBanned = e.IsBanned,
+                    WarningCount = e.Member?.MemberViolation?.WarningCount ?? 0
                 };
             });
         }
@@ -106,20 +108,21 @@ namespace Project_MyFitnessCoach.Services
             });
         }
 
-        public async Task DeleteReviewAsync(int id)
+        public async Task<int> BanReviewAsync(int id)
         {
             var review = await _repo.GetReviewByIdAsync(id);
             if (review != null)
             {
                 int memberId = review.MemberId;
-                await _repo.DeleteReviewAsync(id);
-                await _repo.IncrementMemberWarningCountAsync(memberId, "惡意評論被管理員刪除");
+                await _repo.BanReviewAsync(id);
+                return await _repo.IncrementMemberWarningCountAsync(memberId, "惡意評論被管理員封鎖");
             }
+            return 0;
         }
 
-        public async Task SuspendMemberAsync(int memberId)
+        public async Task SuspendMemberAsync(int memberId, string reason)
         {
-            await _repo.SuspendMemberAsync(memberId);
+            await _repo.SuspendMemberAsync(memberId, reason);
         }
 
         public async Task ReportReviewAsync(int id, int instructorUserId, string reason)

@@ -14,5 +14,7 @@ namespace Project_MyFitnessCoach.Models.Dtos
         public string ReportMessage { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsUserActive { get; set; }
+        public bool IsBanned { get; set; }
+        public int WarningCount { get; set; }
     }
 }
