@@ -15,5 +15,4 @@ namespace Project_MyFitnessCoach.Models.Dtos
         public DateTime CreatedAt { get; set; }
         public bool IsUserActive { get; set; }
     }
-
 }

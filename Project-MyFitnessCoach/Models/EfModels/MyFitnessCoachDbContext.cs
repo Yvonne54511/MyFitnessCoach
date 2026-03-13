@@ -177,6 +177,7 @@ public partial class MyFitnessCoachDbContext : DbContext
             entity.Property(e => e.CancelCount).HasDefaultValue(1);
             entity.Property(e => e.DateOfBirth).HasPrecision(0);
             entity.Property(e => e.ImageUrl).HasMaxLength(300);
+            entity.Property(e => e.IsBanned).HasAnnotation("Relational:DefaultConstraintName", "DF_Members_IsBanned");
             entity.Property(e => e.Target).HasMaxLength(50);
             entity.Property(e => e.Tdee).HasColumnName("TDEE");
 

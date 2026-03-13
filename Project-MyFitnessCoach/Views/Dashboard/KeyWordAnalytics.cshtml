@@ -1,0 +1,345 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.DTOs.KeyWordFrequencyDto>
+@{
+    ViewData["Title"] = "評論關鍵字詞分析";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800 d-inline-block mr-3">評論區 Dashboard</h1>
+            <div class="btn-group shadow-sm" role="group">
+                <a asp-action="Rating" class="btn btn-white text-primary border-right">
+                    <i class="fas fa-star-half-alt mr-1"></i> 營養師評分統計
+                </a>
+                <a asp-action="KeyWordAnalytics" class="btn btn-primary active">
+                    <i class="fas fa-search mr-1"></i> 評論字詞分析
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 正向關鍵字熱度 -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-success">
+                    <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-smile mr-2"></i>正向詞彙熱度排行榜</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-bar" style="height: 400px;">
+                        <canvas id="posKeyWordChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 負向關鍵字熱度 -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-danger">
+                    <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-frown mr-2"></i>負向詞彙熱度排行榜</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-bar" style="height: 400px;">
+                        <canvas id="negKeyWordChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">所有關鍵字出現頻率明細 (點擊「未分類」字詞可進行快速歸類)</h6>
+                    <div class="form-inline">
+                        <!-- 類別篩選 -->
+                        <select id="filterCategory" class="form-control form-control-sm mr-2">
+                            <option value="all">所有類別</option>
+                            <option value="1">正向詞彙</option>
+                            <option value="-1">負向詞彙</option>
+                            <option value="null">未分類 (新發現)</option>
+                        </select>
+                        <!-- 次數篩選 -->
+                        <div class="input-group input-group-sm">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">次數 >=</span>
+                            </div>
+                            <input type="number" id="filterMinCount" class="form-control" value="0" min="0" style="width: 70px;">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="kwTable" width="100%" cellspacing="0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>字詞內容</th>
+                                    <th>類別</th>
+                                    <th>總計出現次數</th>
+                                    <th>熱度比例</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var maxCount = Model.Any() ? Model.Max(m => m.Count) : 1;
+                                }
+                                @foreach (var kw in Model.OrderByDescending(m => m.Count))
+                                {
+                                    <tr class="kw-row @(kw.IsUncategorized ? "table-warning clickable-row" : "")" 
+                                        data-category="@(kw.Category?.ToString() ?? "null")" 
+                                        data-count="@kw.Count"
+                                        data-word="@kw.Word"
+                                        onclick="@(kw.IsUncategorized ? "openQuickAddModal('" + kw.Word + "')" : "")">
+                                        <td class="font-weight-bold">
+                                            @kw.Word
+                                            @if (kw.IsUncategorized)
+                                            {
+                                                <i class="fas fa-exclamation-triangle text-warning ml-1" title="系統發現的高頻新詞彙"></i>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (kw.Category == 1) { <span class="badge badge-success">正向</span> }
+                                            else if (kw.Category == -1) { <span class="badge badge-danger">負向</span> }
+                                            else { <span class="badge badge-warning">未分類 (新發現)</span> }
+                                        </td>
+                                        <td>@kw.Count 次</td>
+                                        <td style="width: 40%;">
+                                            @{ var percent = (double)kw.Count / maxCount * 100; }
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar @(kw.Category == 1 ? "bg-success" : (kw.Category == -1 ? "bg-danger" : "bg-warning"))" 
+                                                     role="progressbar" style="width: @(percent)%;"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <div id="noResults" class="text-center p-5 d-none">
+                            <i class="fas fa-search fa-3x text-gray-300 mb-3"></i>
+                            <p class="text-gray-500">找不到符合條件的字詞</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 快速歸類 Modal -->
+<div class="modal fade" id="quickAddModal" tabindex="-1" role="dialog" aria-labelledby="quickAddModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="quickAddModalLabel"><i class="fas fa-plus-circle mr-2"></i>新詞彙快速歸類</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="quickAddForm">
+                    <div class="form-group">
+                        <label class="font-weight-bold">字詞內容</label>
+                        <input type="text" id="modalWord" class="form-control bg-light" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="font-weight-bold">類別判定</label>
+                        <div class="d-flex justify-content-between">
+                            <button type="button" id="btnPos" class="btn btn-outline-success btn-block mr-2 py-3 active" onclick="setCategory(1)">
+                                <i class="fas fa-smile fa-2x d-block mb-1"></i>
+                                正向詞彙
+                            </button>
+                            <button type="button" id="btnNeg" class="btn btn-outline-danger btn-block ml-2 py-3" onclick="setCategory(-1)">
+                                <i class="fas fa-frown fa-2x d-block mb-1"></i>
+                                負向詞彙
+                            </button>
+                        </div>
+                        <input type="hidden" id="modalCategory" value="1">
+                    </div>
+
+                    <div class="form-group mt-4">
+                        <label class="font-weight-bold d-flex justify-content-between">
+                            <span>分析權重 (影響分數多寡)</span>
+                            <span class="text-primary h5 mb-0" id="weightDisplay">3</span>
+                        </label>
+                        <input type="range" class="custom-range" min="1" max="5" step="1" id="modalWeight" value="3" oninput="updateWeightDisplay(this.value)">
+                        <div class="d-flex justify-content-between text-xs text-muted mt-1">
+                            <span>較低 (1)</span>
+                            <span>中等 (3)</span>
+                            <span>較高 (5)</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary px-4" onclick="submitQuickAdd()">確認加入關鍵字庫</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .clickable-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .clickable-row:hover {
+            background-color: #fff3cd !important;
+            box-shadow: inset 4px 0 0 #f6c23e;
+        }
+        .btn-outline-success.active {
+            background-color: #1cc88a !important;
+            color: white !important;
+        }
+        .btn-outline-danger.active {
+            background-color: #e74a3b !important;
+            color: white !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/vendor/chart.js/Chart.min.js"></script>
+    <script>
+        // 設定預設
+        Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+        Chart.defaults.global.defaultFontColor = '#858796';
+
+        // 準備資料
+        var posLabels = @Html.Raw(Json.Serialize(Model.Where(m => m.Category == 1).Take(10).Select(m => m.Word)));
+        var posCounts = @Html.Raw(Json.Serialize(Model.Where(m => m.Category == 1).Take(10).Select(m => m.Count)));
+        
+        var negLabels = @Html.Raw(Json.Serialize(Model.Where(m => m.Category == -1).Take(10).Select(m => m.Word)));
+        var negCounts = @Html.Raw(Json.Serialize(Model.Where(m => m.Category == -1).Take(10).Select(m => m.Count)));
+
+        // 正向圖表 (橫向長條圖)
+        var ctxPos = document.getElementById("posKeyWordChart");
+        var posChart = new Chart(ctxPos, {
+            type: 'horizontalBar',
+            data: {
+                labels: posLabels,
+                datasets: [{
+                    label: "出現次數",
+                    backgroundColor: "#1cc88a",
+                    hoverBackgroundColor: "#17a673",
+                    borderColor: "#1cc88a",
+                    data: posCounts,
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    xAxes: [{ ticks: { beginAtZero: true, stepSize: 1 } }],
+                    yAxes: [{ gridLines: { display: false } }]
+                },
+                legend: { display: false }
+            }
+        });
+
+        // 負向圖表 (橫向長條圖)
+        var ctxNeg = document.getElementById("negKeyWordChart");
+        var negChart = new Chart(ctxNeg, {
+            type: 'horizontalBar',
+            data: {
+                labels: negLabels,
+                datasets: [{
+                    label: "出現次數",
+                    backgroundColor: "#e74a3b",
+                    hoverBackgroundColor: "#be2617",
+                    borderColor: "#e74a3b",
+                    data: negCounts,
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    xAxes: [{ ticks: { beginAtZero: true, stepSize: 1 } }],
+                    yAxes: [{ gridLines: { display: false } }]
+                },
+                legend: { display: false }
+            }
+        });
+
+        // 篩選功能實作
+        function applyFilters() {
+            var selectedCategory = $('#filterCategory').val();
+            var minCount = parseInt($('#filterMinCount').val()) || 0;
+            var visibleCount = 0;
+
+            $('.kw-row').each(function() {
+                var row = $(this);
+                // 使用 String() 強制轉型，避免 jQuery 把 "null" 變成 null 物件導致 toString() 失敗
+                var category = String(row.data('category'));
+                var count = parseInt(row.data('count'));
+
+                var categoryMatch = (selectedCategory === 'all') || (category === selectedCategory);
+                var countMatch = count >= minCount;
+
+                if (categoryMatch && countMatch) {
+                    row.removeClass('d-none');
+                    visibleCount++;
+                } else {
+                    row.addClass('d-none');
+                }
+            });
+
+            // 處理無結果顯示
+            if (visibleCount === 0) {
+                $('#kwTable').addClass('d-none');
+                $('#noResults').removeClass('d-none');
+            } else {
+                $('#kwTable').removeClass('d-none');
+                $('#noResults').addClass('d-none');
+            }
+        }
+
+        // 綁定事件
+        $('#filterCategory, #filterMinCount').on('change keyup', applyFilters);
+
+        // 快速歸類 Modal 控制
+        function openQuickAddModal(word) {
+            $('#modalWord').val(word);
+            $('#modalWeight').val(3);
+            $('#weightDisplay').text(3);
+            setCategory(1); // 預設正向
+            $('#quickAddModal').modal('show');
+        }
+
+        function setCategory(cat) {
+            $('#modalCategory').val(cat);
+            if (cat === 1) {
+                $('#btnPos').addClass('active');
+                $('#btnNeg').removeClass('active');
+            } else {
+                $('#btnNeg').addClass('active');
+                $('#btnPos').removeClass('active');
+            }
+        }
+
+        function updateWeightDisplay(val) {
+            $('#weightDisplay').text(val);
+        }
+
+        function submitQuickAdd() {
+            var data = {
+                word: $('#modalWord').val(),
+                category: parseInt($('#modalCategory').val()),
+                weight: parseInt($('#modalWeight').val())
+            };
+
+            $.post('/Dashboard/CreateKeyWord', data, function(response) {
+                if (response.success) {
+                    $('#quickAddModal').modal('hide');
+                    alert(response.message);
+                    location.reload(); // 重新整理頁面以更新分析結果
+                }
+            }).fail(function(xhr) {
+                alert('儲存失敗：' + xhr.responseText);
+            });
+        }
+    </script>
+}

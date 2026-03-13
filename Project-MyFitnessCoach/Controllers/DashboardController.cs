@@ -9,17 +9,19 @@ namespace Project_MyFitnessCoach.Controllers
     public class DashboardController : Controller
     {
         private readonly IDashboardService _dashboardService;
+        private readonly Repositories.IKeyWordRepository _keyWordRepo;
 
-        public DashboardController(IDashboardService dashboardService)
+        public DashboardController(IDashboardService dashboardService, Repositories.IKeyWordRepository keyWordRepo)
         {
             _dashboardService = dashboardService;
+            _keyWordRepo = keyWordRepo;
         }
 
         public IActionResult Index()
         {
-            ViewBag.Title = "x޲z";
-            var model = _dashboardService.GetSummary();
-            return View(model);
+            ViewBag.Title = "Dashboard 概覽";
+            var summary = _dashboardService.GetSummary();
+            return View(summary);
         }
 
         public IActionResult Rating()
@@ -34,6 +36,29 @@ namespace Project_MyFitnessCoach.Controllers
             };
             return View(viewModel);
         }
+
+        public IActionResult KeyWordAnalytics()
+        {
+            ViewBag.Title = "評論關鍵字詞分析";
+            var data = _dashboardService.GetKeyWordFrequencies();
+            return View(data);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateKeyWord(string word, int category, int weight)
+        {
+            if (string.IsNullOrEmpty(word)) return BadRequest("字詞不能為空");
+
+            var keyWord = new Models.EfModels.KeyWord
+            {
+                Word = word,
+                Category = category,
+                Weight = weight
+            };
+
+            await _keyWordRepo.CreateAsync(keyWord);
+            return Ok(new { success = true, message = $"已成功將「{word}」加入關鍵字庫" });
+        }
     }
-}
+    }
 

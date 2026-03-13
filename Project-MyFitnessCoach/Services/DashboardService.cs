@@ -10,6 +10,7 @@ namespace Project_MyFitnessCoach.Services
         DashboardSummaryViewModel GetSummary();
         IEnumerable<InstructorRatingDto> GetInstructorRatings();
         GlobalRatingDto GetGlobalRating();
+        IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies();
     }
 
     public class DashboardService : IDashboardService
@@ -42,6 +43,11 @@ namespace Project_MyFitnessCoach.Services
         public GlobalRatingDto GetGlobalRating()
         {
             return _dashboardRepository.GetGlobalRating();
+        }
+
+        public IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies()
+        {
+            return _dashboardRepository.GetKeyWordFrequencies();
         }
     }
 }

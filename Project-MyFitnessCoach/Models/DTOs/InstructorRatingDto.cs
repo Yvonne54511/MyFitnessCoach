@@ -12,5 +12,15 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public int Star3Count { get; set; }
         public int Star2Count { get; set; }
         public int Star1Count { get; set; }
+
+        // 情感分析計數 (混合模型)
+        public int PositiveCount { get; set; }
+        public int NeutralCount { get; set; }
+        public int NegativeCount { get; set; }
+
+        // 詳細評論列表 (情感分析用)
+        public System.Collections.Generic.List<ReviewSentimentDto> PositiveReviews { get; set; } = new();
+        public System.Collections.Generic.List<ReviewSentimentDto> NeutralReviews { get; set; } = new();
+        public System.Collections.Generic.List<ReviewSentimentDto> NegativeReviews { get; set; } = new();
     }
 }

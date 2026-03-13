@@ -112,14 +112,14 @@
                     </button>
                 </form>
                 
-                <form asp-action="SuspendMember" method="post" id="formSuspend" class="m-0">
+                <form asp-action="SuspendMember" method="post" id="formSuspend" class="m-0 ml-2">
                     <input type="hidden" name="memberId" id="inputMemberId" />
                     <button type="submit" id="btnSuspend" class="btn btn-dark" onclick="return confirm('確定停權此學員？');">
                         <i class='bx bx-user-x'></i> 停權學員
                     </button>
                 </form>
                 
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <button type="button" class="btn btn-secondary ml-2" data-dismiss="modal">
                     <i class='bx bx-x'></i> 關閉
                 </button>
             </div>
@@ -165,11 +165,11 @@
 
             $('.detail-btn').on('click', function() {
                 var btn = $(this);
-                var reportMsg = btn.attr('data-report'); // 使用 attr() 較穩定
+                var reportMsg = btn.attr('data-report'); 
                 
                 $('#spanMember').text(btn.data('member'));
                 $('#spanInstructor').text(btn.data('instructor'));
-                $('#pComment').html(btn.attr('data-comment')); // 修改為 .html()
+                $('#pComment').html(btn.attr('data-comment'));
                 $('#inputReviewId').val(btn.data('id'));
                 $('#inputMemberId').val(btn.data('member-id'));
 
@@ -180,7 +180,7 @@
                 for(var i=rating; i<5; i++) stars += '<i class="bx bx-star text-muted"></i>';
                 $('#spanRating').html(stars);
 
-                // 檢舉內容：僅在真正有內容時移除 d-none
+                // 檢舉內容
                 if (reportMsg && reportMsg.trim().length > 0) {
                     $('#pReportMessage').text(reportMsg);
                     $('#divReport').removeClass('d-none');
