@@ -72,7 +72,7 @@ namespace Project_MyFitnessCoach.Services
                     Comment = maskedComment,
                     ReportMessage = displayReason,
                     CreatedAt = e.CreatedAt,
-                    IsUserActive = e.Member?.User?.IsActive ?? true,
+                    IsUserActive = (e.Member?.User?.IsActive ?? true) && !(e.Member?.MemberViolation?.IsSuspended ?? false),
                     IsBanned = e.IsBanned,
                     WarningCount = e.Member?.MemberViolation?.WarningCount ?? 0
                 };
@@ -108,16 +108,21 @@ namespace Project_MyFitnessCoach.Services
             });
         }
 
-        public async Task<int> BanReviewAsync(int id)
+        public async Task<(int NewCount, bool IsSuspended)> BanReviewAsync(int id)
         {
             var review = await _repo.GetReviewByIdAsync(id);
             if (review != null)
             {
                 int memberId = review.MemberId;
                 await _repo.BanReviewAsync(id);
-                return await _repo.IncrementMemberWarningCountAsync(memberId, "惡意評論被管理員封鎖");
+                int newCount = await _repo.IncrementMemberWarningCountAsync(memberId, "惡意評論被管理員封鎖");
+                
+                var violation = await _db.MemberViolations.FirstOrDefaultAsync(v => v.MemberId == memberId);
+                bool isSuspended = violation?.IsSuspended ?? false;
+
+                return (newCount, isSuspended);
             }
-            return 0;
+            return (0, false);
         }
 
         public async Task SuspendMemberAsync(int memberId, string reason)

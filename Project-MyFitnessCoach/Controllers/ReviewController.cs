@@ -48,17 +48,16 @@ namespace Project_MyFitnessCoach.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BanReview(int id)
         {
-            int newCount = await _service.BanReviewAsync(id);
+            var (newCount, isSuspended) = await _service.BanReviewAsync(id);
             TempData["SuccessMessage"] = "評論已成功封鎖。";
-            
-            if (newCount >= 5)
+
+            if (newCount >= 5 && !isSuspended)
             {
                 TempData["StrongWarning"] = $"該學員違規次數已達 {newCount} 次，建議立即進行停權處理！";
             }
-            
+
             return RedirectToAction(nameof(AdminIndex));
         }
-
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]

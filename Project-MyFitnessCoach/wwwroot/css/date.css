@@ -3,27 +3,28 @@
 }
 
 .day-label {
-    min-width: 100px;
+    min-width: 105px;
     flex-shrink: 0;
     font-size: 0.95rem;
 }
 
+.day-row-hover {
+    transition: background-color 0.2s;
+}
+
 .day-row-hover:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: #f8f9fc;
 }
 
 .slot-container {
     display: flex;
-    justify-content: flex-start; /* 改為左對齊但帶間距 */
-    gap: 15px; /* 增加固定間隔 */
+    flex-wrap: wrap;
     flex-grow: 1;
 }
 
 .slot-item-hover {
     transition: all 0.2s;
-    flex: 1;
-    min-width: 120px; /* 確保時段有最小寬度 */
-    justify-content: center;
+    margin-right: 10px;
     border: 1px solid transparent;
 }
 
@@ -33,12 +34,14 @@
 }
 
 .month-control {
-    border-radius: 12px;
+    border-radius: 0.35rem;
+    border-left: 4px solid #858796;
 }
 
 .week-header {
-    font-size: 1.1rem;
-    padding: 12px 20px !important;
+    font-size: 1.05rem;
+    padding: 10px 15px !important;
+    border-bottom: 1px solid #e3e6f0;
 }
 
 #selected-list .badge {
@@ -50,17 +53,6 @@
     transform: scale(1.05);
 }
 
-/* 修正時段文字可能過長導致的擠壓 */
-@media (max-width: 576px) {
-    .slot-container {
-        flex-direction: column;
-        gap: 4px;
-    }
-    .day-label {
-        min-width: 80px;
-    }
-}
-
 /* 確保 checkbox 置中對齊並解決 BS4/BS5 衝突導致的文字覆蓋問題 */
 .form-check-input {
     position: relative !important;
@@ -69,9 +61,16 @@
     margin-right: 8px !important;
     cursor: pointer;
     flex-shrink: 0;
+    width: 1.1rem;
+    height: 1.1rem;
 }
 
-/* 修正 Bootstrap 4 vs 5 導致的按鈕樣式偏移 */
-#btn-submit, #btn-edit {
-    min-width: 150px;
+/* 針對行動裝置優化 */
+@media (max-width: 576px) {
+    .slot-container {
+        flex-direction: column;
+    }
+    .day-label {
+        min-width: 90px;
+    }
 }
