@@ -126,18 +126,26 @@ namespace Project_MyFitnessCoach.Services
                 return new LoginResultDto { IsSuccess = false, Message = "此帳號目前停用中，請洽管理員" };
             }
 
+            var instructor = await _accountRepository.GetInstructorByUserIdAsync(user.Id);
+
             return new LoginResultDto
             {
                 IsSuccess = true,
                 Message = "登入成功",
-                Member = new MemberDto
+                User = new UserDto
                 {
                     Id = user.Id,
                     Account = user.Account,
                     UserName = user.UserName,
                     Email = user.Email,
                     HashedPassword = user.HashedPassword,
-                    Roles = user.UserRoles.Select(ur => ur.Role.RoleName).ToList()
+                    InstructorId = instructor?.Id,
+                    Roles = user.UserRoles.Select(ur => ur.Role.RoleName).ToList(),
+                    Functions = user.UserRoles
+                        .SelectMany(ur => ur.Role.RoleFunctions)
+                        .Select(rf => rf.Function.FunctionName)
+                        .Distinct()
+                        .ToList()
                 }
             };
         }

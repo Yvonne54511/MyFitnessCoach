@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Project_MyFitnessCoach.Models.DTOs;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.ViewModels;
 
 namespace Project_MyFitnessCoach.Controllers
 {
+	[Function("edit_ProductItems")]
 	public class ProductsController : Controller
 	{
 		private readonly ProductService _service;

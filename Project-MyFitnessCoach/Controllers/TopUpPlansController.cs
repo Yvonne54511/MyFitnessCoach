@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.DTOs;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.ViewModels;
 
 namespace Project_MyFitnessCoach.Controllers
 {
+    [Function("edit_Plans")]
     public class TopUpPlansController : Controller
     {
         private readonly TopUpPlanService _service;

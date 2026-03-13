@@ -37,6 +37,27 @@
             </li>
             <br />
 
+            @{
+                var userFunctions = User.FindAll("Function").Select(f => f.Value).ToList();
+                bool canManageUsers = userFunctions.Contains("edit_UserAccounts");
+                bool canManageRoles = userFunctions.Contains("edit_RoleFunctions");
+                bool canEditInstructorShifts = userFunctions.Contains("edit_InstructorShifts");
+                bool canViewInstructorShifts = userFunctions.Contains("view_InstructorShifts");
+                bool isInstructor = User.HasClaim(c => c.Type == "InstructorId");
+
+                // 商城與方案權限
+                bool canManageProductCategories = userFunctions.Contains("edit_ProductCategories");
+                bool canManageProducts = userFunctions.Contains("edit_ProductItems");
+                bool canManageProductOrders = userFunctions.Contains("edit_ProductOrders");
+                bool canManagePlans = userFunctions.Contains("edit_Plans");
+                bool canManagePlanOrders = userFunctions.Contains("edit_PlanOrders");
+
+                // 評論與其他權限
+                bool canManageCommentsAdmin = userFunctions.Contains("edit_Comments_admin");
+                bool canManageCommentsInstructor = userFunctions.Contains("edit_Comments_instructor");
+                bool canManageSensitiveWords = userFunctions.Contains("edit_SensitiveWords");
+            }
+
             <hr class="sidebar-divider">
 
             <div class="sidebar-heading">人員管理</div>
@@ -48,37 +69,62 @@
                 <div id="collapseUser" class="collapse" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <a class="collapse-item" asp-controller="Account" asp-action="ChangePassword">帳密修改</a>
-                        <a class="collapse-item" asp-controller="Account" asp-action="InstructorDetails">資料維護-營養師</a>
+                        @if (isInstructor)
+                        {
+                            <a class="collapse-item" asp-controller="Account" asp-action="InstructorDetails">資料維護-營養師</a>
+                        }
                     </div>
                 </div>
             </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStaff" aria-expanded="true" aria-controls="collapseTutor">
-                    <i class="fa-solid fa-people-group"></i>
-                    <span>帳號管理</span>
-                </a>
-                <div id="collapseStaff" class="collapse" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        
-                        <a class="collapse-item" asp-controller="Staff" asp-action="Index">使用者帳號管理</a>
-                        <a class="collapse-item" asp-controller="Staff" asp-action="RoleFunctions">權限管理</a>
-                        <a class="collapse-item" asp-controller="Staff" asp-action="InstructorList">營養師列表</a>
+
+            @if (canManageUsers || canManageRoles)
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStaff" aria-expanded="true" aria-controls="collapseTutor">
+                        <i class="fa-solid fa-people-group"></i>
+                        <span>帳號管理</span>
+                    </a>
+                    <div id="collapseStaff" class="collapse" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (canManageUsers)
+                            {
+                                <a class="collapse-item" asp-controller="Staff" asp-action="Index">使用者帳號管理</a>
+                                <a class="collapse-item" asp-controller="Staff" asp-action="InstructorList">營養師列表</a>
+                            }
+                            @if (canManageRoles)
+                            {
+                                <a class="collapse-item" asp-controller="Staff" asp-action="RoleFunctions">權限管理</a>
+                            }
+                        </div>
                     </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTutor" aria-expanded="true" aria-controls="collapseTutor">
-                    <i class="fa-regular fa-calendar-check"></i>
-                    <span>班表管理</span>
-                </a>
-                <div id="collapseTutor" class="collapse" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        
-                        <a class="collapse-item" asp-controller="Shift" asp-action="Index">營養師班表排程</a>
-                        <a class="collapse-item" asp-controller="Reservation" asp-action="Index">預約管理</a>
+                </li>
+            }
+
+            @if (canEditInstructorShifts || canViewInstructorShifts || isInstructor)
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTutor" aria-expanded="true" aria-controls="collapseTutor">
+                        <i class="fa-regular fa-calendar-check"></i>
+                        <span>班表管理</span>
+                    </a>
+                    <div id="collapseTutor" class="collapse" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (canEditInstructorShifts)
+                            {
+                                <a class="collapse-item" asp-controller="Shift" asp-action="Index">營養師班表排程</a>
+                            }
+                            @if (canViewInstructorShifts)
+                            {
+                                <a class="collapse-item" asp-controller="Shift" asp-action="AllShifts">所有營養師班表(管理)</a>
+                            }
+                            @if (isInstructor)
+                            {
+                                <a class="collapse-item" asp-controller="Reservation" asp-action="Index">預約管理</a>
+                            }
+                        </div>
                     </div>
-                </div>
-            </li>
+                </li>
+            }
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseClient"
                    aria-expanded="true" aria-controls="collapseClient">
@@ -94,52 +140,90 @@
                 </div>
             </li>
 
-            <hr class="sidebar-divider">
+            @if (canManageProductCategories || canManageProducts || canManageProductOrders || canManagePlans || canManagePlanOrders)
+            {
+                <hr class="sidebar-divider">
 
-            <div class="sidebar-heading">商城</div>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProduct" aria-expanded="true" aria-controls="collapseTutor">
-                    <i class='bx bx-store'></i>
-                    <span>商品管理</span>
-                </a>
-                <div id="collapseProduct" class="collapse" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        
-                        <a class="collapse-item" asp-controller="ProductCategories" asp-action="Index">類別管理</a>
-                        <a class="collapse-item" asp-controller="Products" asp-action="Index">商品品項管理</a>
-                        <a class="collapse-item" asp-controller="ProductOrders" asp-action="index">訂單管理</a>
-                    </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePlan" aria-expanded="true" aria-controls="collapseTutor">
-                    <i class="fa-solid fa-wallet"></i>
-                    <span>方案管理</span>
-                </a>
-                <div id="collapsePlan" class="collapse" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    
-                        <a class="collapse-item" asp-controller="TopUpPlans" asp-action="Index">儲值方案管理</a>
-                        <a class="collapse-item" asp-controller="PointOrders" asp-action="Index">儲值方案訂單管理</a>
-                </div>
-            </li>
+                <div class="sidebar-heading">商城</div>
+                
+                @if (canManageProductCategories || canManageProducts || canManageProductOrders)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProduct" aria-expanded="true" aria-controls="collapseTutor">
+                            <i class='bx bx-store'></i>
+                            <span>商品管理</span>
+                        </a>
+                        <div id="collapseProduct" class="collapse" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                @if (canManageProductCategories)
+                                {
+                                    <a class="collapse-item" asp-controller="ProductCategories" asp-action="Index">類別管理</a>
+                                }
+                                @if (canManageProducts)
+                                {
+                                    <a class="collapse-item" asp-controller="Products" asp-action="Index">商品品項管理</a>
+                                }
+                                @if (canManageProductOrders)
+                                {
+                                    <a class="collapse-item" asp-controller="ProductOrders" asp-action="index">訂單管理</a>
+                                }
+                            </div>
+                        </div>
+                    </li>
+                }
+
+                @if (canManagePlans || canManagePlanOrders)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePlan" aria-expanded="true" aria-controls="collapseTutor">
+                            <i class="fa-solid fa-wallet"></i>
+                            <span>方案管理</span>
+                        </a>
+                        <div id="collapsePlan" class="collapse" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                @if (canManagePlans)
+                                {
+                                    <a class="collapse-item" asp-controller="TopUpPlans" asp-action="Index">儲值方案管理</a>
+                                }
+                                @if (canManagePlanOrders)
+                                {
+                                    <a class="collapse-item" asp-controller="PointOrders" asp-action="Index">儲值方案訂單管理</a>
+                                }
+                            </div>
+                        </div>
+                    </li>
+                }
+            }
             <!-- 客戶-->
             <hr class="sidebar-divider">
 
             <div class="sidebar-heading">其他</div>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseOther"
-                   aria-expanded="true" aria-controls="collapseOther">
-                    <i class='bx bx-message-dots'></i>
-                    <span>評論管理</span>
-                </a>
-                <div id="collapseOther" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" asp-controller="Review" asp-action="AdminIndex">評論區管理 </a>
-                        <a class="collapse-item" asp-controller="Review" asp-action="InstructorIndex">評論區察看與舉報</a>
-                        <a class="collapse-item" asp-controller="SensitiveWords" asp-action="Index">敏感字詞管理</a>
+            @if (canManageCommentsAdmin || canManageCommentsInstructor || canManageSensitiveWords)
+            {
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseOther"
+                       aria-expanded="true" aria-controls="collapseOther">
+                        <i class='bx bx-message-dots'></i>
+                        <span>評論管理</span>
+                    </a>
+                    <div id="collapseOther" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            @if (canManageCommentsAdmin)
+                            {
+                                <a class="collapse-item" asp-controller="Review" asp-action="AdminIndex">評論區管理 </a>
+                            }
+                            @if (canManageCommentsInstructor)
+                            {
+                                <a class="collapse-item" asp-controller="Review" asp-action="InstructorIndex">評論區察看與舉報</a>
+                            }
+                            @if (canManageSensitiveWords)
+                            {
+                                <a class="collapse-item" asp-controller="SensitiveWords" asp-action="Index">敏感字詞管理</a>
+                            }
+                        </div>
                     </div>
-                </div>
-            </li>
+                </li>
+            }
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">

@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
+using Project_MyFitnessCoach.Models.Infra;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Controllers
 {
+    [Function("edit_PlanOrders")]
     public class PointOrdersController : Controller
     {
         private readonly MyFitnessCoachDbContext _context;

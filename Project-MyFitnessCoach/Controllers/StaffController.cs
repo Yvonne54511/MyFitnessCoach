@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.ViewModel;
 using Project_MyFitnessCoach.Models.DTOs;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Services;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.ViewModels;
@@ -11,6 +12,7 @@ using System.Linq;
 namespace Project_MyFitnessCoach.Controllers
 {
     [Authorize]
+    [Function("edit_UserAccounts")]
     public class StaffController : Controller
     {
         private readonly IUserService _userService;
@@ -295,6 +297,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         #region Role & Function Management (Moved from PermissionController)
+        [Function("edit_RoleFunctions")]
         public async Task<IActionResult> RoleFunctions()
         {
             var model = new PermissionViewModel

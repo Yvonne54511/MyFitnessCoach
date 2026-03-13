@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModel;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Services;
 using System.Threading.Tasks;
 
@@ -58,6 +59,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [Authorize]
+        [Function("edit_IntructorDetails")]
         [HttpGet]
         public async Task<IActionResult> InstructorDetails()
         {
@@ -77,6 +79,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [Authorize]
+        [Function("edit_IntructorDetails")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> InstructorDetails(InstructorDto dto, IFormFile? imageFile)
@@ -146,7 +149,7 @@ namespace Project_MyFitnessCoach.Controllers
             };
 
             var result = await _accountService.LoginAsync(dto);
-            if (!result.IsSuccess || result.Member == null)
+            if (!result.IsSuccess || result.User == null)
             {
                 ModelState.AddModelError(string.Empty, result.Message);
                 return View(model);
@@ -154,15 +157,25 @@ namespace Project_MyFitnessCoach.Controllers
 
             var claims = new List<Claim>
             {
-                new(ClaimTypes.NameIdentifier, result.Member.Id.ToString()),
-                new(ClaimTypes.Name, result.Member.UserName ?? result.Member.Account),
-                new(ClaimTypes.Email, result.Member.Email),
-                new("Account", result.Member.Account)
+                new(ClaimTypes.NameIdentifier, result.User.Id.ToString()),
+                new(ClaimTypes.Name, result.User.UserName ?? result.User.Account),
+                new(ClaimTypes.Email, result.User.Email),
+                new("Account", result.User.Account)
             };
 
-            foreach (var role in result.Member.Roles)
+            if (result.User.InstructorId.HasValue)
+            {
+                claims.Add(new Claim("InstructorId", result.User.InstructorId.Value.ToString()));
+            }
+
+            foreach (var role in result.User.Roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            foreach (var func in result.User.Functions)
+            {
+                claims.Add(new Claim("Function", func));
             }
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme, ClaimTypes.Name, ClaimTypes.Role);
@@ -217,6 +230,7 @@ namespace Project_MyFitnessCoach.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> ResetPassword(string code)
         {
@@ -232,6 +246,7 @@ namespace Project_MyFitnessCoach.Controllers
             });
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)

@@ -1,5 +1,6 @@
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModels;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,7 @@ namespace Project_MyFitnessCoach.Controllers
         // --- Instructor Actions ---
 
         [Authorize]
+        [Function("edit_InstructorShifts")]
         public IActionResult Index()
         {
             return View();
@@ -76,6 +78,7 @@ namespace Project_MyFitnessCoach.Controllers
         // --- Admin Actions ---
 
         [Authorize]
+        [Function("view_InstructorShifts")]
         public async Task<IActionResult> AllShifts(ShiftQueryCriteria criteria)
         {
             var shifts = await _adminService.GetAllInstructorShiftsAsync(criteria);

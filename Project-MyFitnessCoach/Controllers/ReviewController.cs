@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Services;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [Authorize]
+        [Function("edit_Comments_admin")]
         public async Task<IActionResult> AdminIndex()
         {
             var dtos = await _service.GetAdminReviewsAsync();
@@ -31,6 +33,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [Authorize]
+        [Function("edit_Comments_instructor")]
         public async Task<IActionResult> InstructorIndex()
         {
             var instructorIdClaim = User.FindFirst("InstructorId")?.Value;
@@ -54,7 +57,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SuspendMember(int memberId)
         {

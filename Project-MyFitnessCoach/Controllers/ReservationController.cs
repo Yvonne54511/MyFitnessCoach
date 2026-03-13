@@ -7,9 +7,12 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Project_MyFitnessCoach.Models.Infra;
+
 namespace Project_MyFitnessCoach.Controllers
 {
     [Authorize]
+    
     public class ReservationController : Controller
     {
         private readonly ReservationService _reservationService;
@@ -24,9 +27,10 @@ namespace Project_MyFitnessCoach.Controllers
         public async Task<IActionResult> Index(DateOnly? startDate, DateOnly? endDate)
         {
             var instructorIdClaim = User.FindFirst("InstructorId")?.Value;
-            int instructorId = int.Parse(instructorIdClaim ?? "0");
-
-            if (instructorId == 0) return RedirectToAction("Index", "Login");
+            if (string.IsNullOrEmpty(instructorIdClaim) || !int.TryParse(instructorIdClaim, out int instructorId) || instructorId == 0)
+            {
+                return Forbid();
+            }
 
             var bookedShifts = await _reservationService.GetBookedShiftsAsync(instructorId, startDate, endDate);
             

@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.DTOs;
+using Project_MyFitnessCoach.Models.Infra;
 using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Controllers
 {
+    [Function("edit_ProductOrders")]
     public class ProductOrdersController : Controller
     {
         private readonly ProductOrderService _service;

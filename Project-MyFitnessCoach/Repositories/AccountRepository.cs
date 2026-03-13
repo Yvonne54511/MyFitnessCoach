@@ -36,6 +36,8 @@ namespace Project_MyFitnessCoach.Repositories
             return await _db.Users
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
+                        .ThenInclude(r => r.RoleFunctions)
+                            .ThenInclude(rf => rf.Function)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Account == account);
         }
