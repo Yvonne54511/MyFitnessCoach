@@ -79,6 +79,20 @@ namespace Project_MyFitnessCoach.Repositories
                 .Take(5)
                 .ToListAsync();
 
+            // 商品類別排行 (透過明細與產品關聯)
+            var categoryRankings = await _context.ProductOrderDetails
+                .Include(d => d.Product)
+                .ThenInclude(p => p.Category)
+                .GroupBy(d => d.Product.Category.CategoryName)
+                .Select(g => new CategoryRankingDto
+                {
+                    CategoryName = g.Key ?? "未分類",
+                    TotalSold = g.Sum(d => d.Qty)
+                })
+                .OrderByDescending(g => g.TotalSold)
+                .Take(5)
+                .ToListAsync();
+
             return new ProductOrderDashboardDto
             {
                 TotalOrdersThisMonth = totalThisMonth,
@@ -88,7 +102,8 @@ namespace Project_MyFitnessCoach.Repositories
                 DisputedCount = await _context.ProductOrders.CountAsync(o => o.Status == 4), // 爭議中不限月份
                 DisputedChangePercentage = CalculateChange(disputedThisMonth, disputedLastMonth),
                 OrderTrends = trends,
-                CityDistributions = cityData
+                CityDistributions = cityData,
+                CategoryRankings = categoryRankings
             };
         }
 

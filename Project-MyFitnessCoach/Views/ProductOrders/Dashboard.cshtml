@@ -1,5 +1,5 @@
-@using Project_MyFitnessCoach.Models.DTOs
-@model ProductOrderDashboardDto
+@using Project_MyFitnessCoach.Models.ViewModels
+@model ProductOrderDashboardViewModel
 @{
     ViewData["Title"] = "訂單統計看板";
 }
@@ -45,30 +45,24 @@
             </a>
         </div>
 
-        <!-- 待出貨訂單 Card -->
+        <!-- 待處理訂單 Card -->
         <div class="col-xl-4 col-md-6 mb-4">
             <a asp-controller="ProductOrders" asp-action="Index" asp-route-status="1" class="text-decoration-none">
-                <div class="card border-left-success shadow h-100 py-2">
+                <div class="card border-left-danger shadow h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                    待出貨訂單</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.PendingShipmentCount.ToString("N0")</div>
+                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                    待處理訂單</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.PendingActionCount.ToString("N0")</div>
                                 <div class="mt-2 mb-0 text-muted text-xs">
-                                    @if (Model.PendingShipmentChangePercentage >= 0)
-                                    {
-                                        <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> @Model.PendingShipmentChangePercentage%</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(Model.PendingShipmentChangePercentage)%</span>
-                                    }
-                                    <span>與上月同期相比</span>
+                                    <span class="text-primary mr-1">待出貨: @Model.PendingShipmentCount</span>
+                                    <span class="mx-1">|</span>
+                                    <span class="text-warning ml-1">退貨: @Model.DisputedCount</span>
                                 </div>
                             </div>
                             <div class="col-auto">
-                                <i class="fas fa-shipping-fast fa-2x text-gray-300"></i>
+                                <i class="fas fa-tasks fa-2x text-gray-300"></i>
                             </div>
                         </div>
                     </div>
@@ -76,39 +70,37 @@
             </a>
         </div>
 
-        <!-- 退貨申請 Card -->
-        <div class="col-xl-4 col-md-6 mb-4">
-            <a asp-controller="ProductOrders" asp-action="Index" asp-route-status="4" class="text-decoration-none">
-                <div class="card border-left-warning shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                    退貨申請</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.DisputedCount.ToString("N0")</div>
-                                <div class="mt-2 mb-0 text-muted text-xs">
-                                    @if (Model.DisputedChangePercentage >= 0)
-                                    {
-                                        <span class="text-warning mr-2"><i class="fa fa-arrow-up"></i> @Model.DisputedChangePercentage%</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-success mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(Model.DisputedChangePercentage)%</span>
-                                    }
-                                    <span>與上月同期相比</span>
+        <!-- City Distribution Card (Moved Up) -->
+        <div class="col-xl-4 col-md-12 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body p-2">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">縣市分布</div>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <div class="chart-pie" style="height: 65px; width: 65px;">
+                                    <canvas id="cityDistributionChart"></canvas>
                                 </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                                <div class="small ml-2 flex-grow-1">
+                                    <div class="row">
+                                        @foreach (var city in Model.CityDistributions.Take(3))
+                                        {
+                                            <div class="col-4 text-center px-1">
+                                                <div class="font-weight-bold" style="font-size: 0.7rem;">@city.City</div>
+                                                <div class="text-gray-800" style="font-size: 0.8rem;">@city.Count</div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </a>
+            </div>
         </div>
     </div>
 
-    <!-- Content Row (Middle: 2 Columns) -->
+    <!-- Content Row (Middle: Trend and Category Ranking) -->
     <div class="row">
         <!-- Left: Order Trend Chart (2/3 width) -->
         <div class="col-xl-8 col-lg-7">
@@ -117,30 +109,30 @@
                     <h6 class="m-0 font-weight-bold text-primary">最近 14 天訂單趨勢</h6>
                 </div>
                 <div class="card-body">
-                    <div class="chart-area" style="height: 400px; position: relative;">
+                    <div class="chart-area" style="height: 350px; position: relative;">
                         <canvas id="orderTrendChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right: City Distribution (1/3 width) -->
+        <!-- Right: Category Ranking (1/3 width, Moved Up) -->
         <div class="col-xl-4 col-lg-5">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">收貨縣市分布 (前五)</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">熱銷商品類別排行</h6>
                 </div>
                 <div class="card-body">
-                    <div class="chart-pie pt-4 pb-2" style="height: 250px; position: relative;">
-                        <canvas id="cityDistributionChart"></canvas>
+                    <div class="chart-bar" style="height: 290px; position: relative;">
+                        <canvas id="categoryRankingChart"></canvas>
                     </div>
-                    <div class="mt-4">
+                    <div class="mt-4 small">
                         <ul class="list-group list-group-flush">
-                            @foreach (var city in Model.CityDistributions)
+                            @foreach (var cat in Model.CategoryRankings.Take(3))
                             {
-                                <li class="list-group-item d-flex justify-content-between align-items-center py-2">
-                                    <span><i class="fas fa-map-marker-alt text-primary mr-2"></i>@city.City</span>
-                                    <span class="badge badge-primary badge-pill">@city.Count</span>
+                                <li class="list-group-item d-flex justify-content-between align-items-center p-2">
+                                    <span>@cat.CategoryName</span>
+                                    <span class="badge badge-info badge-pill">@cat.TotalSold</span>
                                 </li>
                             }
                         </ul>
@@ -229,13 +221,13 @@
             }
         });
 
-        // --- City Distribution Chart ---
+        // --- City Distribution Chart (Donut style) ---
         var cityLabels = @Html.Raw(Json.Serialize(Model.CityDistributions.Select(c => c.City)));
         var cityData = @Html.Raw(Json.Serialize(Model.CityDistributions.Select(c => c.Count)));
 
         var ctxCity = document.getElementById("cityDistributionChart");
         var myPieChart = new Chart(ctxCity, {
-            type: 'pie',
+            type: 'doughnut',
             data: {
                 labels: cityLabels,
                 datasets: [{
@@ -247,20 +239,57 @@
             },
             options: {
                 maintainAspectRatio: false,
-                responsive: true,
                 tooltips: {
-                    backgroundColor: "rgb(255,255,255)", bodyFontColor: "#858796", borderColor: '#dddfeb', borderWidth: 1, xPadding: 15, yPadding: 15, displayColors: true, caretPadding: 10,
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
                 },
-                legend: { 
-                    display: true,
-                    position: 'bottom',
-                    labels: {
-                        padding: 20,
-                        boxWidth: 12
-                    }
+                legend: {
+                    display: false
                 },
-                cutoutPercentage: 0,
+                cutoutPercentage: 80,
             },
+        });
+
+        // --- Category Ranking Chart (New Horizontal Bar) ---
+        var catLabels = @Html.Raw(Json.Serialize(Model.CategoryRankings.Select(c => c.CategoryName)));
+        var catData = @Html.Raw(Json.Serialize(Model.CategoryRankings.Select(c => c.TotalSold)));
+
+        var ctxCat = document.getElementById("categoryRankingChart");
+        var myBarChart = new Chart(ctxCat, {
+            type: 'horizontalBar',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    label: "銷售數量",
+                    backgroundColor: "#36b9cc",
+                    hoverBackgroundColor: "#2c9faf",
+                    borderColor: "#36b9cc",
+                    data: catData,
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        ticks: { beginAtZero: true, precision: 0 },
+                        gridLines: { display: false, drawBorder: false }
+                    }],
+                    yAxes: [{
+                        gridLines: { display: false, drawBorder: false }
+                    }],
+                },
+                legend: { display: false },
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)", bodyFontColor: "#858796", borderColor: '#dddfeb', borderWidth: 1, xPadding: 10, yPadding: 10, displayColors: false, caretPadding: 10,
+                },
+            }
         });
     </script>
 }
