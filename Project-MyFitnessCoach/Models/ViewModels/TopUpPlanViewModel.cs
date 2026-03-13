@@ -23,8 +23,8 @@ namespace Project_MyFitnessCoach.Models.ViewModels
         [Display(Name = "描述")]
         public string Description { get; set; }
 
-        [Display(Name = "是否啟用")]
-        public bool? IsActive { get; set; }
+        [Display(Name = "是否上架")]
+        public bool IsActive { get; set; }
 
         [Display(Name = "排序")]
         public int? SortOrder { get; set; }

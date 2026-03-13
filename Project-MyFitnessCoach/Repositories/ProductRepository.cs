@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.EfModels;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Project_MyFitnessCoach.Models.Repositories
+namespace Project_MyFitnessCoach.Repositories
 {
-
 	public interface IProductRepository
 	{
 		List<ProductDto> GetAll();
@@ -12,7 +14,6 @@ namespace Project_MyFitnessCoach.Models.Repositories
 		void Create(ProductDto dto);
 		void Update(ProductDto dto);
 		void Deactivate(int id);
-		List<ProductCategory> GetCategories();
 	}
 
 	public class ProductRepository : IProductRepository
@@ -26,14 +27,12 @@ namespace Project_MyFitnessCoach.Models.Repositories
 
 		public List<ProductDto> GetAll()
 		{
-			var data = _context.Products
+			return _context.Products
 				.AsNoTracking()
 				.Include(p => p.Category)
 				.OrderBy(p => p.Category.SortOrder)
-				.ToDto()
+				.Select(p => p.ToDto())
 				.ToList();
-
-			return data;
 		}
 
 		public ProductDto GetById(int id)
@@ -60,10 +59,10 @@ namespace Project_MyFitnessCoach.Models.Repositories
 
 			product.CategoryId = dto.CategoryId;
 			product.Name = dto.Name;
-			product.ImageUrl = dto.ImageUrl;
+			product.ImageUrl = dto.ImageUrl ?? string.Empty;
 			product.OriginalPrice = dto.OriginalPrice;
 			product.UnitPrice = dto.UnitPrice;
-			product.Description = dto.Description;
+			product.Description = dto.Description ?? string.Empty;
 			product.SortOrder = dto.SortOrder;
 			product.IsActive = dto.IsActive;
 
@@ -77,13 +76,6 @@ namespace Project_MyFitnessCoach.Models.Repositories
 
 			product.IsActive = false;
 			_context.SaveChanges();
-		}
-
-		public List<ProductCategory> GetCategories()
-		{
-			return _context.ProductCategories
-				.OrderBy(c => c.SortOrder)
-				.ToList();
 		}
 	}
 }

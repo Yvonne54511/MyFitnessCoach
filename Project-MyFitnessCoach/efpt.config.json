@@ -8,7 +8,7 @@
    "MinimumProductVersion": "2.6.1378",
    "ModelNamespace": null,
    "OutputContextPath": null,
-   "OutputPath": "Models\\EfModels",
+   "OutputPath": "Models\/EfModels",
    "PluralRules": null,
    "PreserveCasingWithRegex": true,
    "ProjectRootNamespace": "Project_MyFitnessCoach",
@@ -32,11 +32,33 @@
       },
       {
          "Name": "[dbo].[Functions]",
-         "Name": "[dbo].[PointOrders]",
          "ObjectType": 0
       },
       {
          "Name": "[dbo].[Instructors]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Members]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[MemberViolations]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Notifications]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Nutrients]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PointOrders]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[PointsRecordDetails]",
          "ObjectType": 0
       },
@@ -50,12 +72,18 @@
       },
       {
          "Name": "[dbo].[ProductOrders]",
-         "Name": "[dbo].[Members]",
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[Nutrients]",
          "Name": "[dbo].[Products]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReserveOrders]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Reviews]",
          "ObjectType": 0
       },
       {
@@ -64,6 +92,18 @@
       },
       {
          "Name": "[dbo].[Roles]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SensitiveWords]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Shifts]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TopUpPlans]",
          "ObjectType": 0
       },
       {
@@ -81,6 +121,22 @@
       {
          "Name": "[dbo].[UserWallets]",
          "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[vw_RoleFunctions]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[vw_UserMemberFoodRecord]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[vw_UserRoleFunction]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[vw_UserRoleFunctions]",
+         "ObjectType": 3
       }
    ],
    "UiHint": null,

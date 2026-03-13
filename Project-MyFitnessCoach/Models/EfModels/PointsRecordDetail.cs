@@ -13,13 +13,17 @@ public partial class PointsRecordDetail
 
     public int UserWalletId { get; set; }
 
-    public string CreateAt { get; set; }
+    public DateTime CreateAt { get; set; }
 
-    public string PointAmount { get; set; }
+    public int PointAmount { get; set; }
 
     public string MerchandiseCategory { get; set; }
 
-    public string ReserveOrderId { get; set; }
+    public int? ReserveOrderId { get; set; }
 
     public virtual PointOrder PointOrder { get; set; }
+
+    public virtual ReserveOrder ReserveOrder { get; set; }
+
+    public virtual UserWallet UserWallet { get; set; }
 }

@@ -16,4 +16,6 @@ public partial class UserWallet
     public DateTime LastUpdated { get; set; }
 
     public virtual Member Member { get; set; }
+
+    public virtual ICollection<PointsRecordDetail> PointsRecordDetails { get; set; } = new List<PointsRecordDetail>();
 }

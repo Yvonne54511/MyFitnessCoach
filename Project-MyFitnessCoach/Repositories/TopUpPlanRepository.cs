@@ -1,8 +1,11 @@
-using Project_MyFitnessCoach.Models.DTOs;
+using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.EfModels;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using Project_MyFitnessCoach.Models.DTOs;
 
-namespace Project_MyFitnessCoach.Models.Repositories
+namespace Project_MyFitnessCoach.Repositories
 {
     public interface ITopUpPlanRepository
     {
@@ -52,11 +55,11 @@ namespace Project_MyFitnessCoach.Models.Repositories
             if (entity == null) return;
 
             entity.PlanName = dto.PlanName;
-            entity.Price = dto.Price;
-            entity.Points = dto.Points;
+            entity.Price = dto.Price ?? 0;
+            entity.Points = dto.Points ?? 0;
             entity.Description = dto.Description;
             entity.IsActive = dto.IsActive;
-            entity.SortOrder = dto.SortOrder;
+            entity.SortOrder = dto.SortOrder ?? 0;
 
             _context.SaveChanges();
         }

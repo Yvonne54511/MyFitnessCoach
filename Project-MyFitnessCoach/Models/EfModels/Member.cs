@@ -32,7 +32,16 @@ public partial class Member
     public int CancelCount { get; set; }
 
     public virtual ICollection<FoodRecord> FoodRecords { get; set; } = new List<FoodRecord>();
+
+    public virtual MemberViolation MemberViolation { get; set; }
+
+    public virtual ICollection<PointOrder> PointOrders { get; set; } = new List<PointOrder>();
+
     public virtual ICollection<ProductOrder> ProductOrders { get; set; } = new List<ProductOrder>();
+
+    public virtual ICollection<ReserveOrder> ReserveOrders { get; set; } = new List<ReserveOrder>();
+
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     public virtual User User { get; set; }
 

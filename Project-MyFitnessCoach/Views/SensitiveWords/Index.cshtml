@@ -1,0 +1,88 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.ViewModels.SensitiveWordViewModel>
+
+@{
+    ViewData["Title"] = "敏感字詞管理";
+}
+
+@section Styles {
+    <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800"><i class='bx bx-shield-x'></i> 敏感字詞管理</h1>
+    <p class="mb-4">管理系統中的敏感字詞清單，過濾評論內容。</p>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary"><i class='bx bx-list-check'></i> 敏感字詞列表</h6>
+            <a asp-action="Create" class="btn btn-primary btn-sm shadow-sm">
+                <i class='bx bx-plus'></i> 新增敏感字詞
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle text-center" id="sensitiveWordTable" width="100%" cellspacing="0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>敏感字詞</th>
+                            <th style="width: 150px;" class="no-sort">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="badge badge-danger p-2"><i class='bx bx-tag-alt'></i> @item.Word</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-info btn-circle btn-sm mr-2" title="編輯">
+                                            <i class='bx bx-edit-alt'></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('確定要刪除此敏感字詞嗎？');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-circle btn-sm" title="刪除">
+                                                <i class='bx bx-trash'></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#sensitiveWordTable').DataTable({
+                "columnDefs": [
+                    { "orderable": false, "targets": 1 }
+                ],
+                "language": {
+                    "processing": "處理中...",
+                    "loadingRecords": "載入中...",
+                    "lengthMenu": "顯示 _MENU_ 項結果",
+                    "zeroRecords": "沒有符合的結果",
+                    "info": "顯示第 _START_ 至 _END_ 項結果，共 _TOTAL_ 項",
+                    "infoEmpty": "顯示第 0 至 0 項結果，共 0 項",
+                    "infoFiltered": "(從 _MAX_ 項結果中過濾)",
+                    "search": "搜尋:",
+                    "paginate": {
+                        "first": "第一頁",
+                        "previous": "上一頁",
+                        "next": "下一頁",
+                        "last": "最後一頁"
+                    }
+                }
+            });
+        });
+    </script>
+}
