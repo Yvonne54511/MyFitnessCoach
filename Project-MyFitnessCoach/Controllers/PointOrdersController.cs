@@ -26,6 +26,89 @@ namespace Project_MyFitnessCoach.Controllers
             return View(pointOrders);
         }
 
+        // 點數數據概覽
+        public async Task<IActionResult> DashBoard()
+        {
+            var now = DateTime.Now;
+            var today = now.Date;
+            var yesterday = today.AddDays(-1);
+            var firstDayOfMonth = new DateTime(now.Year, now.Month, 1);
+            var firstDayOfLastMonth = firstDayOfMonth.AddMonths(-1);
+            var lastDayOfLastMonth = firstDayOfMonth.AddDays(-1);
+
+            // 1. KPI 數據
+            // 今日營收
+            var todayRevenue = await _context.PointOrders
+                .Where(o => o.CreateAt >= today && o.Status == 1)
+                .SumAsync(o => (decimal?)o.DiscountedPrice) ?? 0;
+            
+            var yesterdayRevenue = await _context.PointOrders
+                .Where(o => o.CreateAt >= yesterday && o.CreateAt < today && o.Status == 1)
+                .SumAsync(o => (decimal?)o.DiscountedPrice) ?? 0;
+
+            ViewBag.TodayRevenue = todayRevenue;
+            ViewBag.RevenueTrend = yesterdayRevenue == 0 ? 100 : Math.Round((todayRevenue - yesterdayRevenue) / yesterdayRevenue * 100, 1);
+
+            // 本月儲值總計
+            var monthTotal = await _context.PointOrders
+                .Where(o => o.CreateAt >= firstDayOfMonth && o.Status == 1)
+                .SumAsync(o => (decimal?)o.DiscountedPrice) ?? 0;
+            
+            var lastMonthTotal = await _context.PointOrders
+                .Where(o => o.CreateAt >= firstDayOfLastMonth && o.CreateAt <= lastDayOfLastMonth && o.Status == 1)
+                .SumAsync(o => (decimal?)o.DiscountedPrice) ?? 0;
+
+            ViewBag.MonthTotal = monthTotal;
+            ViewBag.MonthComparison = lastMonthTotal == 0 ? 100 : Math.Round((monthTotal - lastMonthTotal) / lastMonthTotal * 100, 1);
+
+            // 總流通點數 (負債)
+            ViewBag.TotalCirculatingPoints = await _context.UserWallets.SumAsync(w => (int?)w.CurrentBalance) ?? 0;
+
+            // 2. 儲值趨勢 (近 30 日)
+            var last30Days = Enumerable.Range(0, 30)
+                .Select(i => today.AddDays(-29 + i))
+                .ToList();
+
+            var trendData = await _context.PointOrders
+                .Where(o => o.CreateAt >= today.AddDays(-29) && o.Status == 1)
+                .GroupBy(o => o.CreateAt.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    Actual = g.Sum(o => o.DiscountedPrice),
+                    TotalPoints = g.Sum(o => o.PointQty)
+                })
+                .ToListAsync();
+
+            var labels = last30Days.Select(d => d.ToString("MM/dd")).ToList();
+            var actualPayments = last30Days.Select(d => trendData.FirstOrDefault(t => t.Date == d)?.Actual ?? 0).ToList();
+            var bonusPoints = last30Days.Select(d => {
+                var item = trendData.FirstOrDefault(t => t.Date == d);
+                return item == null ? 0 : (item.TotalPoints - (int)item.Actual); // 簡單假設 1元 = 1點，多的就是贈送
+            }).ToList();
+
+            ViewBag.TrendLabels = labels;
+            ViewBag.ActualPaymentData = actualPayments;
+            ViewBag.BonusPointsData = bonusPoints;
+
+            // 3. 熱門儲值方案 (根據點數金額分組統計)
+            var popularPlans = await _context.PointOrders
+                .GroupBy(o => o.PointQty)
+                .Select(g => new
+                {
+                    Points = g.Key,
+                    Count = g.Count()
+                })
+                .OrderByDescending(g => g.Count)
+                .Take(5)
+                .ToListAsync();
+
+            ViewBag.PlanNames = popularPlans.Select(p => $"{p.Points} 點方案").ToList();
+            ViewBag.PlanSales = popularPlans.Select(p => p.Count).ToList();
+
+            return View();
+        }
+
         // 儲值頁面
         public IActionResult Recharge()
         {
