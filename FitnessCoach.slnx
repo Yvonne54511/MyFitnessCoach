@@ -3,6 +3,7 @@
     <File Path="ReadMe/Yvonne.txt" />
     <File Path="Yvonne2.txt" />
     <File Path="Wawa.txt" />
+    <File Path="Yvonne3.txt" />
   </Folder>
   <Folder Name="/SqlCodes/" />
   <Project Path="Project-MyFitnessCoach/Project-MyFitnessCoach.csproj" Id="3c0b97ec-6f4c-4122-9581-b622a33095a2" />
