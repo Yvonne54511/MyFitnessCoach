@@ -279,5 +279,35 @@ public async Task<IViewComponentResult> InvokeAsync()
 2.  **效能優化**：在 C# 集合運算中完成過濾，比在 Razor 視圖中反覆使用 `@if` 效能更好且更易於單元測試。
 3.  **高度維護性**：若未來權限邏輯變動 (例如加入「暫時停用功能」的檢查)，僅需修改 `ViewComponent` 一處即可。
 
+
+## 十一、 統一權限導向機制 (避免寫死 Redirect)
+
+為了避免在各個 Filter 或 Controller 中寫死 `RedirectToAction("Login", "Account")`，應利用 ASP.NET Core 內建的配置化導向。
+
+### 1. 核心配置 (Program.cs)
+在 `AddCookie` 中定義標準路徑：
+```csharp
+options.LoginPath = "/Account/Login";        // 未登入時的去處
+options.AccessDeniedPath = "/Account/NoPermission"; // 權限不足時的去處
+```
+
+### 2. 觸發方式 (Filter / Attribute)
+在自定義的權限檢查邏輯中，若驗證失敗，應回傳 **ForbidResult** 而非 Redirect：
+
+```csharp
+if (!hasPermission)
+{
+    // 框架會自動讀取 AccessDeniedPath 進行導頁
+    context.Result = new ForbidResult(); 
+    return;
+}
+```
+
+### 3. 為什麼不直接 Redirect 到 Login？
+1.  **區分錯誤類型**：`ForbidResult` 代表 403 Forbidden (已登入但沒權限)，這與 401 Unauthorized (未登入) 在語意上不同。
+2.  **單一點管理**：未來若導向路徑變更，僅需修改 `Program.cs` 一處，全系統立即生效。
+3.  **ReturnUrl 自動處理**：內建機制會自動處理 `?ReturnUrl=`，確保使用者在獲得權限或重新登入後能回到原頁面。
+
 ---
-*本文件由資深系統設計師撰寫，旨在提供 MyFitnessCoach 系統在 UI 安全過濾上的標準實作方式。*
+*本文件由資深系統設計師撰寫，旨在建立 MyFitnessCoach 專案中高內聚、低耦合的授權導向架構。*
+

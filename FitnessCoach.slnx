@@ -1,4 +1,12 @@
 <Solution>
+  <Folder Name="/CodeExplain/">
+    <File Path="codeExplain/Account.md" />
+    <File Path="codeExplain/Cookie.md" />
+    <File Path="codeExplain/EmailService.txt" />
+    <File Path="codeExplain/HardDelete.md" />
+    <File Path="codeExplain/Staff.md" />
+    <File Path="Cookie-log.md" />
+  </Folder>
   <Folder Name="/ReadMe/">
     <File Path="//172.22.35.100/shares/MyFitnessCoach_Db.sql" />
     <File Path="codeExplain/Account.md" />
