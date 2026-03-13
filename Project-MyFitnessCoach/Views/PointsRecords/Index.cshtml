@@ -1,0 +1,85 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.EfModels.PointsRecordDetail>
+
+@{
+    ViewData["Title"] = "點數進出紀錄管理";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800">
+        點數進出紀錄管理
+        @if (ViewBag.MemberName != null)
+        {
+            <span class="text-primary"> - 會員：@ViewBag.MemberName</span>
+        }
+    </h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <form asp-action="Index" method="get" class="form-inline">
+                <div class="form-group mr-2">
+                    <label for="category" class="mr-2">異動類別：</label>
+                    <select name="category" id="category" class="form-control form-control-sm">
+                        <option value="">全部</option>
+                        <option value="Recharge" selected="@(ViewBag.Category == "Recharge")">儲值</option>
+                        <option value="Consultation" selected="@(ViewBag.Category == "Consultation")">諮詢扣款</option>
+                        <option value="Refund" selected="@(ViewBag.Category == "Refund")">退還點數</option>
+                        <option value="Adjustment" selected="@(ViewBag.Category == "Adjustment")">手動調整</option>
+                    </select>
+                </div>
+                <div class="form-group mr-2">
+                    <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control form-control-sm" placeholder="搜尋會員姓名...">
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">搜尋</button>
+            </form>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>紀錄 ID</th>
+                            <th>異動時間</th>
+                            <th>會員姓名</th>
+                            <th>異動點數</th>
+                            <th>類別</th>
+                            <th>關聯單號</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.CreateAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>@(item.UserWallet?.Member?.User?.UserName ?? "未知")</td>
+                                <td class="@(item.PointAmount >= 0 ? "text-success font-weight-bold" : "text-danger font-weight-bold")">
+                                    @(item.PointAmount >= 0 ? "+" + item.PointAmount : item.PointAmount.ToString())
+                                </td>
+                                <td>
+                                    @switch (item.MerchandiseCategory)
+                                    {
+                                        case "Recharge": <span class="badge badge-primary">儲值</span> break;
+                                        case "Consultation": <span class="badge badge-info">諮詢扣款</span> break;
+                                        case "Refund": <span class="badge badge-success">退還點數</span> break;
+                                        case "Adjustment": <span class="badge badge-warning">手動調整</span> break;
+                                        default: <span class="badge badge-secondary">@item.MerchandiseCategory</span> break;
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.PointOrderId != 0)
+                                    {
+                                        <span>儲值單: #@item.PointOrderId</span>
+                                    }
+                                    else if (item.ReserveOrderId.HasValue)
+                                    {
+                                        <span>預約單: #@item.ReserveOrderId.Value</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

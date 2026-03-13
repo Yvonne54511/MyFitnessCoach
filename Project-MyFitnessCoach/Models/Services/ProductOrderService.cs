@@ -19,6 +19,11 @@ namespace Project_MyFitnessCoach.Models.Services
             return await _repository.GetAllAsync(status, searchString);
         }
 
+        public async Task<ProductOrderDashboardDto> GetDashboardDataAsync()
+        {
+            return await _repository.GetDashboardDataAsync();
+        }
+
         public async Task<ProductOrderDto> GetByIdAsync(int id)
         {
             return await _repository.GetByIdAsync(id);

@@ -26,6 +26,8 @@
                         <option value="1" selected="@(ViewBag.CurrentStatus?.ToString() == "1")">已出貨</option>
                         <option value="2" selected="@(ViewBag.CurrentStatus?.ToString() == "2")">已送達</option>
                         <option value="3" selected="@(ViewBag.CurrentStatus?.ToString() == "3")">已取消</option>
+                        <option value="4" selected="@(ViewBag.CurrentStatus?.ToString() == "4")">退貨申請</option>
+                        <option value="5" selected="@(ViewBag.CurrentStatus?.ToString() == "5")">退貨申請中</option>
                     </select>
                 </div>
                 <div class="col-md-5">
@@ -72,11 +74,25 @@
                             <td>
                                 @switch (item.Status)
                                 {
-                                    case 0: <span class="badge bg-warning">待處理</span> break;
-                                    case 1: <span class="badge bg-primary">已出貨</span> break;
-                                    case 2: <span class="badge bg-success">已送達</span> break;
-                                    case 3: <span class="badge bg-danger">已取消</span> break;
-                                    default: <span class="badge bg-secondary">未知</span> break;
+                                    case 0: <span class="badge bg-warning text-white">待處理</span> break;
+                                    case 1:
+                                        <span class="badge bg-primary text-white">已出貨</span>
+                                        break;
+                                    case 2:
+                                        <span class="badge bg-success text-white">已送達</span>
+                                        break;
+                                    case 3:
+                                        <span class="badge bg-danger text-white">已取消</span>
+                                        break;
+                                    case 4:
+                                        <span class="badge bg-info text-white">申請退貨</span>
+                                        break;
+                                    case 5:
+                                        <span class="badge bg-dark text-white" style="background-color: #6f42c1 !important;">退貨申請中</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary text-white">未知</span>
+                                        break;
                                 }
                             </td>
                             <td>

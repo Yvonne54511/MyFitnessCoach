@@ -16,6 +16,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public string Mobile { get; set; }
         public int? TaxNumber { get; set; }
         public int Status { get; set; }
+        public string Memo { get; set; }
         public List<ProductOrderDetailDto> OrderDetails { get; set; } = new List<ProductOrderDetailDto>();
     }
 
