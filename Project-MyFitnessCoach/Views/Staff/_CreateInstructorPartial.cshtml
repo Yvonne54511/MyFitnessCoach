@@ -1,0 +1,116 @@
+@model Project_MyFitnessCoach.Models.DTOs.InstructorDto
+
+<div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createModalLabel">新增營養師</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="createInstructorForm" asp-action="CreateInstructor" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3 text-center">
+                                <label class="form-label d-block">形象照</label>
+                                <div class="img-preview-container mb-2" style="border: 1px solid #ddd; height: 180px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa; overflow: hidden;">
+                                    <img id="createImgPreview" src="https://via.placeholder.com/150x150?text=No+Image" alt="預覽圖" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                                </div>
+                                <input type="file" name="imageFile" id="createImageFile" class="form-control-file" accept="image/*" />
+                                <div id="createUploadErrorMessage" class="text-danger small mt-1" style="display:none;"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">選擇使用者 (僅限具營養師角色者)</label>
+                                <select asp-for="UserId" class="form-control" required>
+                                    <option value="">請選擇一位使用者...</option>
+                                    @foreach (var user in (IEnumerable<Project_MyFitnessCoach.Models.DTOs.UserDto>)ViewBag.Users)
+                                    {
+                                        <option value="@user.Id">@user.UserName (@user.Account)</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="UserId" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="HourWage" class="form-label">時薪</label>
+                                <input asp-for="HourWage" class="form-control" type="number" required min="0" />
+                                <span asp-validation-for="HourWage" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">個人簡介</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="請輸入營養師簡介..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div id="createGeneralErrorMessage" class="text-danger me-auto" style="display:none;"></div>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveCreate">儲存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // 圖片預覽
+        $('#createImageFile').on('change', function (e) {
+            $('#createUploadErrorMessage').hide();
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    $('#createUploadErrorMessage').text('圖片大小不能超過 2MB').show();
+                    $(this).val('');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    $('#createImgPreview').attr('src', event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        $('#createInstructorForm').on('submit', function (e) {
+            e.preventDefault();
+            $('#createGeneralErrorMessage').hide();
+            
+            var formData = new FormData(this);
+            var $btn = $('#btnSaveCreate');
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 儲存中...');
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (result) {
+                    if (result.success) {
+                        $('#createModal').modal('hide');
+                        // 稍微延遲 reload 讓使用者看到成功感
+                        setTimeout(function() {
+                            location.reload();
+                        }, 300);
+                    } else {
+                        $('#createGeneralErrorMessage').text(result.message || '新增失敗').show();
+                        $btn.prop('disabled', false).text('儲存');
+                    }
+                },
+                error: function() {
+                    $('#createGeneralErrorMessage').text('發生連線錯誤，請稍後再試').show();
+                    $btn.prop('disabled', false).text('儲存');
+                }
+            });
+        });
+    });
+</script>

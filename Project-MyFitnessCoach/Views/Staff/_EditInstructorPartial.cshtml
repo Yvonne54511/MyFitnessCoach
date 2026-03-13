@@ -1,0 +1,121 @@
+@model Project_MyFitnessCoach.Models.DTOs.InstructorDto
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="editModalLabel">編輯營養師: @Model.UserName</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editInstructorForm" asp-action="EditInstructor" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="UserId" />
+                    <input type="hidden" asp-for="ImageUrl" id="editHiddenImageUrl" />
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3 text-center">
+                                <label class="form-label d-block">形象照</label>
+                                <div class="img-preview-container mb-2" style="border: 1px solid #ddd; height: 180px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa; overflow: hidden;">
+                                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                                    {
+                                        <img id="editImgPreview" src="@Model.ImageUrl" alt="形象照" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.src='https://via.placeholder.com/150?text=No+Image'" />
+                                    }
+                                    else
+                                    {
+                                        <img id="editImgPreview" src="https://via.placeholder.com/150?text=No+Image" alt="無照片" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                                    }
+                                </div>
+                                <input type="file" name="imageFile" id="editImageFile" class="form-control-file" accept="image/*" />
+                                <div id="uploadErrorMessage" class="text-danger small mt-1" style="display:none;"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label asp-for="HourWage" class="form-label">時薪</label>
+                                <input asp-for="HourWage" class="form-control" type="number" required />
+                                <span asp-validation-for="HourWage" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="CancelCount" class="form-label">取消次數</label>
+                                <input asp-for="CancelCount" class="form-control" type="number" required />
+                                <span asp-validation-for="CancelCount" class="text-danger"></span>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" role="switch" asp-for="IsActive">
+                                <label class="form-check-label" asp-for="IsActive">帳號有效</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">個人簡介</label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div id="generalErrorMessage" class="text-danger me-auto" style="display:none;"></div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveEdit">儲存變更</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // 圖片預覽
+        $('#editImageFile').on('change', function (e) {
+            $('#uploadErrorMessage').hide();
+            const file = e.target.files[0];
+            if (file) {
+                // 檢查檔案大小 (例如 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    $('#uploadErrorMessage').text('圖片大小不能超過 2MB').show();
+                    $(this).val('');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    $('#editImgPreview').attr('src', event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        $('#editInstructorForm').on('submit', function (e) {
+            e.preventDefault();
+            $('#generalErrorMessage').hide();
+            
+            var formData = new FormData(this);
+            var $btn = $('#btnSaveEdit');
+            $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 儲存中...');
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (result) {
+                    if (result.success) {
+                        $('#editModal').modal('hide');
+                        location.reload();
+                    } else {
+                        $('#generalErrorMessage').text(result.message || '更新失敗').show();
+                    }
+                },
+                error: function() {
+                    $('#generalErrorMessage').text('發生連線錯誤，請稍後再試').show();
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).text('儲存變更');
+                }
+            });
+        });
+    });
+</script>

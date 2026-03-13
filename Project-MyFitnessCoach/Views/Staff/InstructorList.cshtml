@@ -1,0 +1,130 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.DTOs.InstructorDto>
+@{
+    ViewData["Title"] = "營養師管理";
+}
+
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center bg-primary text-white">
+            <h5 class="m-0 font-weight-bold">營養師管理列表</h5>
+            <button type="button" class="btn btn-light" onclick="showCreateModal()">
+                <i class="fas fa-plus"></i> 新增營養師
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="instructorTable" width="100%" cellspacing="0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>形象照</th>
+                            <th>姓名</th>
+                            <th>時薪</th>
+                            <th>取消次數</th>
+                            <th>狀態 (有效)</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td class="text-center">
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="形象照" 
+                                             style="width: 80px; height: auto; max-height: 80px; object-fit: contain; border: 1px solid #ddd;" 
+                                             onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'" />
+                                    }
+                                    else
+                                    {
+                                        <img src="https://via.placeholder.com/80x80?text=No+Image" alt="無照片" 
+                                             style="width: 80px; height: auto; max-height: 80px; object-fit: contain; border: 1px solid #ddd;" />
+                                    }
+                                </td>
+                                <td>@item.UserName</td>
+                                <td>@item.HourWage.ToString("C0")</td>
+                                <td>@item.CancelCount</td>
+                                <td class="text-center">
+                                    <div class="form-check form-switch d-inline-block">
+                                        <input class="form-check-input" type="checkbox" role="switch" 
+                                               id="isActive_@item.Id" @(item.IsActive ? "checked" : "")
+                                               onchange="toggleActive(@item.Id)">
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="btn btn-info btn-sm" onclick="showEditModal(@item.Id)">
+                                        <i class="fas fa-edit"></i> 編輯
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteInstructor(@item.Id)">
+                                        <i class="fas fa-trash"></i> 刪除
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Container -->
+<div id="modalContainer"></div>
+
+@section Scripts {
+    <script>
+        function showCreateModal() {
+            $.get('@Url.Action("CreateInstructor", "Staff")', function (data) {
+                $('#modalContainer').html(data);
+                $('#createModal').modal('show');
+            });
+        }
+
+        function showEditModal(id) {
+            $.get('@Url.Action("EditInstructor", "Staff")/' + id, function (data) {
+                $('#modalContainer').html(data);
+                $('#editModal').modal('show');
+            });
+        }
+
+        function toggleActive(id) {
+            $.ajax({
+                url: '@Url.Action("ToggleInstructorActive", "Staff")',
+                type: 'POST',
+                data: { 
+                    id: id,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() 
+                },
+                success: function (result) {
+                    if (result.success) {
+                        toastr.success(result.message);
+                    } else {
+                        toastr.error(result.message);
+                    }
+                }
+            });
+        }
+
+        function deleteInstructor(id) {
+            if (confirm('確定要刪除這位營養師嗎？這將會移除其營養師身份。')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteInstructor", "Staff")',
+                    type: 'POST',
+                    data: { 
+                        id: id,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() 
+                    },
+                    success: function (result) {
+                        if (result.success) {
+                            location.reload();
+                        } else {
+                            alert(result.message);
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+}

@@ -1,7 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.ViewModel;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Services;
+using Project_MyFitnessCoach.Models.Services;
+using Project_MyFitnessCoach.Models.ViewModels;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace Project_MyFitnessCoach.Controllers
 {
@@ -9,92 +14,244 @@ namespace Project_MyFitnessCoach.Controllers
     public class StaffController : Controller
     {
         private readonly IUserService _userService;
+        private readonly PermissionService _permissionService;
+        private readonly IInstructorService _instructorService;
+        private readonly IWebHostEnvironment _environment;
 
-        public StaffController(IUserService userService)
+        public StaffController(IUserService userService, PermissionService permissionService, IInstructorService instructorService, IWebHostEnvironment environment)
         {
             _userService = userService;
+            _permissionService = permissionService;
+            _instructorService = instructorService;
+            _environment = environment;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> InstructorList()
         {
-            var staffList = _userService.GetStaffList();
-            ViewBag.Roles = _userService.GetActiveRoles();
+            var instructors = await _instructorService.GetAllInstructorsAsync();
+            return View(instructors);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CreateInstructor()
+        {
+            ViewBag.Users = await _instructorService.GetAvailableUsersAsync();
+            return PartialView("_CreateInstructorPartial", new InstructorDto());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateInstructor(InstructorDto dto, IFormFile? imageFile)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                        var filePath = Path.Combine(_environment.WebRootPath, "img", "instructors", fileName);
+                        
+                        var folderPath = Path.GetDirectoryName(filePath);
+                        if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath!);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+                        dto.ImageUrl = "/img/instructors/" + fileName;
+                    }
+
+                    await _instructorService.CreateInstructorAsync(dto);
+                    return Json(new { success = true, message = "新增成功" });
+                }
+                
+                var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                return Json(new { success = false, message = "資料驗證失敗: " + errors });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "伺服器發生錯誤: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditInstructor(int id)
+        {
+            var dto = await _instructorService.GetInstructorByIdAsync(id);
+            if (dto == null) return NotFound();
+
+            return PartialView("_EditInstructorPartial", dto);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditInstructor(InstructorDto dto, IFormFile? imageFile)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                        var filePath = Path.Combine(_environment.WebRootPath, "img", "instructors", fileName);
+                        
+                        var folderPath = Path.GetDirectoryName(filePath);
+                        if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath!);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+                        dto.ImageUrl = "/img/instructors/" + fileName;
+                    }
+
+                    await _instructorService.UpdateInstructorAsync(dto);
+                    return Json(new { success = true, message = "更新成功" });
+                }
+                
+                var errors = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                return Json(new { success = false, message = "資料驗證失敗: " + errors });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "伺服器發生錯誤: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteInstructor(int id)
+        {
+            await _instructorService.DeleteInstructorAsync(id);
+            return Json(new { success = true, message = "刪除成功" });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleInstructorActive(int id)
+        {
+            await _instructorService.ToggleIsActiveAsync(id);
+            return Json(new { success = true, message = "狀態已變更" });
+        }
+
+        public async Task<IActionResult> Index(string? name = null, string? role = null, int? id = null)
+        {
+            var staffDtos = await _userService.GetStaffListAsync(name, role, id);
+            var staffList = staffDtos.Select(s => new StaffListItemViewModel
+            {
+                Id = s.Id,
+                UserName = s.UserName,
+                Email = s.Email,
+                Account = s.Account,
+                IsConfirmed = s.IsConfirmed,
+                IsActive = s.IsActive,
+                Roles = s.Roles
+            }).ToList();
+
+            ViewBag.Roles = await _userService.GetActiveRolesAsync();
+            ViewBag.CurrentName = name;
+            ViewBag.CurrentRole = role;
+            ViewBag.CurrentId = id;
+
             return View(staffList);
         }
 
         [HttpGet]
-        public IActionResult GetStaffList()
+        public async Task<IActionResult> GetStaffList(string? name = null, string? role = null, int? id = null)
         {
-            var staffList = _userService.GetStaffList();
+            var staffDtos = await _userService.GetStaffListAsync(name, role, id);
+            var staffList = staffDtos.Select(s => new StaffListItemViewModel
+            {
+                Id = s.Id,
+                UserName = s.UserName,
+                Email = s.Email,
+                Account = s.Account,
+                IsConfirmed = s.IsConfirmed,
+                IsActive = s.IsActive,
+                Roles = s.Roles
+            }).ToList();
+
             return PartialView("_StaffListPartial", staffList);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Invite(StaffInviteViewModel model)
+        public async Task<IActionResult> Invite(StaffInviteViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return Json(new { success = false, message = "資料格式錯誤" });
             }
 
-            var result = _userService.InviteStaff(model, code => 
+            var dto = new StaffInviteDto
+            {
+                UserName = model.UserName,
+                Email = model.Email,
+                RoleIds = model.RoleIds
+            };
+
+            var result = await _userService.InviteStaffAsync(dto, code => 
                 Url.Action("Activate", "Staff", new { code }, Request.Scheme));
 
-            if (result)
-            {
-                return Json(new { success = true, message = "邀請已送出" });
-            }
-
-            return Json(new { success = false, message = "邀請送出失敗，可能該 Email 已被註冊" });
+            return Json(new { success = result.IsSuccess, message = result.Message });
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var model = _userService.GetStaffEditModel(id);
-            if (model == null) return NotFound();
+            var dto = await _userService.GetStaffByIdAsync(id);
+            if (dto == null) return NotFound();
 
-            ViewBag.Roles = _userService.GetActiveRoles();
+            var model = new StaffEditViewModel
+            {
+                Id = dto.Id,
+                UserName = dto.UserName,
+                Email = dto.Email,
+                IsActive = dto.IsActive,
+                RoleIds = dto.RoleIds
+            };
+
+            ViewBag.Roles = await _userService.GetActiveRolesAsync();
             return PartialView("_EditStaffPartial", model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(StaffEditViewModel model)
+        public async Task<IActionResult> Edit(StaffEditViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return Json(new { success = false, message = "資料格式錯誤" });
             }
 
-            var result = _userService.UpdateStaff(model);
-            if (result)
+            var dto = new StaffUpdateDto
             {
-                return Json(new { success = true, message = "更新成功" });
-            }
+                Id = model.Id,
+                UserName = model.UserName,
+                Email = model.Email,
+                IsActive = model.IsActive,
+                RoleIds = model.RoleIds
+            };
 
-            return Json(new { success = false, message = "更新失敗" });
+            var result = await _userService.UpdateStaffAsync(dto);
+            return Json(new { success = result.IsSuccess, message = result.Message });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var result = _userService.DeleteStaff(id);
-            if (result)
-            {
-                return Json(new { success = true, message = "刪除成功" });
-            }
-
-            return Json(new { success = false, message = "刪除失敗" });
+            var result = await _userService.DeleteStaffAsync(id);
+            return Json(new { success = result.IsSuccess, message = result.Message });
         }
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult Activate(string code)
+        public async Task<IActionResult> Activate(string code)
         {
-            if (string.IsNullOrEmpty(code) || !_userService.IsConfirmCodeValid(code))
+            if (string.IsNullOrEmpty(code) || !await _userService.IsConfirmCodeValidAsync(code))
             {
                 ViewBag.Error = "啟動連結無效或已過期";
                 return View("ActivateError");
@@ -106,28 +263,158 @@ namespace Project_MyFitnessCoach.Controllers
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Activate(StaffActivateViewModel model)
+        public async Task<IActionResult> Activate(StaffActivateViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            if (_userService.AccountExists(model.Account))
+            if (await _userService.AccountExistsAsync(model.Account))
             {
                 ModelState.AddModelError("Account", "此帳號已被使用");
                 return View(model);
             }
 
-            var result = _userService.ActivateAccount(model);
-            if (result)
+            var dto = new StaffActivateDto
+            {
+                Code = model.Code,
+                Account = model.Account,
+                Password = model.Password
+            };
+
+            var result = await _userService.ActivateAccountAsync(dto);
+            if (result.IsSuccess)
             {
                 TempData["LoginMessage"] = "帳號啟用成功，請登入";
                 return RedirectToAction("Login", "Account");
             }
 
-            ViewBag.Error = "帳號啟用失敗";
+            ViewBag.Error = result.Message;
             return View("ActivateError");
         }
+
+        #region Role & Function Management (Moved from PermissionController)
+        public async Task<IActionResult> RoleFunctions()
+        {
+            var model = new PermissionViewModel
+            {
+                Roles = await _permissionService.GetAllRolesAsync(),
+                Functions = await _permissionService.GetAllFunctionsAsync(),
+                RoleFunctions = await _permissionService.GetAllRoleFunctionsAsync(),
+                RolePermissionRows = await _permissionService.GetRolePermissionRowsAsync()
+            };
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditRolePermission(int roleId)
+        {
+            var rows = await _permissionService.GetRolePermissionRowsAsync();
+            var row = rows.FirstOrDefault(r => r.RoleId == roleId);
+            if (row == null) return NotFound();
+
+            var staffList = await _userService.GetStaffListAsync();
+
+            var model = new EditRolePermissionViewModel
+            {
+                RoleId = row.RoleId,
+                RoleName = row.RoleName,
+                SelectedFunctionIds = row.FunctionIds,
+                SelectedUserIds = row.UserIds,
+                AllFunctions = await _permissionService.GetAllFunctionsAsync(),
+                AllStaff = staffList.ToList()
+            };
+
+            return PartialView("_EditRolePermissionPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateRolePermissions(int roleId, List<int> functionIds, List<int> userIds)
+        {
+            await _permissionService.UpdateRolePermissionsAsync(roleId, functionIds, userIds);
+            return Json(new { success = true, message = "權限更新成功" });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateRole(RoleDto dto)
+        {
+            if (ModelState.IsValid)
+            {
+                await _permissionService.CreateRoleAsync(dto);
+            }
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditRole(RoleDto dto)
+        {
+            if (ModelState.IsValid)
+            {
+                await _permissionService.UpdateRoleAsync(dto);
+            }
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteRole(int id)
+        {
+            await _permissionService.DeleteRoleAsync(id);
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateFunction(FunctionDto dto)
+        {
+            if (ModelState.IsValid || !string.IsNullOrEmpty(dto.FunctionName))
+            {
+                await _permissionService.CreateFunctionAsync(dto);
+            }
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditFunction(FunctionDto dto)
+        {
+            if (ModelState.IsValid)
+            {
+                await _permissionService.UpdateFunctionAsync(dto);
+            }
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteFunction(int id)
+        {
+            await _permissionService.DeleteFunctionAsync(id);
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateRoleFunction(RoleFunctionDto dto)
+        {
+            if (dto.RoleId > 0 && dto.FunctionId > 0)
+            {
+                await _permissionService.CreateRoleFunctionAsync(dto);
+            }
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteRoleFunction(int id)
+        {
+            await _permissionService.DeleteRoleFunctionAsync(id);
+            return RedirectToAction(nameof(RoleFunctions));
+        }
+        #endregion
     }
 }

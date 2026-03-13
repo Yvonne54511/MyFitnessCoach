@@ -1,76 +1,166 @@
 using Microsoft.AspNetCore.Identity;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.EfModels;
-using Project_MyFitnessCoach.Models.ViewModel;
 using Project_MyFitnessCoach.Repositories;
+using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Services
 {
-    public interface IAccountService
+    public interface IMemberAccountService
     {
-        (bool Success, string Message, User? User) Login(LoginViewModel model);
-        (bool Success, string Email, bool EmailSent) CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory);
-        (bool Success, string Message) ResetPassword(ResetPasswordViewModel model);
-        bool IsResetPasswordCodeValid(string code);
+        Task<LoginResultDto> LoginAsync(LoginDto dto);
+        Task<ResetPasswordRequestDto> CreateResetPasswordRequestAsync(string email, Func<string, string> resetUrlFactory);
+        Task<AccountResultDto> ResetPasswordAsync(ResetPasswordDto dto);
+        Task<bool> IsResetPasswordCodeValidAsync(string code);
+        Task<AccountResultDto> ChangePasswordAsync(int userId, string oldPassword, string newPassword);
+
+        Task<InstructorDto?> GetInstructorDetailsAsync(int userId);
+        Task<AccountResultDto> UpdateInstructorDetailsAsync(InstructorDto dto);
     }
 
-    public class AccountService : IAccountService
+    public class MemberAccountService : IMemberAccountService
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IEmailService _emailService;
-        private readonly PasswordHasher<User> _passwordHasher;
-        private readonly ILogger<AccountService> _logger;
+        private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly ILogger<MemberAccountService> _logger;
 
-        public AccountService(
+        public MemberAccountService(
             IAccountRepository accountRepository,
             IEmailService emailService,
-            ILogger<AccountService> logger)
+            ILogger<MemberAccountService> logger,
+            IPasswordHasher<User> passwordHasher)
         {
             _accountRepository = accountRepository;
             _emailService = emailService;
             _logger = logger;
-            _passwordHasher = new PasswordHasher<User>();
+            _passwordHasher = passwordHasher;
         }
 
-        public (bool Success, string Message, User? User) Login(LoginViewModel model)
+        public async Task<InstructorDto?> GetInstructorDetailsAsync(int userId)
         {
-            var user = _accountRepository.GetByAccount(model.Account);
+            var user = await _accountRepository.GetByIdAsync(userId);
+            if (user == null) return null;
+
+            var instructor = await _accountRepository.GetInstructorByUserIdAsync(userId);
+            return new InstructorDto
+            {
+                UserId = user.Id,
+                UserName = user.UserName ?? user.Account,
+                ImageUrl = instructor?.ImageUrl ?? string.Empty,
+                Description = instructor?.Description ?? string.Empty,
+                HourWage = instructor?.HourWage ?? 0
+            };
+        }
+
+        public async Task<AccountResultDto> UpdateInstructorDetailsAsync(InstructorDto dto)
+        {
+            var instructor = await _accountRepository.GetInstructorByUserIdAsync(dto.UserId);
+            if (instructor == null)
+            {
+                instructor = new Instructor
+                {
+                    UserId = dto.UserId,
+                    ImageUrl = dto.ImageUrl,
+                    Description = dto.Description,
+                    HourWage = dto.HourWage,
+                    IsActive = true
+                };
+                _accountRepository.AddInstructor(instructor);
+            }
+            else
+            {
+                instructor.ImageUrl = dto.ImageUrl;
+                instructor.Description = dto.Description;
+                instructor.HourWage = dto.HourWage;
+                _accountRepository.UpdateInstructor(instructor);
+            }
+
+            await _accountRepository.SaveChangesAsync();
+            return new AccountResultDto { IsSuccess = true, Message = "Ë≥áÊñôÊõ¥Êñ∞ÊàêÂäü" };
+        }
+
+        public async Task<AccountResultDto> ChangePasswordAsync(int userId, string oldPassword, string newPassword)
+        {
+            var user = await _accountRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return new AccountResultDto { IsSuccess = false, Message = "‰ΩøÁî®ËÄÖ‰∏çÂ≠òÂú®" };
+            }
+
+            var verification = _passwordHasher.VerifyHashedPassword(user, user.HashedPassword, oldPassword);
+            if (verification == PasswordVerificationResult.Failed)
+            {
+                return new AccountResultDto { IsSuccess = false, Message = "ÁõÆÂâçÂØÜÁ¢ºÈåØË™§" };
+            }
+
+            user.HashedPassword = _passwordHasher.HashPassword(user, newPassword);
+            _accountRepository.Update(user);
+            await _accountRepository.SaveChangesAsync();
+
+            return new AccountResultDto { IsSuccess = true, Message = "ÂØÜÁ¢º‰øÆÊîπÊàêÂäü" };
+        }
+
+        public async Task<LoginResultDto> LoginAsync(LoginDto dto)
+        {
+            var user = await _accountRepository.GetByAccountAsync(dto.Account);
 
             if (user == null || string.IsNullOrWhiteSpace(user.HashedPassword))
             {
-                return (false, "±b∏π©Œ±KΩXø˘ª~", null);
+                return new LoginResultDto { IsSuccess = false, Message = "Â∏≥ËôüÊàñÂØÜÁ¢ºÈåØË™§" };
             }
 
-            var result = _passwordHasher.VerifyHashedPassword(user, user.HashedPassword, model.Password);
+            var result = _passwordHasher.VerifyHashedPassword(user, user.HashedPassword, dto.Password);
             if (result == PasswordVerificationResult.Failed)
             {
-                return (false, "±b∏π©Œ±KΩXø˘ª~", null);
+                return new LoginResultDto { IsSuccess = false, Message = "Â∏≥ËôüÊàñÂØÜÁ¢ºÈåØË™§" };
             }
 
             if (!user.IsConfirmed)
             {
-                return (false, "¶π±b∏π©|•ºßπ¶®±“•Œ", null);
+                return new LoginResultDto { IsSuccess = false, Message = "Ê≠§Â∏≥ËôüÂ∞öÊú™ÂÆåÊàêÈ©óË≠â" };
             }
 
             if (!user.IsActive)
             {
-                return (false, "¶π±b∏π•ÿ´e•º±“•Œ°AΩ–¡pµ∏∫ﬁ≤z≠˚", null);
+                return new LoginResultDto { IsSuccess = false, Message = "Ê≠§Â∏≥ËôüÁõÆÂâçÂÅúÁî®‰∏≠ÔºåË´ãÊ¥ΩÁÆ°ÁêÜÂì°" };
             }
 
-            return (true, "µn§J¶®•\", user);
+            return new LoginResultDto
+            {
+                IsSuccess = true,
+                Message = "ÁôªÂÖ•ÊàêÂäü",
+                Member = new MemberDto
+                {
+                    Id = user.Id,
+                    Account = user.Account,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    HashedPassword = user.HashedPassword,
+                    Roles = user.UserRoles.Select(ur => ur.Role.RoleName).ToList()
+                }
+            };
         }
 
-        public (bool Success, string Email, bool EmailSent) CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory)
+        public async Task<ResetPasswordRequestDto> CreateResetPasswordRequestAsync(string email, Func<string, string> resetUrlFactory)
         {
-            var user = _accountRepository.GetByEmail(email);
+            var user = await _accountRepository.GetByEmailAsync(email);
             if (user == null)
             {
-                return (true, email, false);
+                return new ResetPasswordRequestDto 
+                { 
+                    IsSuccess = false, 
+                    Email = email, 
+                    EmailSent = false,
+                    Message = "Êâæ‰∏çÂà∞Â∏≥ËôüÔºåË´ãÊ™¢Êü•ÈõªÂ≠êÈÉµ‰ª∂Âú∞ÂùÄ‰∏¶ÂÜçË©¶‰∏ÄÊ¨°"
+                };
             }
 
             user.ResetPasswordConfirmCode = Guid.NewGuid().ToString("N");
             user.ResetPasswordConfirmCodeExpiry = DateTime.Now.AddMinutes(30);
+            
             _accountRepository.Update(user);
-            _accountRepository.SaveChanges();
+            await _accountRepository.SaveChangesAsync();
 
             var resetUrl = resetUrlFactory(user.ResetPasswordConfirmCode);
             var emailSent = false;
@@ -84,38 +174,44 @@ namespace Project_MyFitnessCoach.Services
                 _logger.LogError(ex, "Failed to send reset password email to {Email}", user.Email);
             }
 
-            return (true, user.Email, emailSent);
+            return new ResetPasswordRequestDto
+            {
+                IsSuccess = emailSent,
+                Email = user.Email,
+                EmailSent = emailSent,
+                Message = emailSent ? "ÈáçË®≠ÂØÜÁ¢º‰ø°‰ª∂Â∑≤ÂØÑÂá∫" : "ÂØÑÈÄÅÂ§±Êïó"
+            };
         }
 
-        public bool IsResetPasswordCodeValid(string code)
+        public async Task<bool> IsResetPasswordCodeValidAsync(string code)
         {
-            var user = _accountRepository.GetByResetPasswordCode(code);
+            var user = await _accountRepository.GetByResetPasswordCodeAsync(code);
             return user != null
                 && user.ResetPasswordConfirmCodeExpiry.HasValue
                 && user.ResetPasswordConfirmCodeExpiry.Value >= DateTime.Now;
         }
 
-        public (bool Success, string Message) ResetPassword(ResetPasswordViewModel model)
+        public async Task<AccountResultDto> ResetPasswordAsync(ResetPasswordDto dto)
         {
-            var user = _accountRepository.GetByResetPasswordCode(model.Code);
+            var user = await _accountRepository.GetByResetPasswordCodeAsync(dto.Code);
             if (user == null)
             {
-                return (false, "≠´≥]±KΩX≥sµ≤§£¶s¶b");
+                return new AccountResultDto { IsSuccess = false, Message = "ÈáçË®≠ÂØÜÁ¢ºÈÄ£Áµê‰∏çÂ≠òÂú®" };
             }
 
             if (!user.ResetPasswordConfirmCodeExpiry.HasValue || user.ResetPasswordConfirmCodeExpiry.Value < DateTime.Now)
             {
-                return (false, "≠´≥]±KΩX≥sµ≤§w•¢Æƒ°AΩ–≠´∑s•”Ω–");
+                return new AccountResultDto { IsSuccess = false, Message = "ÈáçË®≠ÂØÜÁ¢ºÈÄ£ÁµêÂ∑≤ÈÅéÊúüÔºåË´ãÈáçÊñ∞Áî≥Ë´ã" };
             }
 
-            user.HashedPassword = _passwordHasher.HashPassword(user, model.Password);
+            user.HashedPassword = _passwordHasher.HashPassword(user, dto.Password);
             user.ResetPasswordConfirmCode = null!;
             user.ResetPasswordConfirmCodeExpiry = null;
 
             _accountRepository.Update(user);
-            _accountRepository.SaveChanges();
+            await _accountRepository.SaveChangesAsync();
 
-            return (true, "±KΩX§w≠´≥]ßπ¶®°AΩ–≠´∑sµn§J");
+            return new AccountResultDto { IsSuccess = true, Message = "ÂØÜÁ¢ºÂ∑≤ÈáçË®≠ÂÆåÊàêÔºåË´ãÈáçÊñ∞ÁôªÂÖ•" };
         }
     }
 }

@@ -1,10 +1,17 @@
 <Solution>
   <Folder Name="/ReadMe/">
+    <File Path="//172.22.35.100/shares/MyFitnessCoach_Db.sql" />
+    <File Path="codeExplain/Account.md" />
+    <File Path="codeExplain/EmailService.txt" />
+    <File Path="codeExplain/Staff.md" />
     <File Path="ReadMe/Yvonne.txt" />
     <File Path="Yvonne2.txt" />
+    <File Path="Roles&amp;Function.txt" />
     <File Path="Wawa.txt" />
     <File Path="Yvonne3.txt" />
   </Folder>
-  <Folder Name="/SqlCodes/" />
+  <Folder Name="/SqlCodes/">
+    <File Path="//172.22.35.100/shares/MyFitnessCoach_Db.sql" />
+  </Folder>
   <Project Path="Project-MyFitnessCoach/Project-MyFitnessCoach.csproj" Id="3c0b97ec-6f4c-4122-9581-b622a33095a2" />
 </Solution>

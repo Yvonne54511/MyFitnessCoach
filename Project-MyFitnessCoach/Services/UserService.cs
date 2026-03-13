@@ -1,25 +1,43 @@
 using Microsoft.AspNetCore.Identity;
 using Project_MyFitnessCoach.Models.EfModels;
-using Project_MyFitnessCoach.Models.ViewModel;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Repositories;
 using System.Text;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Services
 {
     public interface IUserService
     {
-        IEnumerable<StaffListItemViewModel> GetStaffList();
-        StaffEditViewModel GetStaffEditModel(int id);
-        bool InviteStaff(StaffInviteViewModel model, Func<string, string> generateUrl);
-        bool UpdateStaff(StaffEditViewModel model);
-        bool DeleteStaff(int id);
-        IEnumerable<Role> GetActiveRoles();
-        bool ActivateAccount(StaffActivateViewModel model);
-        bool IsConfirmCodeValid(string code);
-        bool AccountExists(string account);
+        Task<IEnumerable<StaffDto>> GetStaffListAsync(string? name = null, string? role = null, int? id = null);
+        Task<StaffDto?> GetStaffByIdAsync(int id);
+        Task<StaffResultDto> InviteStaffAsync(StaffInviteDto dto, Func<string, string> generateUrl);
+        Task<StaffResultDto> UpdateStaffAsync(StaffUpdateDto dto);
+        Task<StaffResultDto> DeleteStaffAsync(int id);
+        Task<IEnumerable<Role>> GetActiveRolesAsync();
+        Task<StaffResultDto> ActivateAccountAsync(StaffActivateDto dto);
+        Task<bool> IsConfirmCodeValidAsync(string code);
+        Task<bool> AccountExistsAsync(string account);
+
+        // Role Management
+        Task<IEnumerable<RoleDto>> GetAllRolesAsync();
+        Task<StaffResultDto> CreateRoleAsync(RoleDto dto);
+        Task<StaffResultDto> UpdateRoleAsync(RoleDto dto);
+        Task<StaffResultDto> DeleteRoleAsync(int id);
+
+        // Function Management
+        Task<IEnumerable<FunctionDto>> GetAllFunctionsAsync();
+        Task<StaffResultDto> CreateFunctionAsync(FunctionDto dto);
+        Task<StaffResultDto> UpdateFunctionAsync(FunctionDto dto);
+        Task<StaffResultDto> DeleteFunctionAsync(int id);
+
+        // Role-Function Mapping
+        Task<IEnumerable<RoleFunctionDto>> GetRoleFunctionsAsync();
+        Task<StaffResultDto> ToggleRoleFunctionAsync(int roleId, int functionId, bool isEnabled);
+        Task<StaffResultDto> AddRoleFunctionsAsync(int roleId, IEnumerable<int> functionIds);
     }
 
     public class UserService : IUserService
@@ -35,9 +53,29 @@ namespace Project_MyFitnessCoach.Services
             _passwordHasher = new PasswordHasher<User>();
         }
 
-        public IEnumerable<StaffListItemViewModel> GetStaffList()
+        // Existing methods... (skipped for brevity)
+        public async Task<IEnumerable<StaffDto>> GetStaffListAsync(string? name = null, string? role = null, int? id = null)
         {
-            return _userRepository.GetAllUsers().Select(u => new StaffListItemViewModel
+            var users = await _userRepository.GetAllUsersAsync();
+            
+            var query = users.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                query = query.Where(u => u.UserName.Contains(name, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                query = query.Where(u => u.UserRoles.Any(ur => ur.Role.RoleName == role));
+            }
+
+            if (id.HasValue)
+            {
+                query = query.Where(u => u.Id == id.Value);
+            }
+
+            return query.Select(u => new StaffDto
             {
                 Id = u.Id,
                 UserName = u.UserName,
@@ -49,12 +87,12 @@ namespace Project_MyFitnessCoach.Services
             });
         }
 
-        public StaffEditViewModel GetStaffEditModel(int id)
+        public async Task<StaffDto?> GetStaffByIdAsync(int id)
         {
-            var user = _userRepository.GetUserById(id);
+            var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null) return null;
 
-            return new StaffEditViewModel
+            return new StaffDto
             {
                 Id = user.Id,
                 UserName = user.UserName,
@@ -64,79 +102,204 @@ namespace Project_MyFitnessCoach.Services
             };
         }
 
-        public bool InviteStaff(StaffInviteViewModel model, Func<string, string> generateUrl)
+        public async Task<StaffResultDto> InviteStaffAsync(StaffInviteDto dto, Func<string, string> generateUrl)
         {
-            var existingUser = _userRepository.GetUserByEmail(model.Email);
-            if (existingUser != null) return false;
+            var existingUser = await _userRepository.GetUserByEmailAsync(dto.Email);
+            if (existingUser != null)
+            {
+                return new StaffResultDto { IsSuccess = false, Message = "該 Email 已被註冊" };
+            }
 
             var confirmCode = Guid.NewGuid().ToString();
             var user = new User
             {
-                UserName = model.UserName,
-                Email = model.Email,
+                UserName = dto.UserName,
+                Email = dto.Email,
                 IsConfirmed = false,
                 IsActive = true,
                 NewMemberConfirmCode = confirmCode,
                 NewMemberConfirmCodeExpiry = DateTime.Now.AddDays(7)
             };
 
-            _userRepository.CreateUser(user, model.RoleIds);
+            await _userRepository.CreateUserAsync(user, dto.RoleIds);
 
             var invitationUrl = generateUrl(confirmCode);
-            return _emailService.SendStaffInvitationEmail(model.Email, model.UserName, invitationUrl);
+            var emailSent = _emailService.SendStaffInvitationEmail(dto.Email, dto.UserName, invitationUrl);
+
+            return new StaffResultDto 
+            { 
+                IsSuccess = emailSent, 
+                Message = emailSent ? "邀請已送出" : "邀請送出失敗，請檢查 SMTP 設定" 
+            };
         }
 
-        public bool UpdateStaff(StaffEditViewModel model)
+        public async Task<StaffResultDto> UpdateStaffAsync(StaffUpdateDto dto)
         {
             var user = new User
             {
-                Id = model.Id,
-                UserName = model.UserName,
-                Email = model.Email,
-                IsActive = model.IsActive
+                Id = dto.Id,
+                UserName = dto.UserName,
+                Email = dto.Email,
+                IsActive = dto.IsActive
             };
 
-            _userRepository.UpdateUser(user, model.RoleIds);
-            return true;
+            await _userRepository.UpdateUserAsync(user, dto.RoleIds);
+            return new StaffResultDto { IsSuccess = true, Message = "更新成功" };
         }
 
-        public bool DeleteStaff(int id)
+        public async Task<StaffResultDto> DeleteStaffAsync(int id)
         {
-            _userRepository.DeleteUser(id);
-            return true;
+            await _userRepository.DeleteUserAsync(id);
+            return new StaffResultDto { IsSuccess = true, Message = "刪除成功" };
         }
 
-        public IEnumerable<Role> GetActiveRoles()
+        public async Task<IEnumerable<Role>> GetActiveRolesAsync()
         {
-            return _userRepository.GetAllRoles();
+            return await _userRepository.GetAllRolesAsync();
         }
 
-        public bool ActivateAccount(StaffActivateViewModel model)
+        public async Task<StaffResultDto> ActivateAccountAsync(StaffActivateDto dto)
         {
-            var user = _userRepository.GetUserByConfirmCode(model.Code);
+            var user = await _userRepository.GetUserByConfirmCodeAsync(dto.Code);
             if (user == null || (user.NewMemberConfirmCodeExpiry.HasValue && user.NewMemberConfirmCodeExpiry < DateTime.Now))
             {
-                return false;
+                return new StaffResultDto { IsSuccess = false, Message = "啟動連結無效或已過期" };
             }
 
-            user.Account = model.Account;
-            user.HashedPassword = _passwordHasher.HashPassword(user, model.Password);
+            user.Account = dto.Account;
+            user.HashedPassword = _passwordHasher.HashPassword(user, dto.Password);
             user.IsConfirmed = true;
             user.IsActive = true;
 
-            _userRepository.UpdateUser(user, null); // Roles won't be updated here
-            return true;
+            await _userRepository.UpdateUserAsync(user, null);
+            return new StaffResultDto { IsSuccess = true, Message = "帳號啟用成功" };
         }
 
-        public bool IsConfirmCodeValid(string code)
+        public async Task<bool> IsConfirmCodeValidAsync(string code)
         {
-            var user = _userRepository.GetUserByConfirmCode(code);
+            var user = await _userRepository.GetUserByConfirmCodeAsync(code);
             return user != null && (!user.NewMemberConfirmCodeExpiry.HasValue || user.NewMemberConfirmCodeExpiry > DateTime.Now);
         }
 
-        public bool AccountExists(string account)
+        public async Task<bool> AccountExistsAsync(string account)
         {
-            return _userRepository.AccountExists(account);
+            return await _userRepository.AccountExistsAsync(account);
+        }
+
+        // --- Role Management ---
+        public async Task<IEnumerable<RoleDto>> GetAllRolesAsync()
+        {
+            var roles = await _userRepository.GetAllRolesIncludeInactiveAsync();
+            return roles.Select(r => new RoleDto
+            {
+                Id = r.Id,
+                RoleName = r.RoleName,
+                Description = r.Description,
+                IsActive = r.IsActive
+            });
+        }
+
+        public async Task<StaffResultDto> CreateRoleAsync(RoleDto dto)
+        {
+            await _userRepository.CreateRoleAsync(new Role
+            {
+                RoleName = dto.RoleName,
+                Description = dto.Description,
+                IsActive = dto.IsActive
+            });
+            return new StaffResultDto { IsSuccess = true, Message = "角色建立成功" };
+        }
+
+        public async Task<StaffResultDto> UpdateRoleAsync(RoleDto dto)
+        {
+            await _userRepository.UpdateRoleAsync(new Role
+            {
+                Id = dto.Id,
+                RoleName = dto.RoleName,
+                Description = dto.Description,
+                IsActive = dto.IsActive
+            });
+            return new StaffResultDto { IsSuccess = true, Message = "角色更新成功" };
+        }
+
+        public async Task<StaffResultDto> DeleteRoleAsync(int id)
+        {
+            await _userRepository.DeleteRoleAsync(id);
+            return new StaffResultDto { IsSuccess = true, Message = "角色刪除成功" };
+        }
+
+        // --- Function Management ---
+        public async Task<IEnumerable<FunctionDto>> GetAllFunctionsAsync()
+        {
+            var functions = await _userRepository.GetAllFunctionsAsync();
+            return functions.Select(f => new FunctionDto
+            {
+                Id = f.Id,
+                FunctionName = f.FunctionName,
+                Description = f.Description,
+                api_path = f.api_path,
+                IsActive = f.IsActive
+            });
+        }
+
+        public async Task<StaffResultDto> CreateFunctionAsync(FunctionDto dto)
+        {
+            await _userRepository.CreateFunctionAsync(new Function
+            {
+                FunctionName = dto.FunctionName,
+                Description = dto.Description,
+                api_path = dto.api_path,
+                IsActive = dto.IsActive
+            });
+            return new StaffResultDto { IsSuccess = true, Message = "功能建立成功" };
+        }
+
+        public async Task<StaffResultDto> UpdateFunctionAsync(FunctionDto dto)
+        {
+            await _userRepository.UpdateFunctionAsync(new Function
+            {
+                Id = dto.Id,
+                FunctionName = dto.FunctionName,
+                Description = dto.Description,
+                api_path = dto.api_path,
+                IsActive = dto.IsActive
+            });
+            return new StaffResultDto { IsSuccess = true, Message = "功能更新成功" };
+        }
+
+        public async Task<StaffResultDto> DeleteFunctionAsync(int id)
+        {
+            await _userRepository.DeleteFunctionAsync(id);
+            return new StaffResultDto { IsSuccess = true, Message = "功能刪除成功" };
+        }
+
+        // --- Role-Function Mapping ---
+        public async Task<IEnumerable<RoleFunctionDto>> GetRoleFunctionsAsync()
+        {
+            var mappings = await _userRepository.GetRoleFunctionsAsync();
+            return mappings.Select(m => new RoleFunctionDto
+            {
+                RoleId = m.RoleId,
+                RoleName = m.Role.RoleName,
+                FunctionId = m.FunctionId,
+                FunctionName = m.Function.FunctionName,
+                IsEnabled = true // If it exists in this table, it's enabled
+            });
+        }
+
+        public async Task<StaffResultDto> ToggleRoleFunctionAsync(int roleId, int functionId, bool isEnabled)
+        {
+            await _userRepository.UpdateRoleFunctionStatusAsync(roleId, functionId, isEnabled);
+            return new StaffResultDto { IsSuccess = true, Message = "權限更新成功" };
+        }
+
+        public async Task<StaffResultDto> AddRoleFunctionsAsync(int roleId, IEnumerable<int> functionIds)
+        {
+            foreach (var funcId in functionIds)
+            {
+                await _userRepository.AddRoleFunctionAsync(roleId, funcId);
+            }
+            return new StaffResultDto { IsSuccess = true, Message = "關聯建立成功" };
         }
     }
 }
