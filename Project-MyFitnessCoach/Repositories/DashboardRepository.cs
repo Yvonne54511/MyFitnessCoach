@@ -37,7 +37,7 @@ namespace Project_MyFitnessCoach.Repositories
 
         public IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies()
         {
-            var rawReviews = _db.Reviews.Where(r => !string.IsNullOrEmpty(r.Comment)).Select(r => r.Comment).ToList();
+            var rawReviews = _db.Reviews.Where(r => !r.IsBanned && !string.IsNullOrEmpty(r.Comment)).Select(r => r.Comment).ToList();
             var dbKeyWords = _db.KeyWords.ToList();
             var dbWordSet = new HashSet<string>(dbKeyWords.Select(k => k.Word));
 
@@ -94,7 +94,7 @@ namespace Project_MyFitnessCoach.Repositories
         {
             var instructors = _db.Instructors
                 .Include(i => i.User)
-                .Include(i => i.Reviews)
+                .Include(i => i.Reviews.Where(r => !r.IsBanned))
                     .ThenInclude(r => r.Member)
                         .ThenInclude(m => m.User)
                 .ToList();
@@ -188,7 +188,7 @@ namespace Project_MyFitnessCoach.Repositories
 
         public GlobalRatingDto GetGlobalRating()
         {
-            var reviews = _db.Reviews.ToList();
+            var reviews = _db.Reviews.Where(r => !r.IsBanned).ToList();
             if (!reviews.Any()) return new GlobalRatingDto();
 
             return new GlobalRatingDto
