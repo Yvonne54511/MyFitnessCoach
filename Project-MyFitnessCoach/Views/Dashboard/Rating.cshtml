@@ -11,9 +11,50 @@
                 <a asp-action="Rating" class="btn btn-primary active border-right">
                     <i class="fas fa-star-half-alt mr-1"></i> 營養師評分統計
                 </a>
-                <a asp-action="KeyWordAnalytics" class="btn btn-white text-primary">
+                <a asp-action="KeyWordAnalytics" class="btn btn-white text-primary border-right">
                     <i class="fas fa-search mr-1"></i> 評論字詞分析
                 </a>
+                <button type="button" class="btn btn-white text-info" data-toggle="modal" data-target="#rankingModal">
+                    <i class="fas fa-trophy mr-1 text-warning"></i> 查看排名
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 排名 Modal -->
+    <div class="modal fade" id="rankingModal" tabindex="-1" role="dialog" aria-labelledby="rankingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-header bg-gradient-info text-white border-0 py-3">
+                    <h5 class="modal-title font-weight-bold" id="rankingModalLabel">
+                        <i class="fas fa-crown mr-2"></i> 營養師人氣王排名
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body bg-light p-4">
+                    <div id="kahoot-podium" class="d-flex align-items-end justify-content-center mb-5" style="height: 300px;">
+                        <!-- JS 動態渲染 -->
+                    </div>
+                    <div id="ranking-list-container" class="mt-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover border-0">
+                                <thead class="bg-white">
+                                    <tr>
+                                        <th class="border-0 text-muted small text-uppercase">排名</th>
+                                        <th class="border-0 text-muted small text-uppercase">營養師</th>
+                                        <th class="border-0 text-muted small text-uppercase text-center">平均評分</th>
+                                        <th class="border-0 text-muted small text-uppercase text-center">總評論數</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ranking-table-body">
+                                    <!-- JS 動態渲染 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -287,17 +328,145 @@
             background-color: #dddfeb;
             border-radius: 3px;
         }
+
+        /* 排名相關樣式 */
+        .podium-item {
+            flex: 1;
+            margin: 0 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        .podium-item:hover {
+            transform: translateY(-10px);
+        }
+        .podium-block {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            border-radius: 10px 10px 0 0;
+            padding-top: 20px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .podium-block::after {
+            content: attr(data-rank);
+            font-size: 4rem;
+            opacity: 0.3;
+            position: absolute;
+            bottom: 10px;
+        }
+        .rank-1 .podium-block { height: 200px; background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%); }
+        .rank-2 .podium-block { height: 160px; background: linear-gradient(135deg, #aab2bd 0%, #858796 100%); }
+        .rank-3 .podium-block { height: 120px; background: linear-gradient(135deg, #cd7f32 0%, #a05a2c 100%); }
+        
+        .podium-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 4px solid white;
+            background-color: #eee;
+            margin-bottom: 15px;
+            object-fit: cover;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .rank-1 .podium-avatar { width: 90px; height: 90px; margin-top: -45px; border-color: #f6c23e; }
+        .rank-2 .podium-avatar { margin-top: -35px; border-color: #858796; }
+        .rank-3 .podium-avatar { margin-top: -35px; border-color: #cd7f32; }
+        
+        .podium-name { font-weight: bold; color: #4e73df; margin-bottom: 5px; text-align: center; }
+        .podium-score { font-size: 1.2rem; font-weight: 800; color: #5a5c69; }
+        
+        .crown-icon {
+            position: absolute;
+            top: -30px;
+            font-size: 1.5rem;
+            color: #f6c23e;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+        }
     </style>
 }
 
 @section Scripts {
     <script src="~/vendor/chart.js/Chart.min.js"></script>
     <script>
+        // ... (Chart.js 相關邏輯保持不變)
         // 設定 Chart.js 預設樣式
         Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
         Chart.defaults.global.defaultFontColor = '#858796';
 
-        // 準備資料
+        // 準備原始資料並排序 (由高到低)
+        var instructorData = @Html.Raw(Json.Serialize(Model.InstructorRatings));
+        var sortedInstructors = [...instructorData].sort((a, b) => b.AverageRating - a.AverageRating);
+
+        // 監聽 Modal 顯示事件
+        $('#rankingModal').on('show.bs.modal', function () {
+            renderRanking();
+        });
+
+        function renderRanking() {
+            var podiumHtml = '';
+            var tableHtml = '';
+            
+            // 處理前三名 (波地恩格式: 2, 1, 3)
+            var top3 = sortedInstructors.slice(0, 3);
+            var podiumOrder = [1, 0, 2]; // 索引 1 是第一名，索引 0 是第二名，索引 2 是第三名
+            
+            podiumOrder.forEach(idx => {
+                var inst = top3[idx];
+                if (inst) {
+                    var rankClass = (idx === 0) ? 'rank-2' : (idx === 1 ? 'rank-1' : 'rank-3');
+                    var rankNum = idx + 1;
+                    podiumHtml += `
+                        <div class="podium-item ${rankClass}" onclick="jumpToDetail(${inst.instructorId}, '${inst.instructorName}')" style="cursor:pointer;">
+                            <div class="podium-name">${inst.instructorName}</div>
+                            <div class="podium-score">${inst.averageRating.toFixed(1)}</div>
+                            <div class="podium-block" data-rank="${rankNum}">
+                                ${rankNum === 1 ? '<i class="fas fa-crown crown-icon"></i>' : ''}
+                                <img src="${inst.imageUrl || '/img/undraw_profile.svg'}" class="podium-avatar shadow">
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            $('#kahoot-podium').html(podiumHtml);
+
+            // 處理全體清單
+            sortedInstructors.forEach((inst, index) => {
+                var rankNum = index + 1;
+                var medal = '';
+                if (rankNum === 1) medal = '<i class="fas fa-medal text-warning"></i>';
+                else if (rankNum === 2) medal = '<i class="fas fa-medal text-secondary"></i>';
+                else if (rankNum === 3) medal = '<i class="fas fa-medal text-danger"></i>';
+
+                tableHtml += `
+                    <tr onclick="jumpToDetail(${inst.instructorId}, '${inst.instructorName}')" style="cursor:pointer;">
+                        <td class="font-weight-bold">${medal} ${rankNum}</td>
+                        <td>
+                            <img src="${inst.imageUrl || '/img/undraw_profile.svg'}" class="rounded-circle mr-2" width="30" height="30" style="object-fit:cover;">
+                            ${inst.instructorName}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge badge-warning px-3 py-2" style="font-size: 1rem;">${inst.averageRating.toFixed(1)}</span>
+                        </td>
+                        <td class="text-center text-muted">${inst.totalReviews}</td>
+                    </tr>
+                `;
+            });
+            $('#ranking-table-body').html(tableHtml);
+        }
+
+        function jumpToDetail(id, name) {
+            $('#rankingModal').modal('hide');
+            showInstructorDetail(id, name);
+        }
+
+        // 準備圖表資料
         var instructorLabels = @Html.Raw(Json.Serialize(Model.InstructorRatings.Select(i => i.InstructorName)));
         var instructorCounts = @Html.Raw(Json.Serialize(Model.InstructorRatings.Select(i => i.TotalReviews)));
         var instructorIds = @Html.Raw(Json.Serialize(Model.InstructorRatings.Select(i => i.InstructorId)));
