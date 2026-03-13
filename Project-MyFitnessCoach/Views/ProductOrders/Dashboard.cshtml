@@ -1,3 +1,5 @@
+@using Project_MyFitnessCoach.Models.DTOs
+@model ProductOrderDashboardDto
 @{
     ViewData["Title"] = "訂單統計看板";
 }
@@ -14,83 +16,134 @@
 
         <!-- 本月總訂單量 Card -->
         <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                本月總訂單量</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">1,280</div>
-                            <div class="mt-2 mb-0 text-muted text-xs">
-                                <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 12%</span>
-                                <span>與上月相比</span>
+            <a asp-controller="ProductOrders" asp-action="Index" class="text-decoration-none">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    本月總訂單量</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalOrdersThisMonth.ToString("N0")</div>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                    @if (Model.TotalOrdersChangePercentage >= 0)
+                                    {
+                                        <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> @Model.TotalOrdersChangePercentage%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(Model.TotalOrdersChangePercentage)%</span>
+                                    }
+                                    <span>與上月相比</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                            <div class="col-auto">
+                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- 待出貨訂單 Card -->
         <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                待出貨訂單</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">45</div>
-                            <div class="mt-2 mb-0 text-muted text-xs">
-                                <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> 5%</span>
-                                <span>與上月相比</span>
+            <a asp-controller="ProductOrders" asp-action="Index" asp-route-status="1" class="text-decoration-none">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    待出貨訂單</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.PendingShipmentCount.ToString("N0")</div>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                    @if (Model.PendingShipmentChangePercentage >= 0)
+                                    {
+                                        <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> @Model.PendingShipmentChangePercentage%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(Model.PendingShipmentChangePercentage)%</span>
+                                    }
+                                    <span>與上月同期相比</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-shipping-fast fa-2x text-gray-300"></i>
+                            <div class="col-auto">
+                                <i class="fas fa-shipping-fast fa-2x text-gray-300"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- 爭議訂單 Card -->
         <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                爭議訂單</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">12</div>
-                            <div class="mt-2 mb-0 text-muted text-xs">
-                                <span class="text-warning mr-2"><i class="fa fa-arrow-up"></i> 2%</span>
-                                <span>與上月相比</span>
+            <a asp-controller="ProductOrders" asp-action="Index" asp-route-status="4" class="text-decoration-none">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    爭議訂單</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.DisputedCount.ToString("N0")</div>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                    @if (Model.DisputedChangePercentage >= 0)
+                                    {
+                                        <span class="text-warning mr-2"><i class="fa fa-arrow-up"></i> @Model.DisputedChangePercentage%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(Model.DisputedChangePercentage)%</span>
+                                    }
+                                    <span>與上月同期相比</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
                             </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
-                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Content Row (Middle: 2 Columns) -->
+    <div class="row">
+        <!-- Left: Order Trend Chart (2/3 width) -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">最近 14 天訂單趨勢</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area" style="height: 400px; position: relative;">
+                        <canvas id="orderTrendChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Content Row (Middle: Line Chart) -->
-    <div class="row">
-        <div class="col-xl-12 col-lg-12">
+        <!-- Right: City Distribution (1/3 width) -->
+        <div class="col-xl-4 col-lg-5">
             <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">訂單趨勢折線圖</h6>
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">收貨縣市分布 (前五)</h6>
                 </div>
-                <!-- Card Body -->
                 <div class="card-body">
-                    <div class="chart-area" style="height: 400px;">
-                        <canvas id="orderTrendChart"></canvas>
+                    <div class="chart-pie pt-4 pb-2" style="height: 250px; position: relative;">
+                        <canvas id="cityDistributionChart"></canvas>
+                    </div>
+                    <div class="mt-4">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var city in Model.CityDistributions)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                    <span><i class="fas fa-map-marker-alt text-primary mr-2"></i>@city.City</span>
+                                    <span class="badge badge-primary badge-pill">@city.Count</span>
+                                </li>
+                            }
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -131,12 +184,15 @@
             return s.join(dec);
         }
 
-        // Line Chart Example
-        var ctx = document.getElementById("orderTrendChart");
-        var myLineChart = new Chart(ctx, {
+        // --- Order Trend Chart ---
+        var trendLabels = @Html.Raw(Json.Serialize(Model.OrderTrends.Select(t => t.Date)));
+        var trendData = @Html.Raw(Json.Serialize(Model.OrderTrends.Select(t => t.Count)));
+
+        var ctxTrend = document.getElementById("orderTrendChart");
+        var myLineChart = new Chart(ctxTrend, {
             type: 'line',
             data: {
-                labels: ["3/1", "3/2", "3/3", "3/4", "3/5", "3/6", "3/7", "3/8", "3/9", "3/10", "3/11", "3/12", "3/13"],
+                labels: trendLabels,
                 datasets: [{
                     label: "訂單數",
                     lineTension: 0.3,
@@ -150,75 +206,61 @@
                     pointHoverBorderColor: "rgba(78, 115, 223, 1)",
                     pointHitRadius: 10,
                     pointBorderWidth: 2,
-                    data: [45, 52, 48, 61, 55, 67, 70, 65, 72, 80, 78, 85, 92],
+                    data: trendData,
                 }],
             },
             options: {
                 maintainAspectRatio: false,
-                layout: {
-                    padding: {
-                        left: 10,
-                        right: 25,
-                        top: 25,
-                        bottom: 0
-                    }
-                },
+                responsive: true,
+                layout: { padding: { left: 10, right: 25, top: 25, bottom: 0 } },
                 scales: {
-                    xAxes: [{
-                        time: {
-                            unit: 'date'
-                        },
-                        gridLines: {
-                            display: false,
-                            drawBorder: false
-                        },
-                        ticks: {
-                            maxTicksLimit: 7
-                        }
-                    }],
+                    xAxes: [{ gridLines: { display: false, drawBorder: false }, ticks: { maxTicksLimit: 7 } }],
                     yAxes: [{
-                        ticks: {
-                            maxTicksLimit: 5,
-                            padding: 10,
-                            // Include a dollar sign in the ticks
-                            callback: function(value, index, values) {
-                                return number_format(value);
-                            }
-                        },
-                        gridLines: {
-                            color: "rgb(234, 236, 244)",
-                            zeroLineColor: "rgb(234, 236, 244)",
-                            drawBorder: false,
-                            borderDash: [2],
-                            zeroLineBorderDash: [2]
-                        }
+                        ticks: { maxTicksLimit: 5, padding: 10, beginAtZero: true, callback: function(value) { return number_format(value); } },
+                        gridLines: { color: "rgb(234, 236, 244)", zeroLineColor: "rgb(234, 236, 244)", drawBorder: false, borderDash: [2], zeroLineBorderDash: [2] }
                     }],
                 },
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltips: {
-                    backgroundColor: "rgb(255,255,255)",
-                    bodyFontColor: "#858796",
-                    titleMarginBottom: 10,
-                    titleFontColor: '#6e707e',
-                    titleFontSize: 14,
-                    borderColor: '#dddfeb',
-                    borderWidth: 1,
-                    xPadding: 15,
-                    yPadding: 15,
-                    displayColors: false,
-                    intersect: false,
-                    mode: 'index',
-                    caretPadding: 10,
-                    callbacks: {
-                        label: function(tooltipItem, chart) {
-                            var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-                            return datasetLabel + ': ' + number_format(tooltipItem.yLabel);
-                        }
-                    }
+                    backgroundColor: "rgb(255,255,255)", bodyFontColor: "#858796", titleMarginBottom: 10, titleFontColor: '#6e707e', titleFontSize: 14,
+                    borderColor: '#dddfeb', borderWidth: 1, xPadding: 15, yPadding: 15, displayColors: false, intersect: false, mode: 'index', caretPadding: 10,
+                    callbacks: { label: function(tooltipItem, chart) { return chart.datasets[tooltipItem.datasetIndex].label + ': ' + number_format(tooltipItem.yLabel); } }
                 }
             }
+        });
+
+        // --- City Distribution Chart ---
+        var cityLabels = @Html.Raw(Json.Serialize(Model.CityDistributions.Select(c => c.City)));
+        var cityData = @Html.Raw(Json.Serialize(Model.CityDistributions.Select(c => c.Count)));
+
+        var ctxCity = document.getElementById("cityDistributionChart");
+        var myPieChart = new Chart(ctxCity, {
+            type: 'pie',
+            data: {
+                labels: cityLabels,
+                datasets: [{
+                    data: cityData,
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617'],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)", bodyFontColor: "#858796", borderColor: '#dddfeb', borderWidth: 1, xPadding: 15, yPadding: 15, displayColors: true, caretPadding: 10,
+                },
+                legend: { 
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        boxWidth: 12
+                    }
+                },
+                cutoutPercentage: 0,
+            },
         });
     </script>
 }

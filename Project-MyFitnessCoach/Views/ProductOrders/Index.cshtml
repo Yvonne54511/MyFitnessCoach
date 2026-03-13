@@ -72,11 +72,19 @@
                             <td>
                                 @switch (item.Status)
                                 {
-                                    case 0: <span class="badge bg-warning">待處理</span> break;
-                                    case 1: <span class="badge bg-primary">已出貨</span> break;
-                                    case 2: <span class="badge bg-success">已送達</span> break;
-                                    case 3: <span class="badge bg-danger">已取消</span> break;
-                                    default: <span class="badge bg-secondary">未知</span> break;
+                                    case 0: <span class="badge bg-warning text-white">待處理</span> break;
+                                    case 1:
+                                        <span class="badge bg-primary text-white">已出貨</span>
+                                        break;
+                                    case 2:
+                                        <span class="badge bg-success text-white">已送達</span>
+                                        break;
+                                    case 3:
+                                        <span class="badge bg-danger text-white">已取消</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary text-white">未知</span>
+                                        break;
                                 }
                             </td>
                             <td>

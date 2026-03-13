@@ -26,9 +26,10 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         // GET: ProductOrders/Dashboard
-        public IActionResult Dashboard()
+        public async Task<IActionResult> Dashboard()
         {
-            return View();
+            var data = await _service.GetDashboardDataAsync();
+            return View(data);
         }
 
         // GET: ProductOrders/Details/5
