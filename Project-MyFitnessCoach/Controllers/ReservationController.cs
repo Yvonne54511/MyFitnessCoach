@@ -20,7 +20,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         // 講師查看自己已被預約的班表
-        [Authorize(Roles = "Instructor")]
+        [Authorize]
         public async Task<IActionResult> Index(DateOnly? startDate, DateOnly? endDate)
         {
             var instructorIdClaim = User.FindFirst("InstructorId")?.Value;
@@ -50,7 +50,7 @@ namespace Project_MyFitnessCoach.Controllers
 
         // 檢視並編輯預約詳細資訊 (Memorandum)
         [HttpGet]
-        [Authorize(Roles = "Instructor")]
+        [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
             var booking = await _reservationService.GetBookingDetailsAsync(id);
@@ -79,7 +79,7 @@ namespace Project_MyFitnessCoach.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Instructor")]
+        [Authorize]
         public async Task<IActionResult> Edit([Bind("Id,Memorandum")] ReservationViewModel model)
         {
             var booking = await _reservationService.GetBookingDetailsAsync(model.Id);

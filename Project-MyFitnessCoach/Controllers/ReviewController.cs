@@ -23,14 +23,14 @@ namespace Project_MyFitnessCoach.Controllers
             return Forbid();
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         public async Task<IActionResult> AdminIndex()
         {
             var dtos = await _service.GetAdminReviewsAsync();
             return View(dtos);
         }
 
-        [Authorize(Roles = "Instructor")]
+        [Authorize]
         public async Task<IActionResult> InstructorIndex()
         {
             var instructorIdClaim = User.FindFirst("InstructorId")?.Value;
@@ -64,7 +64,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Instructor")]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ReportReview(int id, string reason)
         {

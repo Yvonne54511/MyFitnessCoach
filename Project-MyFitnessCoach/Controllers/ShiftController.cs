@@ -25,14 +25,14 @@ namespace Project_MyFitnessCoach.Controllers
 
         // --- Instructor Actions ---
 
-        [Authorize(Roles = "Instructor")]
+        [Authorize]
         public IActionResult Index()
         {
             return View();
         }
 
         [HttpGet]
-        [Authorize(Roles = "Instructor")]
+        [Authorize]
         public async Task<IActionResult> GetBookedSlots()
         {
             var instructorIdClaim = User.FindFirst("InstructorId")?.Value;
@@ -50,7 +50,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Instructor")]
+        [Authorize]
         public async Task<IActionResult> Submit([FromBody] List<ShiftViewModel> vm)
         {
             var instructorIdClaim = User.FindFirst("InstructorId")?.Value;
@@ -75,7 +75,7 @@ namespace Project_MyFitnessCoach.Controllers
 
         // --- Admin Actions ---
 
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         public async Task<IActionResult> AllShifts(ShiftQueryCriteria criteria)
         {
             var shifts = await _adminService.GetAllInstructorShiftsAsync(criteria);
@@ -114,7 +114,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         public async Task<IActionResult> UpdateShiftStatus(int shiftId, bool isBooked)
         {
             var result = await _adminService.UpdateShiftStatusAsync(shiftId, isBooked);

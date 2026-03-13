@@ -61,7 +61,7 @@
                     <label asp-for="Password"></label>
                     <div class="input-frame">
                         <i class="fas fa-lock"></i>
-                        <input asp-for="Password" id="passwordInput" placeholder="請輸入密碼" />
+                        <input asp-for="Password" placeholder="請輸入密碼" />
                         <button type="button" class="icon-button" id="togglePassword" aria-label="顯示或隱藏密碼">
                             <i class="fas fa-eye-slash" id="eyeIcon"></i>
                         </button>
@@ -78,10 +78,11 @@
         </section>
     </main>
 
+    <script src="~/vendor/jquery/jquery.min.js"></script>
     <partial name="_ValidationScriptsPartial" />
     <script>
         const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('passwordInput');
+        const passwordInput = document.getElementById('Password'); // 改回對應屬性生成的 ID
         const eyeIcon = document.getElementById('eyeIcon');
 
         if (togglePassword && passwordInput && eyeIcon) {

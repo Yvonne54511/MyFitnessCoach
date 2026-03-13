@@ -134,6 +134,16 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 }
 ```
 
+### 步驟 5：安全性擴充 (BaseController)
+建立一個基礎控制器，讓所有後台頁面繼承，強制要求登入：
+```csharp
+[Authorize] // 全域強制登入
+public class AdminBaseController : Controller
+{
+    // 可以在這裡定義通用的 UserContext 屬性
+    public int CurrentUserId => int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+}
+```
 
 ## 七、 重點觀念分析：[Authorize] vs [Permission]
 
@@ -151,6 +161,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 | **範例** | `[Authorize]` | `[Permission("Product_Delete")]` |
 | **靈活性** | 低 (修改角色需重新編譯程式碼) | 高 (修改資料庫即可即時生效) |
 
+### 3. 為什麼我們需要 [Permission]？
+如果只使用 `[Authorize(Roles = "Admin")]`，當系統需求變動（例如要把「刪除商品」權限開放給「店長」角色）時，開發者必須手動修改每一支 Controller 的程式碼。
+
+使用 `[Permission]` 後，程式碼只會檢查是否有「`Product_Delete`」這把鑰匙。至於誰擁有這把鑰匙，**完全由資料庫後台動態決定**，這就是系統架構中所謂的「解耦合 (Decoupling)」。
 
 ## 八、 Functions 資料表中 api_path 欄位的用途與防護實作
 
@@ -201,7 +215,6 @@ public class DynamicRouteFilter : IAsyncActionFilter
 }
 ```
 
-
 ## 九、 動態選單設計：整合 asp-controller 與 asp-action
 
 雖然目前 `_Layout` 使用 `asp-controller` 和 `asp-action` 進行硬編碼，但為了達到真正的「配置化管理」，建議將選單改為由資料庫驅動。
@@ -233,7 +246,6 @@ public class DynamicRouteFilter : IAsyncActionFilter
     }
 </ul>
 ```
-
 
 ## 十、 ViewComponent 權限過濾實作
 
@@ -269,7 +281,3 @@ public async Task<IViewComponentResult> InvokeAsync()
 
 ---
 *本文件由資深系統設計師撰寫，旨在提供 MyFitnessCoach 系統在 UI 安全過濾上的標準實作方式。*
-
-
-
-

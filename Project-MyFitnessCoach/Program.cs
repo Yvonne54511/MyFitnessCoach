@@ -41,14 +41,6 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<Project_MyFitnessCoach.Repositories.IRoleFunctionRepository, Project_MyFitnessCoach.Repositories.RoleFunctionRepository>();
             builder.Services.AddScoped<PermissionService>();
 
-            builder.Services
-                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
-                {
-                    options.LoginPath = "/Account/Login";
-                    options.AccessDeniedPath = "/Account/Login";
-                });
-
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IAccountRepository, AccountRepository>();
@@ -63,12 +55,6 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
             builder.Services.AddScoped<IInstructorService, InstructorService>();
-
-            // 註冊 DbContext
-            builder.Services.AddDbContext<MyFitnessCoachDbContext>(option =>
-            {
-                option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-            });
 
 			// 註冊 ShiftRepository
 			builder.Services.AddScoped<IShiftRepository, ShiftRepository>();

@@ -1,5 +1,7 @@
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Repositories;
+using Microsoft.AspNetCore.Identity;
+using Project_MyFitnessCoach.Models.EfModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +12,12 @@ namespace Project_MyFitnessCoach.Services
 	public class LoginService
 	{
 		private readonly ILoginRepository _repository;
+		private readonly IPasswordHasher<User> _passwordHasher;
 
-		public LoginService(ILoginRepository repository)
+		public LoginService(ILoginRepository repository, IPasswordHasher<User> passwordHasher)
 		{
 			_repository = repository;
+			_passwordHasher = passwordHasher;
 		}
 
 		public async Task<Result> LoginAsync(LoginDto dto)
@@ -21,7 +25,12 @@ namespace Project_MyFitnessCoach.Services
 			var user = await _repository.GetByAccountAsync(dto.Account);
 			if (user == null) return Result.Failure("帳號不存在");
 
-			if (user.HashedPassword != dto.Password) return Result.Failure("密碼錯誤");
+			// 使用 PasswordHasher 驗證密碼
+			var verifyResult = _passwordHasher.VerifyHashedPassword(user, user.HashedPassword, dto.Password);
+			if (verifyResult == PasswordVerificationResult.Failed)
+			{
+				return Result.Failure("密碼錯誤");
+			}
 
             // 抓取角色名稱清單，並去除多餘空格
             var roles = user.UserRoles?
