@@ -21,3 +21,4 @@ topupplan edit 沒有上傳新圖片出現:"The 上傳圖片 field is required."
 topupplan 的 index <td>@Html.DisplayFor(modelItem => item.Price)</td> 這裡價格小數點後不要有數字
 
 topupplan 和 product 的 crud頁面 方案資訊 (ID: 2)這行 不要顯示在畫面上
+
