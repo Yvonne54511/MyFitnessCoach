@@ -403,6 +403,7 @@ public partial class MyFitnessCoachDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasPrecision(0)
                 .HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IsBanned).HasAnnotation("Relational:DefaultConstraintName", "DF_Reviews_IsBanned");
 
             entity.HasOne(d => d.Instructor).WithMany(p => p.Reviews)
                 .HasForeignKey(d => d.InstructorId)
