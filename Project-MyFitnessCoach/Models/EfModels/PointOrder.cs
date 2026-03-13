@@ -11,6 +11,8 @@ public partial class PointOrder
 
     public int MemberId { get; set; }
 
+    public int TopUpPlanId { get; set; }
+
     public DateTime CreateAt { get; set; }
 
     public int PointQty { get; set; }
@@ -19,7 +21,11 @@ public partial class PointOrder
 
     public decimal DiscountedPrice { get; set; }
 
+    public int Status { get; set; }
+
     public virtual Member Member { get; set; }
 
     public virtual ICollection<PointsRecordDetail> PointsRecordDetails { get; set; } = new List<PointsRecordDetail>();
+
+    public virtual TopUpPlan TopUpPlan { get; set; }
 }

@@ -11,6 +11,8 @@ public partial class TopUpPlan
 
     public string PlanName { get; set; }
 
+    public string ImageUrl { get; set; }
+
     public decimal Price { get; set; }
 
     public int Points { get; set; }
@@ -20,4 +22,6 @@ public partial class TopUpPlan
     public bool IsActive { get; set; }
 
     public int SortOrder { get; set; }
+
+    public virtual ICollection<PointOrder> PointOrders { get; set; } = new List<PointOrder>();
 }

@@ -14,6 +14,7 @@ namespace Project_MyFitnessCoach.Repositories
         Task UpdateStatusAsync(int id, int newStatus);
         Task DeleteAsync(int id);
         bool Exists(int id);
+        Task<ProductOrderDashboardDto> GetDashboardDataAsync();
     }
 
     public class ProductOrderRepository : IProductOrderRepository
@@ -23,6 +24,71 @@ namespace Project_MyFitnessCoach.Repositories
         public ProductOrderRepository(MyFitnessCoachDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<ProductOrderDashboardDto> GetDashboardDataAsync()
+        {
+            var now = DateTime.Now;
+            var startOfMonth = new DateTime(now.Year, now.Month, 1);
+            var startOfLastMonth = startOfMonth.AddMonths(-1);
+            var endOfLastMonth = startOfMonth.AddDays(-1);
+
+            // 本月與上月訂單量
+            var totalThisMonth = await _context.ProductOrders.CountAsync(o => o.CreateAt >= startOfMonth);
+            var totalLastMonth = await _context.ProductOrders.CountAsync(o => o.CreateAt >= startOfLastMonth && o.CreateAt <= endOfLastMonth);
+            
+            // 待出貨 (Status = 1)
+            var pendingThisMonth = await _context.ProductOrders.CountAsync(o => o.Status == 1 && o.CreateAt >= startOfMonth);
+            var pendingLastMonth = await _context.ProductOrders.CountAsync(o => o.Status == 1 && o.CreateAt >= startOfLastMonth && o.CreateAt <= endOfLastMonth);
+            
+            // 爭議中/退貨申請 (Status = 4)
+            var disputedThisMonth = await _context.ProductOrders.CountAsync(o => o.Status == 4 && o.CreateAt >= startOfMonth);
+            var disputedLastMonth = await _context.ProductOrders.CountAsync(o => o.Status == 4 && o.CreateAt >= startOfLastMonth && o.CreateAt <= endOfLastMonth);
+
+            // 計算百分比變動
+            double CalculateChange(int current, int previous)
+            {
+                if (previous == 0) return current > 0 ? 100 : 0;
+                return Math.Round((double)(current - previous) / previous * 100, 1);
+            }
+
+            // 趨勢圖 (最近 14 天)
+            var startDate = now.AddDays(-13).Date;
+            var trendData = await _context.ProductOrders
+                .Where(o => o.CreateAt >= startDate)
+                .GroupBy(o => o.CreateAt.Date)
+                .Select(g => new { Date = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var trends = new List<OrderTrendDto>();
+            for (int i = 0; i < 14; i++)
+            {
+                var date = startDate.AddDays(i);
+                var count = trendData.FirstOrDefault(d => d.Date == date)?.Count ?? 0;
+                trends.Add(new OrderTrendDto { Date = date.ToString("M/d"), Count = count });
+            }
+
+            // 縣市分布 (取 Address 前 3 個字)
+            var cityData = await _context.ProductOrders
+                .Where(o => !string.IsNullOrEmpty(o.Address))
+                .Select(o => o.Address.Substring(0, 3))
+                .GroupBy(city => city)
+                .Select(g => new CityDistributionDto { City = g.Key, Count = g.Count() })
+                .OrderByDescending(g => g.Count)
+                .Take(5)
+                .ToListAsync();
+
+            return new ProductOrderDashboardDto
+            {
+                TotalOrdersThisMonth = totalThisMonth,
+                TotalOrdersChangePercentage = CalculateChange(totalThisMonth, totalLastMonth),
+                PendingShipmentCount = await _context.ProductOrders.CountAsync(o => o.Status == 1), // 待出貨不限月份
+                PendingShipmentChangePercentage = CalculateChange(pendingThisMonth, pendingLastMonth),
+                DisputedCount = await _context.ProductOrders.CountAsync(o => o.Status == 4), // 爭議中不限月份
+                DisputedChangePercentage = CalculateChange(disputedThisMonth, disputedLastMonth),
+                OrderTrends = trends,
+                CityDistributions = cityData
+            };
         }
 
         public async Task<List<ProductOrderDto>> GetAllAsync(int? status, string searchString)
@@ -80,6 +146,7 @@ namespace Project_MyFitnessCoach.Repositories
                 Mobile = p.Mobile,
                 TaxNumber = p.TaxNumber,
                 Status = p.Status,
+                Memo = p.Memo,
                 OrderDetails = p.ProductOrderDetails.Select(d => new ProductOrderDetailDto
                 {
                     Id = d.Id,

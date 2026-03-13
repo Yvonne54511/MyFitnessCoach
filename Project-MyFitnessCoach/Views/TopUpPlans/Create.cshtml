@@ -12,56 +12,259 @@
             <h6 class="m-0 font-weight-bold text-primary">方案資訊</h6>
         </div>
         <div class="card-body">
-            <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <form asp-action="Create" class="warm-form" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
                 
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label asp-for="PlanName" class="control-label"></label>
-                            <input asp-for="PlanName" class="form-control" />
-                            <span asp-validation-for="PlanName" class="text-danger"></span>
+                    <div class="col-md-6 border-right">
+                        <div class="field">
+                            <label asp-for="PlanName"></label>
+                            <div class="input-frame">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                                <input asp-for="PlanName" placeholder="請輸入方案名稱" />
+                            </div>
+                            <span asp-validation-for="PlanName" class="field-error"></span>
                         </div>
-                        <div class="form-group">
-                            <label asp-for="Price" class="control-label"></label>
-                            <input asp-for="Price" class="form-control" type="number" step="0.01" />
-                            <span asp-validation-for="Price" class="text-danger"></span>
+
+                        <div class="field">
+                            <label asp-for="ProductImage"></label>
+                            <div class="file-upload-container">
+                                <label for="fileUploadInput" class="primary-button warm-button d-flex align-items-center justify-content-center cursor-pointer mb-0">
+                                    <i class="fas fa-cloud-upload-alt mr-2"></i> 選擇方案圖片檔案
+                                </label>
+                                <input asp-for="ProductImage" type="file" id="fileUploadInput" class="d-none" accept="image/*" />
+                                <small id="fileNameDisplay" class="text-soft mt-2 d-block text-center font-italic"></small>
+                            </div>
+                            <span asp-validation-for="ProductImage" class="field-error"></span>
                         </div>
-                        <div class="form-group">
-                            <label asp-for="Points" class="control-label"></label>
-                            <input asp-for="Points" class="form-control" type="number" />
-                            <span asp-validation-for="Points" class="text-danger"></span>
+
+                        <div class="field">
+                            <label asp-for="ImageUrl">或是圖片網址</label>
+                            <div class="input-frame">
+                                <i class="fas fa-link"></i>
+                                <input asp-for="ImageUrl" id="imageUrlInput" placeholder="請輸入圖片網址" />
+                            </div>
+                            <span asp-validation-for="ImageUrl" class="field-error"></span>
+                        </div>
+                        
+                        <div class="mt-3 mb-4 text-center p-3 bg-light rounded border-dashed image-preview-container">
+                            <p class="text-soft mb-2 small font-weight-bold">圖片預覽</p>
+                            <img id="imagePreview" src="#" alt="圖片預覽" style="max-height: 200px; display: none;" class="img-thumbnail shadow-sm" />
+                            <div id="noPreview" class="py-4"><i class="fas fa-image fa-3x text-soft opacity-25"></i></div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label asp-for="SortOrder" class="control-label"></label>
-                            <input asp-for="SortOrder" class="form-control" type="number" />
-                            <span asp-validation-for="SortOrder" class="text-danger"></span>
+
+                    <div class="col-md-6 pl-md-4">
+                        <div class="field">
+                            <label asp-for="Price"></label>
+                            <div class="input-frame">
+                                <i class="fas fa-dollar-sign"></i>
+                                <input asp-for="Price" type="number" step="1" placeholder="請輸入金額" />
+                            </div>
+                            <span asp-validation-for="Price" class="field-error"></span>
                         </div>
-                        <div class="form-group form-check">
-                            <label class="form-check-label">
-                                <input class="form-check-input" asp-for="IsActive" checked /> @Html.DisplayNameFor(model => model.IsActive)
-                            </label>
+
+                        <div class="field">
+                            <label asp-for="Points"></label>
+                            <div class="input-frame">
+                                <i class="fas fa-coins"></i>
+                                <input asp-for="Points" type="number" step="1" placeholder="請輸入點數" />
+                            </div>
+                            <span asp-validation-for="Points" class="field-error"></span>
+                        </div>
+
+                        <div class="field">
+                            <label asp-for="SortOrder"></label>
+                            <div class="input-frame">
+                                <i class="fas fa-sort-numeric-down"></i>
+                                <input asp-for="SortOrder" type="number" />
+                            </div>
+                            <span asp-validation-for="SortOrder" class="field-error"></span>
+                        </div>
+
+                        <div class="field mt-4">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" asp-for="IsActive" id="isActiveSwitch" checked>
+                                <label class="custom-control-label font-weight-bold text-soft" for="isActiveSwitch">上架</label>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label asp-for="Description" class="control-label"></label>
-                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                    <span asp-validation-for="Description" class="text-danger"></span>
+                <div class="field mt-4">
+                    <label asp-for="Description"></label>
+                    <textarea asp-for="Description" class="form-control p-3" rows="4" placeholder="請輸入方案詳細描述..."></textarea>
+                    <span asp-validation-for="Description" class="field-error"></span>
                 </div>
 
-                <div class="form-group mt-4">
-                    <button type="submit" class="btn btn-primary">儲存</button>
-                    <a asp-action="Index" class="btn btn-secondary">返回列表</a>
+                <div class="form-group mt-5 border-top pt-4 d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-secondary px-4">
+                        <i class="fas fa-arrow-left fa-sm text-white-50"></i> 返回列表
+                    </a>
+                    <button type="submit" class="btn btn-primary primary-button warm-button px-5">
+                        <i class="fas fa-plus fa-sm text-white-50"></i> 建立新方案
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+@section styles {
+    <style>
+        :root {
+            --bg-start: #fff8dc;
+            --bg-end: #ffe3b3;
+            --text-main: #3f2d1f;
+            --text-soft: #7a614d;
+            --accent: #f2a531;
+            --accent-dark: #e47b22;
+            --border: rgba(228, 123, 34, 0.18);
+            --panel: rgba(255, 255, 255, 0.88);
+            --panel-strong: #fffdfa;
+            --font-main: "Trebuchet MS", "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: #fcf8f3;
+            color: var(--text-main);
+            font-family: var(--font-main);
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(165, 104, 29, 0.08);
+            background: var(--panel);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+
+        .text-primary { color: var(--accent-dark) !important; }
+        .text-soft { color: var(--text-soft) !important; }
+
+        .field { margin-bottom: 20px; }
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: .92rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .input-frame {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 50px;
+            padding: 0 18px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--panel-strong);
+            transition: all .2s ease;
+        }
+
+        .input-frame:focus-within {
+            border-color: rgba(228,123,34,.55);
+            box-shadow: 0 0 0 4px rgba(242,165,49,.16);
+            transform: translateY(-1px);
+        }
+
+        .input-frame i { color: var(--accent-dark); width: 20px; text-align: center; }
+        .input-frame input, .input-frame select {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 1rem;
+            color: var(--text-main);
+            padding: 10px 0;
+        }
+
+        .warm-form textarea.form-control {
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--panel-strong);
+            resize: none;
+        }
+
+        .warm-form textarea.form-control:focus {
+            border-color: rgba(228,123,34,.55);
+            box-shadow: 0 0 0 4px rgba(242,165,49,.16);
+            outline: none;
+        }
+
+        .primary-button {
+            min-height: 46px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            color: #fffaf2;
+            transition: all .2s ease;
+        }
+
+        .warm-button {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            box-shadow: 0 8px 15px rgba(228, 123, 34, 0.2);
+        }
+
+        .primary-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(228, 123, 34, 0.3);
+        }
+
+        .field-error { color: #c85f47; font-size: .85rem; margin-top: 4px; display: block; }
+        .border-dashed { border: 2px dashed var(--border); }
+        
+        .custom-control-input:checked ~ .custom-control-label::before {
+            background-color: var(--accent-dark);
+            border-color: var(--accent-dark);
+        }
+        
+        .image-preview-container { min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    </style>
+}
+
 @section scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            // 處理檔案上傳預覽
+            $('#fileUploadInput').on('change', function () {
+                var file = this.files[0];
+                if (file) {
+                    $('#fileNameDisplay').text('已選擇：' + file.name);
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#imagePreview').attr('src', e.target.result).show();
+                        $('#noPreview').hide();
+                        $('#imageUrlInput').val(''); // 清空網址欄位，以檔案為主
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    $('#fileNameDisplay').text('');
+                }
+            });
+
+            // 處理網址預覽
+            $('#imageUrlInput').on('input change', function () {
+                var url = $(this).val();
+                if (url) {
+                    $('#imagePreview').attr('src', url).show();
+                    $('#noPreview').hide();
+                    $('#fileUploadInput').val(''); // 清空檔案欄位，以網址為主
+                } else {
+                    if (!$('#fileUploadInput').val()) {
+                        $('#imagePreview').hide();
+                        $('#noPreview').show();
+                    }
+                }
+            });
+        });
+    </script>
 }

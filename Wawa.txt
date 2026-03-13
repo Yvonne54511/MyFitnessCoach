@@ -1,1 +1,24 @@
 產品管理頁面的下架功能正常 但是編輯功能 勾選上架後 圖示沒有更新 資料庫IsActive也沒有從0變成1 幫我修正 可以參考ProductCategoriesController和TopUpPlansController
+
+
+topupplan的datatables幫我加上圖片的欄位 樣式請參考product的部分
+
+
+topupplan和product的datatables 圖片以正方形顯示
+
+
+topupplan 的 編輯頁面 是否上架勾選後 要改成上架 按下儲存變更 要跳回topupplan的index
+
+
+topupplan 的 crud頁面 請參考product部分 風格一樣 並加上圖片上傳功能
+
+
+topupplan的編輯頁面 價格不要小數點後面的數字 且不一定要上傳圖片也能儲存
+
+
+topupplan edit 沒有上傳新圖片出現:"The 上傳圖片 field is required."  修正成沒上傳新圖片就使用原本圖片 然後可以成功儲存
+
+topupplan 的 index <td>@Html.DisplayFor(modelItem => item.Price)</td> 這裡價格小數點後不要有數字
+
+topupplan 和 product 的 crud頁面 方案資訊 (ID: 2)這行 不要顯示在畫面上
+
