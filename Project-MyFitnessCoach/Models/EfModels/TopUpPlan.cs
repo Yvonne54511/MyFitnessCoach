@@ -22,4 +22,6 @@ public partial class TopUpPlan
     public bool IsActive { get; set; }
 
     public int SortOrder { get; set; }
+
+    public virtual ICollection<PointOrder> PointOrders { get; set; } = new List<PointOrder>();
 }
