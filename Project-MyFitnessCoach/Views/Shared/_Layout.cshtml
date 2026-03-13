@@ -22,13 +22,22 @@
                 <div class="sidebar-brand-text mx-3">@(ViewBag.Title ?? "後台管理")</div>
             </a>
             <hr class="sidebar-divider">
-            <div class="sidebar-heading">人員管理</div>
-            <li class="nav-item active">
-                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+            <div class="sidebar-heading">數據統計</div>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDashboard" aria-expanded="true" aria-controls="collapseDashboard">
                     <i class="bx bx-home-circle"></i>
                     <span>Dashboard</span>
                 </a>
+                <div id="collapseDashboard" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" asp-controller="Dashboard" asp-action="Index">後台概覽</a>
+                        <a class="collapse-item" asp-controller="Dashboard" asp-action="Rating">評論統計</a>
+                    </div>
+                </div>
             </li>
+
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading">人員管理</div>
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUser" aria-expanded="true" aria-controls="collapseUser">
                     <i class="bx bx-user"></i>
@@ -51,7 +60,6 @@
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Custom Components:</h6>
                         <a class="collapse-item" href="cards.html">營養師列表(怡潁)</a>
-                        <a class="collapse-item" asp-controller="Dashboard" asp-action="Rating">評論區Dashboard</a>
                         @if (User.IsInRole("Instructor"))
                         {
                             <a class="collapse-item" asp-controller="Shift" asp-action="Index">營養師班表排程(小朱)</a>
@@ -125,21 +133,33 @@
                         <a class="collapse-item" href="#">點數紀錄查詢</a>
                         <a class="collapse-item" asp-controller="FoodRecord" asp-action="ViewFoodRecord">客戶飲食紀錄查詢</a>
                         <a class="collapse-item" href="#">客戶體態數據查詢</a>
-                        <a class="collapse-item" asp-controller="MemberViolation" asp-action="Index">會員違規管理</a>
                     </div>
                 </div>
             </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseReview"
+                   aria-expanded="true" aria-controls="collapseReview">
+                    <i class='bx bx-comment-detail'></i>
+                    <span>評論管理</span>
+                </a>
+                <div id="collapseReview" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" asp-controller="Review" asp-action="AdminIndex">評論管理(Admin)</a>
+                        <a class="collapse-item" asp-controller="Review" asp-action="InstructorIndex">評論查看與舉報</a>
+                    </div>
+                </div>
+            </li>
+
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseOther"
                    aria-expanded="true" aria-controls="collapseOther">
-                    <i class='bx bx-message-dots'></i>
+                    <i class='bx bx-dots-horizontal-rounded'></i>
                     <span>其他</span>
                 </a>
                 <div id="collapseOther" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Custom Components:</h6>
-                        <a class="collapse-item" asp-controller="Review" asp-action="AdminIndex">評論區管理 - admin(小朱)</a>
-                        <a class="collapse-item" asp-controller="Review" asp-action="InstructorIndex">評論區察看與舉報 - instructor(小朱)</a>
+                        <a class="collapse-item" asp-controller="MemberViolation" asp-action="Index">會員違規管理</a>
                         <a class="collapse-item" asp-controller="KeyWords" asp-action="Index">關鍵字詞管理</a>
                     </div>
                 </div>
