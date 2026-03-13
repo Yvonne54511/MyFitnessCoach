@@ -138,7 +138,7 @@ namespace Project_MyFitnessCoach
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<MyFitnessCoachDbContext>();
-                
+
                 // 如果 admin 帳號不存在，才進行建立
                 if (!db.Users.Any(u => u.Account == "admin"))
                 {
@@ -151,7 +151,7 @@ namespace Project_MyFitnessCoach
                         IsConfirmed = true,
                         IsActive = true
                     };
-                    
+
                     // 由程式產生符合當前環境的正確雜湊值
                     adminUser.HashedPassword = hasher.HashPassword(adminUser, "123456");
 

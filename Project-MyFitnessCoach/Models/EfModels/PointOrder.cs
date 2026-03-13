@@ -18,8 +18,10 @@ public partial class PointOrder
     public decimal OriginalPrice { get; set; }
 
     public decimal DiscountedPrice { get; set; }
+    public int Status { get; set; }
 
     public virtual Member Member { get; set; }
+   
 
     public virtual ICollection<PointsRecordDetail> PointsRecordDetails { get; set; } = new List<PointsRecordDetail>();
 }
