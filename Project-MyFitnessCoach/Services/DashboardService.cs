@@ -7,10 +7,10 @@ namespace Project_MyFitnessCoach.Services
 {
     public interface IDashboardService
     {
-        DashboardSummaryViewModel GetSummary();
-        IEnumerable<InstructorRatingDto> GetInstructorRatings();
-        GlobalRatingDto GetGlobalRating();
-        IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies();
+        DashboardSummaryViewModel GetSummary(int year, int month);
+        IEnumerable<InstructorRatingDto> GetInstructorRatings(int year, int month);
+        GlobalRatingDto GetGlobalRating(int year, int month);
+        IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies(int year, int month);
     }
 
     public class DashboardService : IDashboardService
@@ -22,7 +22,7 @@ namespace Project_MyFitnessCoach.Services
             _dashboardRepository = dashboardRepository;
         }
 
-        public DashboardSummaryViewModel GetSummary()
+        public DashboardSummaryViewModel GetSummary(int year, int month)
         {
             return new DashboardSummaryViewModel
             {
@@ -31,23 +31,38 @@ namespace Project_MyFitnessCoach.Services
                 PendingUsers = _dashboardRepository.GetPendingUsers(),
                 ActiveRoles = _dashboardRepository.GetActiveRoles(),
                 ActiveFunctions = _dashboardRepository.GetActiveFunctions(),
-                ActiveInstructors = _dashboardRepository.GetActiveInstructors()
+                ActiveInstructors = _dashboardRepository.GetActiveInstructors(),
+                
+                MonthlyOrdersCount = _dashboardRepository.GetMonthlyOrdersCount(year, month),
+                MonthlyRevenue = _dashboardRepository.GetMonthlyRevenue(year, month),
+                MonthlyReviewsCount = _dashboardRepository.GetMonthlyReviewsCount(year, month),
+                MonthlyActiveMembers = _dashboardRepository.GetMonthlyActiveMembers(year, month),
+
+                YearlyOrdersCount = _dashboardRepository.GetMonthlyOrdersCount(year, 0),
+                YearlyRevenue = _dashboardRepository.GetMonthlyRevenue(year, 0),
+                YearlyReviewsCount = _dashboardRepository.GetMonthlyReviewsCount(year, 0),
+                YearlyActiveMembers = _dashboardRepository.GetMonthlyActiveMembers(year, 0),
+                
+                MonthlyRevenueTrend = _dashboardRepository.GetMonthlyRevenueTrendData(year),
+                
+                SelectedYear = year,
+                SelectedMonth = month
             };
         }
 
-        public IEnumerable<InstructorRatingDto> GetInstructorRatings()
+        public IEnumerable<InstructorRatingDto> GetInstructorRatings(int year, int month)
         {
-            return _dashboardRepository.GetInstructorRatings();
+            return _dashboardRepository.GetInstructorRatings(year, month);
         }
 
-        public GlobalRatingDto GetGlobalRating()
+        public GlobalRatingDto GetGlobalRating(int year, int month)
         {
-            return _dashboardRepository.GetGlobalRating();
+            return _dashboardRepository.GetGlobalRating(year, month);
         }
 
-        public IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies()
+        public IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies(int year, int month)
         {
-            return _dashboardRepository.GetKeyWordFrequencies();
+            return _dashboardRepository.GetKeyWordFrequencies(year, month);
         }
     }
 }

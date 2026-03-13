@@ -17,30 +17,45 @@ namespace Project_MyFitnessCoach.Controllers
             _keyWordRepo = keyWordRepo;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int? year, int? month)
         {
+            int y = year ?? DateTime.Now.Year;
+            int m = month ?? DateTime.Now.Month;
+            
             ViewBag.Title = "Dashboard 概覽";
-            var summary = _dashboardService.GetSummary();
+            var summary = _dashboardService.GetSummary(y, m);
             return View(summary);
         }
 
-        public IActionResult Rating()
+        public IActionResult Rating(int? year, int? month)
         {
+            int y = year ?? DateTime.Now.Year;
+            int m = month ?? DateTime.Now.Month;
+
             ViewBag.Title = "營養師評分統計";
-            var ratings = _dashboardService.GetInstructorRatings();
-            var globalRating = _dashboardService.GetGlobalRating();
+            var ratings = _dashboardService.GetInstructorRatings(y, m);
+            var yearlyRatings = _dashboardService.GetInstructorRatings(y, 0); // month = 0 is All Time for the year
+            var globalRating = _dashboardService.GetGlobalRating(y, m);
             var viewModel = new InstructorRatingViewModel
             {
                 InstructorRatings = ratings,
-                GlobalRating = globalRating
+                YearlyInstructorRatings = yearlyRatings,
+                GlobalRating = globalRating,
+                SelectedYear = y,
+                SelectedMonth = m
             };
             return View(viewModel);
         }
 
-        public IActionResult KeyWordAnalytics()
+        public IActionResult KeyWordAnalytics(int? year, int? month)
         {
+            int y = year ?? DateTime.Now.Year;
+            int m = month ?? DateTime.Now.Month;
+
             ViewBag.Title = "評論關鍵字詞分析";
-            var data = _dashboardService.GetKeyWordFrequencies();
+            var data = _dashboardService.GetKeyWordFrequencies(y, m);
+            ViewBag.SelectedYear = y;
+            ViewBag.SelectedMonth = m;
             return View(data);
         }
 

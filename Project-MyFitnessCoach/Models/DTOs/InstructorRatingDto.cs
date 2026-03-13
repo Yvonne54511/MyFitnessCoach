@@ -13,6 +13,8 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public int Star2Count { get; set; }
         public int Star1Count { get; set; }
 
+        public int TotalScore { get; set; }
+
         // 情感分析計數 (混合模型)
         public int PositiveCount { get; set; }
         public int NeutralCount { get; set; }

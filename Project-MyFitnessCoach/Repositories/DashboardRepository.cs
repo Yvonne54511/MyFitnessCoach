@@ -14,9 +14,19 @@ namespace Project_MyFitnessCoach.Repositories
         int GetActiveRoles();
         int GetActiveFunctions();
         int GetActiveInstructors();
-        IEnumerable<InstructorRatingDto> GetInstructorRatings();
-        GlobalRatingDto GetGlobalRating();
-        IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies();
+        
+        // Monthly stats
+        int GetMonthlyOrdersCount(int year, int month);
+        decimal GetMonthlyRevenue(int year, int month);
+        int GetMonthlyReviewsCount(int year, int month);
+        int GetMonthlyActiveMembers(int year, int month);
+
+        // Yearly stats
+        decimal[] GetMonthlyRevenueTrendData(int year);
+
+        IEnumerable<InstructorRatingDto> GetInstructorRatings(int year, int month);
+        GlobalRatingDto GetGlobalRating(int year, int month);
+        IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies(int year, int month);
     }
 
     public class DashboardRepository : IDashboardRepository
@@ -35,9 +45,68 @@ namespace Project_MyFitnessCoach.Repositories
         public int GetActiveFunctions() => _db.Functions.Count(x => x.IsActive);
         public int GetActiveInstructors() => _db.Instructors.Count(x => x.IsActive);
 
-        public IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies()
+        public int GetMonthlyOrdersCount(int year, int month)
         {
-            var rawReviews = _db.Reviews.Where(r => !r.IsBanned && !string.IsNullOrEmpty(r.Comment)).Select(r => r.Comment).ToList();
+            int pOrders = _db.ProductOrders.Count(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month));
+            int rOrders = _db.ReserveOrders.Count(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month));
+            return pOrders + rOrders;
+        }
+
+        public decimal GetMonthlyRevenue(int year, int month)
+        {
+            decimal pRev = _db.ProductOrders
+                .Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month))
+                .Sum(x => (decimal?)(x.OriginalAmount - x.DiscountAmount)) ?? 0;
+            
+            decimal rRev = _db.ReserveOrders
+                .Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month))
+                .Sum(x => (decimal?)x.Price) ?? 0;
+
+            decimal ptRev = _db.PointOrders
+                .Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month))
+                .Sum(x => (decimal?)x.DiscountedPrice) ?? 0;
+
+            return pRev + rRev + ptRev;
+        }
+
+        public int GetMonthlyReviewsCount(int year, int month)
+        {
+            return _db.Reviews.Count(x => x.CreatedAt.Year == year && (month == 0 || x.CreatedAt.Month == month));
+        }
+
+        public int GetMonthlyActiveMembers(int year, int month)
+        {
+            var pMembers = _db.ProductOrders.Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month)).Select(x => x.MemberId);
+            var rMembers = _db.ReserveOrders.Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month)).Select(x => x.MemberId);
+            var rvMembers = _db.Reviews.Where(x => x.CreatedAt.Year == year && (month == 0 || x.CreatedAt.Month == month)).Select(x => x.MemberId);
+            var ptMembers = _db.PointOrders.Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month)).Select(x => x.MemberId);
+
+            return pMembers.Union(rMembers).Union(rvMembers).Union(ptMembers).Distinct().Count();
+        }
+
+        public decimal[] GetMonthlyRevenueTrendData(int year)
+        {
+            var pOrders = _db.ProductOrders.Where(x => x.CreateAt.Year == year).Select(x => new { x.CreateAt.Month, Revenue = x.OriginalAmount - x.DiscountAmount }).ToList();
+            var rOrders = _db.ReserveOrders.Where(x => x.CreateAt.Year == year).Select(x => new { x.CreateAt.Month, Revenue = x.Price }).ToList();
+            var ptOrders = _db.PointOrders.Where(x => x.CreateAt.Year == year).Select(x => new { x.CreateAt.Month, Revenue = x.DiscountedPrice }).ToList();
+
+            decimal[] trend = new decimal[12];
+            for (int i = 1; i <= 12; i++)
+            {
+                decimal pRev = pOrders.Where(x => x.Month == i).Sum(x => (decimal?)x.Revenue) ?? 0;
+                decimal rRev = rOrders.Where(x => x.Month == i).Sum(x => (decimal?)x.Revenue) ?? 0;
+                decimal ptRev = ptOrders.Where(x => x.Month == i).Sum(x => (decimal?)x.Revenue) ?? 0;
+                trend[i - 1] = pRev + rRev + ptRev;
+            }
+            return trend;
+        }
+
+        public IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies(int year, int month)
+        {
+            var rawReviews = _db.Reviews
+                .Where(r => !r.IsBanned && !string.IsNullOrEmpty(r.Comment) && r.CreatedAt.Year == year && (month == 0 || r.CreatedAt.Month == month))
+                .Select(r => r.Comment)
+                .ToList();
             var dbKeyWords = _db.KeyWords.ToList();
             var dbWordSet = new HashSet<string>(dbKeyWords.Select(k => k.Word));
 
@@ -90,19 +159,18 @@ namespace Project_MyFitnessCoach.Repositories
             return results.Concat(discoveredGrams).OrderByDescending(k => k.Count).ToList();
         }
 
-        public IEnumerable<InstructorRatingDto> GetInstructorRatings()
+        public IEnumerable<InstructorRatingDto> GetInstructorRatings(int year, int month)
         {
             var instructors = _db.Instructors
                 .Include(i => i.User)
-                .Include(i => i.Reviews.Where(r => !r.IsBanned))
+                .Include(i => i.Reviews.Where(r => !r.IsBanned && r.CreatedAt.Year == year && (month == 0 || r.CreatedAt.Month == month)))
                     .ThenInclude(r => r.Member)
                         .ThenInclude(m => m.User)
                 .ToList();
 
             var keyWords = _db.KeyWords.ToList();
-            // 防呆：依字數從長到短排序，優先匹配長字詞
-            var sortedPositiveWords = keyWords.Where(k => k.Category == 1).OrderByDescending(k => k.Word.Length).ToList();
-            var sortedNegativeWords = keyWords.Where(k => k.Category == -1).OrderByDescending(k => k.Word.Length).ToList();
+            // 合併所有關鍵字，並從長到短排序，確保長字詞（如「不專業」）優先於短字詞（如「專業」）被匹配
+            var sortedAllKeywords = keyWords.OrderByDescending(k => k.Word.Length).ToList();
 
             return instructors.Select(i => {
                 var posReviews = new List<ReviewSentimentDto>();
@@ -117,34 +185,24 @@ namespace Project_MyFitnessCoach.Repositories
                     else if (review.Rating <= 2) score = -2;
                     else score = 0;
 
-                    // Step 2: 關鍵字加權 (具備防呆去重邏輯)
+                    // Step 2: 關鍵字加權 (一次掃描所有關鍵字)
                     if (!string.IsNullOrEmpty(review.Comment))
                     {
                         string tempComment = review.Comment;
 
-                        // 處理正向詞
-                        foreach (var pw in sortedPositiveWords)
+                        foreach (var kw in sortedAllKeywords)
                         {
-                            if (tempComment.Contains(pw.Word))
+                            if (tempComment.Contains(kw.Word))
                             {
-                                // 算出該字詞出現次數並加分
-                                int count = (tempComment.Length - tempComment.Replace(pw.Word, "").Length) / pw.Word.Length;
-                                score += count * pw.Weight;
-
-                                // 防呆：將已匹配的字詞從暫存內容中移除（用空格取代），避免被後續較短的關鍵字重複匹配
-                                tempComment = tempComment.Replace(pw.Word, new string(' ', pw.Word.Length));
-                            }
-                        }
-
-                        // 處理負向詞 (使用剩下的字串繼續匹配)
-                        foreach (var nw in sortedNegativeWords)
-                        {
-                            if (tempComment.Contains(nw.Word))
-                            {
-                                int count = (tempComment.Length - tempComment.Replace(nw.Word, "").Length) / nw.Word.Length;
-                                score -= count * nw.Weight;
+                                // 算出該字詞出現次數
+                                int count = (tempComment.Length - tempComment.Replace(kw.Word, "").Length) / kw.Word.Length;
                                 
-                                tempComment = tempComment.Replace(nw.Word, new string(' ', nw.Word.Length));
+                                // 根據分類加分或減分
+                                if (kw.Category == 1) score += count * kw.Weight;
+                                else if (kw.Category == -1) score -= count * kw.Weight;
+
+                                // 將已匹配的字詞移除，避免短字詞重複匹配
+                                tempComment = tempComment.Replace(kw.Word, new string(' ', kw.Word.Length));
                             }
                         }
                     }
@@ -171,6 +229,7 @@ namespace Project_MyFitnessCoach.Repositories
                     ImageUrl = i.ImageUrl,
                     TotalReviews = i.Reviews.Count(),
                     AverageRating = i.Reviews.Any() ? i.Reviews.Average(r => r.Rating) : 0,
+                    TotalScore = posReviews.Sum(r => r.CalculatedScore) + neuReviews.Sum(r => r.CalculatedScore) + negReviews.Sum(r => r.CalculatedScore),
                     Star5Count = i.Reviews.Count(r => r.Rating == 5),
                     Star4Count = i.Reviews.Count(r => r.Rating == 4),
                     Star3Count = i.Reviews.Count(r => r.Rating == 3),
@@ -186,9 +245,9 @@ namespace Project_MyFitnessCoach.Repositories
             }).ToList();
         }
 
-        public GlobalRatingDto GetGlobalRating()
+        public GlobalRatingDto GetGlobalRating(int year, int month)
         {
-            var reviews = _db.Reviews.Where(r => !r.IsBanned).ToList();
+            var reviews = _db.Reviews.Where(r => !r.IsBanned && r.CreatedAt.Year == year && (month == 0 || r.CreatedAt.Month == month)).ToList();
             if (!reviews.Any()) return new GlobalRatingDto();
 
             return new GlobalRatingDto
