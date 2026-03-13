@@ -1,8 +1,8 @@
-ï»¿namespace Project_MyFitnessCoach.Models.Dtos
+namespace Project_MyFitnessCoach.Models.DTOs
 {
 	public class ShiftQueryCriteria
 	{
-		// å¦‚æœç‚º nullï¼Œä»£è¡¨æŸ¥è©¢ã€Œæ‰€æœ‰ã€è¬›å¸« (Admin æ¨¡å¼)
+		// ¦pªG¬° null¡A¥Nªí¬d¸ß¡u©Ò¦³¡vÁ¿®v (Admin ¼Ò¦¡)
 		public int? InstructorId { get; set; }
         public string? InstructorName { get; set; }
 		public DateOnly? StartDate { get; set; }

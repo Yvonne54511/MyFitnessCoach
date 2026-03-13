@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Project_MyFitnessCoach.Models.Dtos;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Repositories;
 
 namespace Project_MyFitnessCoach.Services

@@ -1,4 +1,3 @@
-using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Repositories;
 using System;

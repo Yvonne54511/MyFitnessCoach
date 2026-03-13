@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Models.Infra;
-using Project_MyFitnessCoach.Models.Repositories;
-using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.ViewModel;
+using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Repositories;
 using Project_MyFitnessCoach.Services;
 

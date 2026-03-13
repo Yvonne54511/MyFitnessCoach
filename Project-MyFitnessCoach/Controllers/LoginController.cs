@@ -1,4 +1,3 @@
-using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.ViewModels;
 using Project_MyFitnessCoach.Services;
 using Microsoft.AspNetCore.Authentication;
