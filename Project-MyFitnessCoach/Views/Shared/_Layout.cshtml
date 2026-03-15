@@ -38,24 +38,41 @@
             <br />
 
             @{
+                
                 var userFunctions = User.FindAll("Function").Select(f => f.Value).ToList();
-                bool canManageUsers = userFunctions.Contains("edit_UserAccounts");
-                bool canManageRoles = userFunctions.Contains("edit_RoleFunctions");
+
+                //人員管理
+                bool canEditPassword = userFunctions.Contains("edit_Password");
+                bool canEditInstructorDetails = userFunctions.Contains("edit_InstructorDetails");
+
+                //班表管理
                 bool canEditInstructorShifts = userFunctions.Contains("edit_InstructorShifts");
                 bool canViewInstructorShifts = userFunctions.Contains("view_InstructorShifts");
-                bool isInstructor = User.HasClaim(c => c.Type == "InstructorId");
 
-                // 商城與方案權限
-                bool canManageProductCategories = userFunctions.Contains("edit_ProductCategories");
-                bool canManageProducts = userFunctions.Contains("edit_ProductItems");
-                bool canManageProductOrders = userFunctions.Contains("edit_ProductOrders");
-                bool canManagePlans = userFunctions.Contains("edit_Plans");
-                bool canManagePlanOrders = userFunctions.Contains("edit_PlanOrders");
+                //帳號管理
+                bool canEditUserAccounts = userFunctions.Contains("edit_UserAccounts");
+                bool canEditRoleFunctions = userFunctions.Contains("edit_RoleFunctions");
+                // bool canEditUserRoles = userFunctions.Contains("edit_UserRoles");
+                // bool isInstructor = User.HasClaim(c => c.Type == "InstructorId");
+
+                // 商品管理
+                bool canEditProductCategories = userFunctions.Contains("edit_ProductCategories");
+                bool canEditProductsItems = userFunctions.Contains("edit_ProductItems");
+                bool canEditProductOrders = userFunctions.Contains("edit_ProductOrders");
+
+                //方案管理
+                bool canEditPlans = userFunctions.Contains("edit_Plans");
+                bool canEditPlanOrders = userFunctions.Contains("edit_PlanOrders");
+
+                //客戶管理
+                bool canViewPointRecords = userFunctions.Contains("view_PointRecords");
+                bool canViewClientFoodRecords = userFunctions.Contains("view_ClientFoodRecords");
+                bool canViewClientBodyData = userFunctions.Contains("view_ClientBodyData");
 
                 // 評論與其他權限
-                bool canManageCommentsAdmin = userFunctions.Contains("edit_Comments_admin");
-                bool canManageCommentsInstructor = userFunctions.Contains("edit_Comments_instructor");
-                bool canManageSensitiveWords = userFunctions.Contains("edit_SensitiveWords");
+                bool canEditCommentsAdmin = userFunctions.Contains("edit_Comments_admin");
+                bool canEditCommentsInstructor = userFunctions.Contains("edit_Comments_instructor");
+                bool canEditSensitiveWords = userFunctions.Contains("edit_SensitiveWords");
             }
 
             <hr class="sidebar-divider">
@@ -69,10 +86,7 @@
                 <div id="collapseUser" class="collapse" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <a class="collapse-item" asp-controller="Account" asp-action="ChangePassword">帳密修改</a>
-                        @if (isInstructor)
-                        {
                             <a class="collapse-item" asp-controller="Account" asp-action="InstructorDetails">資料維護-營養師</a>
-                        }
                     </div>
                 </div>
             </li>
