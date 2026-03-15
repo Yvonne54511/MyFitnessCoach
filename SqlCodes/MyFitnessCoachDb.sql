@@ -1,0 +1,2278 @@
+USE [master]
+GO
+/****** Object:  Database [MyFitnessCoachDb]    Script Date: 2026/3/15 下午 09:51:37 ******/
+CREATE DATABASE [MyFitnessCoachDb]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'MyFitnessCoachDb', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL17.SQL2025\MSSQL\DATA\MyFitnessCoachDb.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'MyFitnessCoachDb_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL17.SQL2025\MSSQL\DATA\MyFitnessCoachDb_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET COMPATIBILITY_LEVEL = 170
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [MyFitnessCoachDb].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET RECOVERY FULL 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET  MULTI_USER 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET OPTIMIZED_LOCKING = OFF 
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET QUERY_STORE = ON
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 1000, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
+GO
+USE [MyFitnessCoachDb]
+GO
+/****** Object:  Table [dbo].[Users]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Users](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Account] [nvarchar](50) NULL,
+	[HashedPassword] [nvarchar](256) NULL,
+	[UserName] [nvarchar](30) NOT NULL,
+	[Email] [nvarchar](200) NOT NULL,
+	[Mobile] [varchar](10) NULL,
+	[IsConfirmed] [bit] NOT NULL,
+	[IsActive] [bit] NOT NULL,
+	[NewMemberConfirmCode] [varchar](100) NULL,
+	[NewMemberConfirmCodeExpiry] [datetime2](0) NULL,
+	[ResetPasswordConfirmCode] [varchar](100) NULL,
+	[ResetPasswordConfirmCodeExpiry] [datetime2](0) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Roles]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Roles](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[RoleName] [nvarchar](30) NOT NULL,
+	[IsActive] [bit] NOT NULL,
+	[Description] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[UserRoles]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[UserRoles](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[RoleId] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Functions]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Functions](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[FunctionName] [nvarchar](50) NOT NULL,
+	[IsActive] [bit] NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[Api_path] [nvarchar](255) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[RoleFunctions]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[RoleFunctions](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[RoleId] [int] NOT NULL,
+	[FunctionId] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[vw_UserRoleFunctions]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+-- ============================================================
+-- 2. 建立視圖 (Views)
+-- ============================================================
+
+CREATE VIEW [dbo].[vw_UserRoleFunctions] AS
+SELECT u.UserName, u.Account, r.RoleName, f.FunctionName
+FROM [dbo].[Users] u
+JOIN [dbo].[UserRoles] ur ON u.Id = ur.UserId
+JOIN [dbo].[Roles] r ON ur.RoleId = r.Id
+JOIN [dbo].[RoleFunctions] rf ON r.Id = rf.RoleId
+JOIN [dbo].[Functions] f ON rf.FunctionId = f.Id;
+GO
+/****** Object:  View [dbo].[vw_RoleFunctions]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE VIEW [dbo].[vw_RoleFunctions] AS
+SELECT r.RoleName, f.FunctionName
+FROM [dbo].[Roles] r
+JOIN [dbo].[RoleFunctions] rf ON r.Id = rf.RoleId
+JOIN [dbo].[Functions] f ON rf.FunctionId = f.Id;
+GO
+/****** Object:  View [dbo].[vw_UserRoleFunction]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE VIEW [dbo].[vw_UserRoleFunction] AS
+SELECT u.Id AS UserId, u.UserName, u.Email, r.Id AS RoleId, r.RoleName, f.Id AS FunctionId, f.FunctionName
+FROM Users u
+JOIN UserRoles ur ON ur.UserId = u.Id
+JOIN Roles r ON r.Id = ur.RoleId
+JOIN RoleFunctions rf ON rf.RoleId = r.Id
+JOIN [Functions] f ON f.Id = rf.FunctionId;
+GO
+/****** Object:  Table [dbo].[Members]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Members](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[Gender] [tinyint] NULL,
+	[DateOfBirth] [datetime2](0) NULL,
+	[Weight] [float] NULL,
+	[Height] [float] NULL,
+	[ActivityLevel] [nvarchar](50) NULL,
+	[Target] [nvarchar](50) NULL,
+	[BMR] [float] NULL,
+	[TDEE] [float] NULL,
+	[ImageUrl] [nvarchar](300) NULL,
+	[CancelCount] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FoodCategories]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FoodCategories](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[CategoryName] [nvarchar](50) NOT NULL,
+	[IsActive] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Foods]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Foods](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[CategoryId] [int] NOT NULL,
+	[FoodName] [nvarchar](50) NOT NULL,
+	[IsDeleted] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Nutrients]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Nutrients](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[FoodId] [int] NOT NULL,
+	[BaseAmount] [int] NOT NULL,
+	[Measure] [nvarchar](20) NOT NULL,
+	[Kcal] [float] NULL,
+	[ProteinGram] [float] NULL,
+	[CarbGram] [float] NULL,
+	[FatGram] [float] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[FoodRecords]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FoodRecords](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[MemberId] [int] NOT NULL,
+	[EatDT] [datetime2](0) NOT NULL,
+	[MealType] [nvarchar](20) NOT NULL,
+	[FoodId] [int] NOT NULL,
+	[Amount] [float] NOT NULL,
+	[Measure] [nvarchar](20) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[vw_UserMemberFoodRecord]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE VIEW [dbo].[vw_UserMemberFoodRecord] AS
+SELECT u.Id AS UserId, u.UserName, u.Email, m.Id AS MemberId, m.Gender, m.Weight, m.Height, m.BMR, m.TDEE,
+       fr.Id AS FoodRecordId, fr.EatDT, fr.MealType, fr.Amount, fr.Measure AS RecordMeasure,
+       fo.Id AS FoodId, fo.FoodName, fc.CategoryName, n.BaseAmount, n.Measure AS NutrientMeasure,
+       ROUND(n.Kcal * fr.Amount / n.BaseAmount, 2) AS TotalKcal,
+       ROUND(n.ProteinGram * fr.Amount / n.BaseAmount, 2) AS TotalProtein,
+       ROUND(n.CarbGram * fr.Amount / n.BaseAmount, 2) AS TotalCarb,
+       ROUND(n.FatGram * fr.Amount / n.BaseAmount, 2) AS TotalFat
+FROM Users u
+JOIN Members m ON m.UserId = u.Id
+JOIN FoodRecords fr ON fr.MemberId = m.Id
+JOIN Foods fo ON fo.Id = fr.FoodId
+JOIN FoodCategories fc ON fc.Id = fo.CategoryId
+LEFT JOIN Nutrients n ON n.FoodId = fo.Id;
+GO
+/****** Object:  Table [dbo].[Instructors]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Instructors](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[ImageUrl] [nvarchar](300) NOT NULL,
+	[Description] [nvarchar](500) NOT NULL,
+	[HourWage] [int] NOT NULL,
+	[CancelCount] [int] NOT NULL,
+	[IsActive] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[MemberViolations]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[MemberViolations](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[MemberId] [int] NOT NULL,
+	[WarningCount] [int] NOT NULL,
+	[IsSuspended] [bit] NOT NULL,
+	[LastWarningAt] [datetime2](0) NULL,
+	[SuspendedAt] [datetime2](0) NULL,
+	[Reason] [nvarchar](500) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Notifications]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Notifications](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[SenderId] [int] NULL,
+	[NotifyType] [nvarchar](50) NOT NULL,
+	[Title] [nvarchar](100) NOT NULL,
+	[Content] [nvarchar](max) NOT NULL,
+	[IsRead] [bit] NOT NULL,
+	[ReferenceId] [int] NULL,
+	[CreatedAt] [datetime2](0) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[PointOrders]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PointOrders](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[MemberId] [int] NOT NULL,
+	[TopUpPlanId] [int] NOT NULL,
+	[CreateAt] [datetime2](7) NOT NULL,
+	[PointQty] [int] NOT NULL,
+	[OriginalPrice] [decimal](18, 0) NOT NULL,
+	[DiscountedPrice] [decimal](18, 0) NOT NULL,
+	[Status] [int] NOT NULL,
+ CONSTRAINT [PK__PointOrd__3214EC0746269E1A] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[PointsRecordDetails]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[PointsRecordDetails](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[PointOrderId] [int] NOT NULL,
+	[UserWalletId] [int] NOT NULL,
+	[CreateAt] [datetime2](0) NOT NULL,
+	[PointAmount] [int] NOT NULL,
+	[MerchandiseCategory] [nvarchar](50) NOT NULL,
+	[ReserveOrderId] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ProductCategories]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ProductCategories](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[CategoryName] [nvarchar](50) NOT NULL,
+	[SortOrder] [int] NOT NULL,
+	[IsActive] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ProductOrderDetails]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ProductOrderDetails](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[ProductOrderId] [int] NOT NULL,
+	[ProductId] [int] NOT NULL,
+	[UnitPrice] [decimal](18, 0) NOT NULL,
+	[Qty] [int] NOT NULL,
+	[SubTotal] [decimal](18, 0) NOT NULL,
+	[DiscountedPrice] [decimal](18, 0) NOT NULL,
+	[ProductName] [nvarchar](50) NOT NULL,
+	[ImageURL] [nvarchar](300) NULL,
+	[Memo] [nvarchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ProductOrders]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ProductOrders](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[MemberId] [int] NOT NULL,
+	[CreateAt] [datetime2](7) NOT NULL,
+	[OriginalAmount] [decimal](18, 0) NOT NULL,
+	[DiscountAmount] [decimal](18, 0) NOT NULL,
+	[Receiver] [nvarchar](30) NOT NULL,
+	[Address] [nvarchar](500) NOT NULL,
+	[Mobile] [varchar](20) NOT NULL,
+	[TaxNumber] [int] NULL,
+	[Status] [int] NOT NULL,
+	[Memo] [nvarchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Products]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Products](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[CategoryId] [int] NOT NULL,
+	[Name] [nvarchar](100) NOT NULL,
+	[ImageUrl] [nvarchar](max) NULL,
+	[OriginalPrice] [decimal](18, 0) NOT NULL,
+	[UnitPrice] [decimal](18, 0) NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[SortOrder] [int] NOT NULL,
+	[IsActive] [bit] NOT NULL,
+ CONSTRAINT [PK__Products__3214EC0794CE8449] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ReserveOrders]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ReserveOrders](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[MemberId] [int] NOT NULL,
+	[ShiftId] [int] NOT NULL,
+	[CreateAt] [datetime2](0) NOT NULL,
+	[Status] [nvarchar](10) NOT NULL,
+	[PaymentMethod] [nvarchar](10) NOT NULL,
+	[Target] [nvarchar](300) NULL,
+	[PointCost] [int] NULL,
+	[Price] [decimal](10, 2) NULL,
+	[Memorandum] [nvarchar](100) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Reviews]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Reviews](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[ReserveOrderId] [int] NOT NULL,
+	[InstructorId] [int] NOT NULL,
+	[MemberId] [int] NOT NULL,
+	[Rating] [int] NOT NULL,
+	[Comment] [nvarchar](500) NULL,
+	[CreatedAt] [datetime2](0) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[SensitiveWords]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[SensitiveWords](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Word] [nvarchar](50) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Shifts]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Shifts](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[InstructorId] [int] NOT NULL,
+	[ScheduleDate] [date] NOT NULL,
+	[TimeSlot] [nvarchar](20) NOT NULL,
+	[IsBooked] [bit] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[TopUpPlans]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TopUpPlans](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[PlanName] [nvarchar](50) NOT NULL,
+	[ImageUrl] [nvarchar](max) NULL,
+	[Price] [decimal](18, 0) NOT NULL,
+	[Points] [int] NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[IsActive] [bit] NOT NULL,
+	[SortOrder] [int] NOT NULL,
+ CONSTRAINT [PK__TopUpPla__3214EC07E1DBA0D1] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[UserExternalLogins]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[UserExternalLogins](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[LoginProvider] [nvarchar](50) NOT NULL,
+	[ProviderKey] [nvarchar](255) NOT NULL,
+	[ProviderDisplayName] [nvarchar](100) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[UserWallets]    Script Date: 2026/3/15 下午 09:51:37 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[UserWallets](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[MemberId] [int] NOT NULL,
+	[CurrentBalance] [decimal](10, 2) NOT NULL,
+	[LastUpdated] [datetime2](0) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+SET IDENTITY_INSERT [dbo].[Functions] ON 
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (18, N'edit_Password', 1, N'修改個人自己的登入密碼', N'/Account/ResetPassword')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (19, N'edit_IntructorDetails', 1, N'修改教練自己的個人簡介', N'/Account/InstructorDetails')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (20, N'edit_InstructorShifts', 1, N'安排或修改教練自己的排班', N'/Shift/Index')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (21, N'view_InstructorShifts', 1, N'查看所有教練的排班情況', N'/Shift/AllShifts')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (22, N'edit_UserAccounts', 1, N'管理、設定、修改、停用、恢復所有使用者的帳號', N'/Staff/Index')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (23, N'edit_RoleFunctions', 1, N'設定每個角色可以使用哪些系統功能(設定每個角色的權限設定)', N'/Staff/RoleFunctions')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (24, N'edit_UserRoles', 1, N'新增或修改使用者的所屬角色', N'/Staff/UserRoles')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (25, N'edit_ProductCategories', 1, N'管理商品的商品分類', N'/ProductCategories/Index')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (26, N'edit_ProductItems', 1, N'管理商品的商品', N'/Products/Index')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (27, N'edit_ProductOrders', 1, N'處理商品的訂單', N'/ProductOrders/index')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (28, N'edit_Plans', 1, N'制定或修改促銷方案', N'/TopUpPlans/Index')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (29, N'edit_PlanOrders', 1, N'處理促銷方案或課程購買生成的訂單', N'/PointOrders/Index')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (30, N'view_PointRecords', 1, N'查看會員的點數取得及使用紀錄', N'/Member/PointsRecord')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (31, N'view_ClientFoodRecords', 1, N'查看會員每日的飲食紀錄', N'/Member/ViewFoodRecords')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (32, N'view_ClientBodyData', 1, N'查看會員生理數據變化', N'/Member/ViewFoodRecords')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (33, N'edit_Comments_admin', 1, N'系統管理員回覆評論或刪除', N'/Review/AdminIndex')
+GO
+INSERT [dbo].[Functions] ([Id], [FunctionName], [IsActive], [Description], [Api_path]) VALUES (34, N'edit_Comments_instructor', 1, N'專業教練回覆評論', N'/Review/InstructorIndex')
+GO
+SET IDENTITY_INSERT [dbo].[Functions] OFF
+GO
+SET IDENTITY_INSERT [dbo].[Instructors] ON 
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (1, 2014, N'/images/instructors/ins1.jpg', N'專精減脂', 1000, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (2, 2013, N'/images/instructors/yvonne.jpg', N'糖尿病飲食', 1200, 3, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (3, 2015, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料1', 1200, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (4, 2016, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料2', 1200, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (5, 2017, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料3', 1200, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (6, 2018, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料4', 1200, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (7, 2019, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料5', 1200, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (8, 2020, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料6', 1200, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (9, 2021, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料7', 1200, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (10, 2022, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料8', 1200, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (11, 2023, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料9', 1200, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (12, 2024, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料10', 1200, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (13, 2025, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料11', 1200, 0, 1)
+GO
+INSERT [dbo].[Instructors] ([Id], [UserId], [ImageUrl], [Description], [HourWage], [CancelCount], [IsActive]) VALUES (14, 2026, N'/images/instructors/default.jpg', N'專業營養諮詢服務 - 測試資料12', 1200, 0, 1)
+GO
+SET IDENTITY_INSERT [dbo].[Instructors] OFF
+GO
+SET IDENTITY_INSERT [dbo].[Members] ON 
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (1, 1, 2, CAST(N'1995-03-15T00:00:00.0000000' AS DateTime2), 58, 163, N'輕度活動', N'維持體重', NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (2, 2, 1, CAST(N'1990-07-22T00:00:00.0000000' AS DateTime2), 75, 178, N'中度活動', N'增肌', NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (3, 3, 2, CAST(N'1998-11-05T00:00:00.0000000' AS DateTime2), 52, 158, N'久坐', N'減重', NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (4, 11, 1, CAST(N'1993-04-10T00:00:00.0000000' AS DateTime2), 70, 175, N'中度活動', N'增肌', NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (5, 12, 2, CAST(N'1997-09-25T00:00:00.0000000' AS DateTime2), 54, 161, N'輕度活動', N'維持體重', NULL, NULL, NULL, 1)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (6, 13, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (7, 2052, 2, CAST(N'1999-06-27T21:04:12.0000000' AS DateTime2), 68, 180, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (8, 2053, 1, CAST(N'1982-09-25T21:04:12.0000000' AS DateTime2), 62, 169, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (9, 2054, 1, CAST(N'1985-02-14T21:04:12.0000000' AS DateTime2), 83, 179, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (10, 2055, 2, CAST(N'1988-08-02T21:04:12.0000000' AS DateTime2), 85, 170, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (11, 2056, 1, CAST(N'2000-10-22T21:04:12.0000000' AS DateTime2), 81, 182, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (12, 2057, 1, CAST(N'1983-12-31T21:04:12.0000000' AS DateTime2), 87, 173, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (13, 2058, 1, CAST(N'2005-11-26T21:04:12.0000000' AS DateTime2), 64, 184, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (14, 2059, 1, CAST(N'2002-09-18T21:04:12.0000000' AS DateTime2), 76, 181, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (15, 2060, 2, CAST(N'1994-04-19T21:04:12.0000000' AS DateTime2), 67, 184, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (16, 2061, 2, CAST(N'1985-06-12T21:04:12.0000000' AS DateTime2), 66, 179, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (17, 2062, 2, CAST(N'1985-10-11T21:04:12.0000000' AS DateTime2), 60, 174, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (18, 2063, 1, CAST(N'2003-03-20T21:04:12.0000000' AS DateTime2), 69, 176, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (19, 2064, 2, CAST(N'2000-03-18T21:04:12.0000000' AS DateTime2), 64, 182, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (20, 2065, 2, CAST(N'1999-02-20T21:04:12.0000000' AS DateTime2), 66, 182, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (21, 2066, 1, CAST(N'1981-11-19T21:04:12.0000000' AS DateTime2), 88, 176, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (22, 2067, 1, CAST(N'1994-08-04T21:04:12.0000000' AS DateTime2), 86, 170, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (23, 2068, 1, CAST(N'1999-11-19T21:04:12.0000000' AS DateTime2), 78, 169, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (24, 2069, 1, CAST(N'1993-01-12T21:04:12.0000000' AS DateTime2), 72, 178, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (25, 2070, 2, CAST(N'1991-06-14T21:04:12.0000000' AS DateTime2), 68, 172, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (26, 2071, 2, CAST(N'1981-12-30T21:04:12.0000000' AS DateTime2), 85, 177, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (27, 2072, 2, CAST(N'1990-08-09T21:04:12.0000000' AS DateTime2), 83, 170, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (28, 2073, 2, CAST(N'1982-09-13T21:04:12.0000000' AS DateTime2), 87, 178, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (29, 2074, 2, CAST(N'1981-06-18T21:04:12.0000000' AS DateTime2), 81, 170, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (30, 2075, 1, CAST(N'2001-11-26T21:04:12.0000000' AS DateTime2), 76, 167, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (31, 2076, 2, CAST(N'2003-06-23T21:04:12.0000000' AS DateTime2), 65, 160, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (32, 2077, 1, CAST(N'2006-09-24T21:04:12.0000000' AS DateTime2), 63, 160, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (33, 2078, 1, CAST(N'1990-12-20T21:04:12.0000000' AS DateTime2), 65, 164, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (34, 2079, 2, CAST(N'1989-04-22T21:04:12.0000000' AS DateTime2), 88, 162, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (35, 2080, 1, CAST(N'1988-09-25T21:04:12.0000000' AS DateTime2), 75, 181, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (36, 2081, 2, CAST(N'1998-10-10T21:04:12.0000000' AS DateTime2), 73, 182, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (37, 2082, 1, CAST(N'1990-06-18T21:04:12.0000000' AS DateTime2), 73, 177, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (38, 2083, 1, CAST(N'1987-11-02T21:04:12.0000000' AS DateTime2), 78, 170, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (39, 2084, 2, CAST(N'2000-06-08T21:04:12.0000000' AS DateTime2), 65, 168, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (40, 2085, 1, CAST(N'1982-07-25T21:04:12.0000000' AS DateTime2), 79, 182, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (41, 2086, 1, CAST(N'2006-08-04T21:04:12.0000000' AS DateTime2), 66, 179, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (42, 2087, 2, CAST(N'1996-07-30T21:04:12.0000000' AS DateTime2), 85, 169, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (43, 2088, 2, CAST(N'2006-11-18T21:04:12.0000000' AS DateTime2), 65, 160, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (44, 2089, 2, CAST(N'1997-05-15T21:04:12.0000000' AS DateTime2), 77, 164, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (45, 2090, 1, CAST(N'2005-12-29T21:04:12.0000000' AS DateTime2), 75, 165, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (46, 2091, 1, CAST(N'1999-09-24T21:04:12.0000000' AS DateTime2), 75, 160, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (47, 2092, 1, CAST(N'1992-11-13T21:04:12.0000000' AS DateTime2), 87, 164, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (48, 2093, 1, CAST(N'1980-07-20T21:04:12.0000000' AS DateTime2), 85, 168, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (49, 2094, 2, CAST(N'1991-05-21T21:04:12.0000000' AS DateTime2), 79, 175, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (50, 2095, 2, CAST(N'1989-07-16T21:04:12.0000000' AS DateTime2), 86, 176, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (51, 2096, 2, CAST(N'1997-10-27T21:04:12.0000000' AS DateTime2), 71, 172, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (52, 2097, 2, CAST(N'1985-10-09T21:04:12.0000000' AS DateTime2), 76, 171, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (53, 2098, 1, CAST(N'2006-03-13T21:04:12.0000000' AS DateTime2), 78, 179, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (54, 2099, 2, CAST(N'1990-07-04T21:04:12.0000000' AS DateTime2), 73, 169, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (55, 2100, 2, CAST(N'2006-09-07T21:04:12.0000000' AS DateTime2), 72, 175, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (56, 2101, 2, CAST(N'2001-11-01T21:04:12.0000000' AS DateTime2), 86, 163, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (57, 2102, 1, CAST(N'1985-10-24T21:04:12.0000000' AS DateTime2), 89, 180, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (58, 2103, 2, CAST(N'1996-12-16T21:04:12.0000000' AS DateTime2), 82, 168, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (59, 2104, 2, CAST(N'2002-08-01T21:04:12.0000000' AS DateTime2), 81, 172, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (60, 2105, 2, CAST(N'1997-04-21T21:04:12.0000000' AS DateTime2), 72, 163, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (61, 2106, 2, CAST(N'1980-02-17T21:04:12.0000000' AS DateTime2), 87, 164, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (62, 2107, 2, CAST(N'1992-05-01T21:04:12.0000000' AS DateTime2), 65, 177, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (63, 2108, 1, CAST(N'1981-09-19T21:04:12.0000000' AS DateTime2), 71, 175, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (64, 2109, 2, CAST(N'1995-11-12T21:04:12.0000000' AS DateTime2), 84, 164, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (65, 2110, 1, CAST(N'1998-08-18T21:04:12.0000000' AS DateTime2), 69, 164, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (66, 2111, 2, CAST(N'1984-09-26T21:04:12.0000000' AS DateTime2), 77, 184, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (67, 2112, 2, CAST(N'2006-03-27T21:04:12.0000000' AS DateTime2), 78, 168, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (68, 2113, 2, CAST(N'1997-09-24T21:04:12.0000000' AS DateTime2), 61, 162, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (69, 2114, 2, CAST(N'1979-12-15T21:04:12.0000000' AS DateTime2), 75, 167, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (70, 2115, 2, CAST(N'1994-10-30T21:04:12.0000000' AS DateTime2), 75, 165, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (71, 2116, 2, CAST(N'2004-11-08T21:04:12.0000000' AS DateTime2), 67, 170, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (72, 2117, 1, CAST(N'1998-07-15T21:04:12.0000000' AS DateTime2), 85, 180, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (73, 2118, 1, CAST(N'1989-05-22T21:04:12.0000000' AS DateTime2), 63, 172, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (74, 2119, 1, CAST(N'1982-03-09T21:04:12.0000000' AS DateTime2), 83, 171, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (75, 2120, 1, CAST(N'1996-01-03T21:04:12.0000000' AS DateTime2), 66, 169, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (76, 2121, 1, CAST(N'1983-07-30T21:04:13.0000000' AS DateTime2), 72, 173, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (77, 2122, 2, CAST(N'1986-02-26T21:04:13.0000000' AS DateTime2), 68, 165, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (78, 2123, 2, CAST(N'1991-12-04T21:04:13.0000000' AS DateTime2), 76, 179, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (79, 2124, 1, CAST(N'1997-02-18T21:04:13.0000000' AS DateTime2), 66, 160, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (80, 2125, 2, CAST(N'2004-12-27T21:04:13.0000000' AS DateTime2), 65, 184, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (81, 2126, 2, CAST(N'1995-03-23T21:04:13.0000000' AS DateTime2), 69, 169, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (82, 2127, 1, CAST(N'2003-06-11T21:04:13.0000000' AS DateTime2), 60, 163, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (83, 2128, 2, CAST(N'2005-07-27T21:04:13.0000000' AS DateTime2), 71, 174, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (84, 2129, 2, CAST(N'1996-11-01T21:04:13.0000000' AS DateTime2), 77, 180, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (85, 2130, 1, CAST(N'1996-01-30T21:04:13.0000000' AS DateTime2), 78, 173, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (86, 2131, 2, CAST(N'1983-04-01T21:04:13.0000000' AS DateTime2), 60, 175, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (87, 2132, 2, CAST(N'2002-07-29T21:04:13.0000000' AS DateTime2), 63, 161, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (88, 2133, 1, CAST(N'1981-01-04T21:04:13.0000000' AS DateTime2), 62, 161, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (89, 2134, 2, CAST(N'1997-01-04T21:04:13.0000000' AS DateTime2), 86, 183, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (90, 2135, 2, CAST(N'2001-03-13T21:04:13.0000000' AS DateTime2), 86, 163, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (91, 2136, 1, CAST(N'1982-09-20T21:04:13.0000000' AS DateTime2), 65, 184, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (92, 2137, 1, CAST(N'1991-10-06T21:04:13.0000000' AS DateTime2), 79, 161, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (93, 2138, 1, CAST(N'1996-04-15T21:04:13.0000000' AS DateTime2), 83, 174, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (94, 2139, 2, CAST(N'2004-04-09T21:04:13.0000000' AS DateTime2), 77, 168, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (95, 2140, 1, CAST(N'1991-02-02T21:04:13.0000000' AS DateTime2), 63, 171, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (96, 2141, 2, CAST(N'2006-07-23T21:04:13.0000000' AS DateTime2), 76, 181, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (97, 2142, 2, CAST(N'2005-06-05T21:04:13.0000000' AS DateTime2), 71, 183, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (98, 2143, 1, CAST(N'2002-12-20T21:04:13.0000000' AS DateTime2), 85, 180, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (99, 2144, 2, CAST(N'2004-09-24T21:04:13.0000000' AS DateTime2), 66, 172, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (100, 2145, 2, CAST(N'1986-01-19T21:04:13.0000000' AS DateTime2), 81, 168, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (101, 2146, 2, CAST(N'2005-06-14T21:04:13.0000000' AS DateTime2), 85, 179, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (102, 2147, 2, CAST(N'1990-03-07T21:04:13.0000000' AS DateTime2), 62, 167, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (103, 2148, 1, CAST(N'1985-10-15T21:04:13.0000000' AS DateTime2), 75, 177, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (104, 2149, 1, CAST(N'1983-07-28T21:04:13.0000000' AS DateTime2), 68, 175, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (105, 2150, 2, CAST(N'1991-08-07T21:04:13.0000000' AS DateTime2), 67, 173, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+INSERT [dbo].[Members] ([Id], [UserId], [Gender], [DateOfBirth], [Weight], [Height], [ActivityLevel], [Target], [BMR], [TDEE], [ImageUrl], [CancelCount]) VALUES (106, 2151, 2, CAST(N'2000-05-18T21:04:13.0000000' AS DateTime2), 70, 170, N'中度活動', N'維持體重', 1500, 2200, N'/images/members/default.jpg', 0)
+GO
+SET IDENTITY_INSERT [dbo].[Members] OFF
+GO
+SET IDENTITY_INSERT [dbo].[MemberViolations] ON 
+GO
+INSERT [dbo].[MemberViolations] ([Id], [MemberId], [WarningCount], [IsSuspended], [LastWarningAt], [SuspendedAt], [Reason]) VALUES (1, 1, 0, 0, NULL, NULL, NULL)
+GO
+INSERT [dbo].[MemberViolations] ([Id], [MemberId], [WarningCount], [IsSuspended], [LastWarningAt], [SuspendedAt], [Reason]) VALUES (2, 2, 2, 0, CAST(N'2026-03-11T16:00:49.0000000' AS DateTime2), NULL, N'近期連續取消兩次營養師預約，系統自動發出警告。')
+GO
+INSERT [dbo].[MemberViolations] ([Id], [MemberId], [WarningCount], [IsSuspended], [LastWarningAt], [SuspendedAt], [Reason]) VALUES (3, 3, 4, 1, CAST(N'2026-03-09T16:00:49.0000000' AS DateTime2), CAST(N'2026-03-11T16:00:49.0000000' AS DateTime2), N'惡意留負評且多次未取貨，經管理員判定予以停權處分。')
+GO
+SET IDENTITY_INSERT [dbo].[MemberViolations] OFF
+GO
+SET IDENTITY_INSERT [dbo].[Notifications] ON 
+GO
+INSERT [dbo].[Notifications] ([Id], [UserId], [SenderId], [NotifyType], [Title], [Content], [IsRead], [ReferenceId], [CreatedAt]) VALUES (1, 1014, 2014, N'Report', N'【系統警示】評價檢舉通知', N'營養師 ins1 檢舉了一則不當評價，請盡速前往後台評價管理區審核。', 1, 3, CAST(N'2026-03-11T16:32:30.0000000' AS DateTime2))
+GO
+INSERT [dbo].[Notifications] ([Id], [UserId], [SenderId], [NotifyType], [Title], [Content], [IsRead], [ReferenceId], [CreatedAt]) VALUES (2, 1, NULL, N'Booking', N'預約成功通知', N'親愛的 Alice Wang 您好，您已成功預約 2026-03-01 18-19 (晚) 的營養諮詢！', 0, 5, CAST(N'2026-03-11T16:32:30.0000000' AS DateTime2))
+GO
+INSERT [dbo].[Notifications] ([Id], [UserId], [SenderId], [NotifyType], [Title], [Content], [IsRead], [ReferenceId], [CreatedAt]) VALUES (3, 1014, 2013, N'Report1', N'評論檢舉通知', N'不好看 [Url:/Review/AdminIndex?id=3]', 1, NULL, CAST(N'2026-03-11T17:20:37.0000000' AS DateTime2))
+GO
+INSERT [dbo].[Notifications] ([Id], [UserId], [SenderId], [NotifyType], [Title], [Content], [IsRead], [ReferenceId], [CreatedAt]) VALUES (4, 2013, 2013, N'Report1', N'評論檢舉通知', N'不好看 [Url:/Review/AdminIndex?id=3]', 1, NULL, CAST(N'2026-03-11T17:20:37.0000000' AS DateTime2))
+GO
+INSERT [dbo].[Notifications] ([Id], [UserId], [SenderId], [NotifyType], [Title], [Content], [IsRead], [ReferenceId], [CreatedAt]) VALUES (5, 1014, 2013, N'Report1', N'評論檢舉通知', N'1 [Url:/Review/AdminIndex?id=3]', 1, NULL, CAST(N'2026-03-12T15:26:37.0000000' AS DateTime2))
+GO
+INSERT [dbo].[Notifications] ([Id], [UserId], [SenderId], [NotifyType], [Title], [Content], [IsRead], [ReferenceId], [CreatedAt]) VALUES (6, 2013, 2013, N'Report1', N'評論檢舉通知', N'1 [Url:/Review/AdminIndex?id=3]', 1, NULL, CAST(N'2026-03-12T15:26:37.0000000' AS DateTime2))
+GO
+SET IDENTITY_INSERT [dbo].[Notifications] OFF
+GO
+SET IDENTITY_INSERT [dbo].[PointOrders] ON 
+GO
+INSERT [dbo].[PointOrders] ([Id], [MemberId], [TopUpPlanId], [CreateAt], [PointQty], [OriginalPrice], [DiscountedPrice], [Status]) VALUES (1, 1, 3, CAST(N'2026-03-11T14:51:48.5266667' AS DateTime2), 5, CAST(5000 AS Decimal(18, 0)), CAST(4000 AS Decimal(18, 0)), 2)
+GO
+INSERT [dbo].[PointOrders] ([Id], [MemberId], [TopUpPlanId], [CreateAt], [PointQty], [OriginalPrice], [DiscountedPrice], [Status]) VALUES (2, 2, 2, CAST(N'2026-03-11T14:51:48.5266667' AS DateTime2), 2, CAST(2000 AS Decimal(18, 0)), CAST(1800 AS Decimal(18, 0)), 3)
+GO
+SET IDENTITY_INSERT [dbo].[PointOrders] OFF
+GO
+SET IDENTITY_INSERT [dbo].[ProductCategories] ON 
+GO
+INSERT [dbo].[ProductCategories] ([Id], [CategoryName], [SortOrder], [IsActive]) VALUES (1, N'雞胸肉', 1, 1)
+GO
+INSERT [dbo].[ProductCategories] ([Id], [CategoryName], [SortOrder], [IsActive]) VALUES (2, N'蛋白粉', 2, 1)
+GO
+INSERT [dbo].[ProductCategories] ([Id], [CategoryName], [SortOrder], [IsActive]) VALUES (3, N'各種維生素', 3, 1)
+GO
+INSERT [dbo].[ProductCategories] ([Id], [CategoryName], [SortOrder], [IsActive]) VALUES (4, N'便當盒', 4, 1)
+GO
+SET IDENTITY_INSERT [dbo].[ProductCategories] OFF
+GO
+SET IDENTITY_INSERT [dbo].[ProductOrderDetails] ON 
+GO
+INSERT [dbo].[ProductOrderDetails] ([Id], [ProductOrderId], [ProductId], [UnitPrice], [Qty], [SubTotal], [DiscountedPrice], [ProductName], [ImageURL], [Memo]) VALUES (1, 1, 1, CAST(99 AS Decimal(18, 0)), 2, CAST(198 AS Decimal(18, 0)), CAST(198 AS Decimal(18, 0)), N'經典原味舒肥雞胸肉', N'/images/products/chicken_01.jpg', N'請幫我用紙箱包裝')
+GO
+INSERT [dbo].[ProductOrderDetails] ([Id], [ProductOrderId], [ProductId], [UnitPrice], [Qty], [SubTotal], [DiscountedPrice], [ProductName], [ImageURL], [Memo]) VALUES (2, 1, 9, CAST(1200 AS Decimal(18, 0)), 1, CAST(1200 AS Decimal(18, 0)), CAST(1000 AS Decimal(18, 0)), N'濃縮乳清蛋白 - 醇厚巧克力', N'/images/products/protein_01.jpg', NULL)
+GO
+INSERT [dbo].[ProductOrderDetails] ([Id], [ProductOrderId], [ProductId], [UnitPrice], [Qty], [SubTotal], [DiscountedPrice], [ProductName], [ImageURL], [Memo]) VALUES (3, 2, 17, CAST(450 AS Decimal(18, 0)), 1, CAST(450 AS Decimal(18, 0)), CAST(450 AS Decimal(18, 0)), N'高單位活力B群', N'/images/products/vitamin_01.jpg', NULL)
+GO
+INSERT [dbo].[ProductOrderDetails] ([Id], [ProductOrderId], [ProductId], [UnitPrice], [Qty], [SubTotal], [DiscountedPrice], [ProductName], [ImageURL], [Memo]) VALUES (4, 2, 24, CAST(350 AS Decimal(18, 0)), 2, CAST(700 AS Decimal(18, 0)), CAST(650 AS Decimal(18, 0)), N'304不鏽鋼分隔便當盒', N'/images/products/box_01.jpg', N'送禮用，請確認無刮痕')
+GO
+INSERT [dbo].[ProductOrderDetails] ([Id], [ProductOrderId], [ProductId], [UnitPrice], [Qty], [SubTotal], [DiscountedPrice], [ProductName], [ImageURL], [Memo]) VALUES (5, 1, 6, CAST(109 AS Decimal(18, 0)), 3, CAST(327 AS Decimal(18, 0)), CAST(327 AS Decimal(18, 0)), N'川味麻辣雞胸肉', N'/images/products/chicken_06.jpg', NULL)
+GO
+SET IDENTITY_INSERT [dbo].[ProductOrderDetails] OFF
+GO
+SET IDENTITY_INSERT [dbo].[ProductOrders] ON 
+GO
+INSERT [dbo].[ProductOrders] ([Id], [MemberId], [CreateAt], [OriginalAmount], [DiscountAmount], [Receiver], [Address], [Mobile], [TaxNumber], [Status], [Memo]) VALUES (1, 1, CAST(N'2026-03-11T14:51:48.5233333' AS DateTime2), CAST(2000 AS Decimal(18, 0)), CAST(1800 AS Decimal(18, 0)), N'陳小明', N'台北市信義區', N'0912345678', NULL, 1, NULL)
+GO
+INSERT [dbo].[ProductOrders] ([Id], [MemberId], [CreateAt], [OriginalAmount], [DiscountAmount], [Receiver], [Address], [Mobile], [TaxNumber], [Status], [Memo]) VALUES (2, 2, CAST(N'2026-03-11T14:51:48.5266667' AS DateTime2), CAST(1500 AS Decimal(18, 0)), CAST(1500 AS Decimal(18, 0)), N'王大同', N'台北市大安區', N'0987654321', NULL, 5, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[ProductOrders] OFF
+GO
+SET IDENTITY_INSERT [dbo].[Products] ON 
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (1, 1, N'經典原味舒肥雞胸肉', N'/images/products/chicken_01.jpg', CAST(120 AS Decimal(18, 0)), CAST(99 AS Decimal(18, 0)), N'鮮嫩多汁，低脂高蛋白，無過多調味', 1, 0)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (2, 1, N'黑胡椒海鹽雞胸肉', N'/images/products/chicken_02.jpg', CAST(120 AS Decimal(18, 0)), CAST(99 AS Decimal(18, 0)), N'使用天然海鹽與粗粒黑胡椒，經典百搭', 2, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (3, 1, N'蒜香風味雞胸肉', N'/images/products/chicken_03.jpg', CAST(120 AS Decimal(18, 0)), CAST(99 AS Decimal(18, 0)), N'濃郁蒜香，健身後補充的最佳首選', 3, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (4, 1, N'泰式檸檬雞胸肉', N'/images/products/chicken_04.jpg', CAST(130 AS Decimal(18, 0)), CAST(109 AS Decimal(18, 0)), N'微酸微辣，清爽解膩的泰式風味', 4, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (5, 1, N'印度咖哩雞胸肉', N'/images/products/chicken_05.jpg', CAST(130 AS Decimal(18, 0)), CAST(109 AS Decimal(18, 0)), N'濃郁咖哩香氣，異國風味口感豐富', 5, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (6, 1, N'川味麻辣雞胸肉', N'/images/products/chicken_06.jpg', CAST(130 AS Decimal(18, 0)), CAST(109 AS Decimal(18, 0)), N'嗜辣者必備，刺激味蕾好下飯', 6, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (7, 1, N'義式香草雞胸肉', N'/images/products/chicken_07.jpg', CAST(140 AS Decimal(18, 0)), CAST(119 AS Decimal(18, 0)), N'特選義式綜合香料醃製，香氣四溢', 7, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (8, 1, N'迷迭香烤雞胸肉', N'/images/products/chicken_08.jpg', CAST(140 AS Decimal(18, 0)), CAST(119 AS Decimal(18, 0)), N'高級餐廳等級口感，在家也能輕鬆享受', 8, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (9, 2, N'濃縮乳清蛋白 - 醇厚巧克力', N'/images/products/protein_01.jpg', CAST(1500 AS Decimal(18, 0)), CAST(1200 AS Decimal(18, 0)), N'每份含25g蛋白質，濃郁可可風味', 1, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (10, 2, N'濃縮乳清蛋白 - 經典香草', N'/images/products/protein_02.jpg', CAST(1500 AS Decimal(18, 0)), CAST(1200 AS Decimal(18, 0)), N'百搭香草風味，適合搭配牛奶或燕麥', 2, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (11, 2, N'分離乳清蛋白 - 鮮採草莓', N'/images/products/protein_03.jpg', CAST(1800 AS Decimal(18, 0)), CAST(1450 AS Decimal(18, 0)), N'乳糖不耐症適用，酸甜草莓口感', 3, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (12, 2, N'分離乳清蛋白 - 英式奶茶', N'/images/products/protein_04.jpg', CAST(1800 AS Decimal(18, 0)), CAST(1450 AS Decimal(18, 0)), N'超人氣奶茶口味，享受喝手搖飲的快感', 4, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (13, 2, N'緩釋型酪蛋白 - 原味', N'/images/products/protein_05.jpg', CAST(1600 AS Decimal(18, 0)), CAST(1300 AS Decimal(18, 0)), N'緩慢釋放胺基酸，睡前補充最佳選擇', 5, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (14, 2, N'純素大豆分離蛋白 - 抹茶', N'/images/products/protein_06.jpg', CAST(1400 AS Decimal(18, 0)), CAST(1100 AS Decimal(18, 0)), N'素食者健身必備，日式靜岡抹茶風味', 6, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (15, 2, N'綜合植物蛋白粉 - 芝麻', N'/images/products/protein_07.jpg', CAST(1450 AS Decimal(18, 0)), CAST(1150 AS Decimal(18, 0)), N'富含多種植物性胺基酸，濃郁芝麻香', 7, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (16, 2, N'高蛋白能量代餐飲 - 香蕉', N'/images/products/protein_08.jpg', CAST(1200 AS Decimal(18, 0)), CAST(990 AS Decimal(18, 0)), N'富含飽足感，減脂期代餐好幫手', 8, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (17, 3, N'高單位活力B群', N'/images/products/vitamin_01.jpg', CAST(600 AS Decimal(18, 0)), CAST(450 AS Decimal(18, 0)), N'增強體力，精神旺盛，運動後恢復必備', 1, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (18, 3, N'維生素C1000發泡錠', N'/images/products/vitamin_02.jpg', CAST(350 AS Decimal(18, 0)), CAST(280 AS Decimal(18, 0)), N'酸甜好喝，日常保養與促進膠原蛋白形成', 2, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (19, 3, N'陽光維生素D3軟膠囊', N'/images/products/vitamin_03.jpg', CAST(500 AS Decimal(18, 0)), CAST(390 AS Decimal(18, 0)), N'室內族必備，促進鈣質吸收', 3, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (20, 3, N'綜合礦物質複方錠', N'/images/products/vitamin_04.jpg', CAST(800 AS Decimal(18, 0)), CAST(650 AS Decimal(18, 0)), N'一次補充多種流汗流失的必需礦物質', 4, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (21, 3, N'高濃度深海魚油 Omega-3', N'/images/products/vitamin_05.jpg', CAST(1200 AS Decimal(18, 0)), CAST(890 AS Decimal(18, 0)), N'晶亮護明，循環順暢，維持健康', 5, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (22, 3, N'胺基酸螯合鋅錠', N'/images/products/vitamin_06.jpg', CAST(550 AS Decimal(18, 0)), CAST(420 AS Decimal(18, 0)), N'高吸收率，維持生長發育與生殖機能', 6, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (23, 3, N'海藻鈣+鎂+D3', N'/images/products/vitamin_07.jpg', CAST(900 AS Decimal(18, 0)), CAST(720 AS Decimal(18, 0)), N'完美吸收比例，維持骨骼與牙齒健康', 7, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (24, 4, N'304不鏽鋼分隔便當盒', N'/images/products/box_01.jpg', CAST(450 AS Decimal(18, 0)), CAST(350 AS Decimal(18, 0)), N'耐用好洗，不殘留異味，環保首選', 1, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (25, 4, N'白金矽膠摺疊便當盒', N'/images/products/box_02.jpg', CAST(550 AS Decimal(18, 0)), CAST(420 AS Decimal(18, 0)), N'可摺疊收納節省空間，外出攜帶超方便', 2, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (26, 4, N'耐熱玻璃保鮮盒 - 單格600ml', N'/images/products/box_03.jpg', CAST(300 AS Decimal(18, 0)), CAST(199 AS Decimal(18, 0)), N'微波、烤箱、電鍋皆適用，安全無毒', 3, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (27, 4, N'耐熱玻璃保鮮盒 - 雙格800ml', N'/images/products/box_04.jpg', CAST(380 AS Decimal(18, 0)), CAST(250 AS Decimal(18, 0)), N'飯菜分離不串味，備餐最佳容器', 4, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (28, 4, N'日式質感木製便當盒', N'/images/products/box_05.jpg', CAST(650 AS Decimal(18, 0)), CAST(499 AS Decimal(18, 0)), N'文青風格，適合冷食與輕食沙拉專用', 5, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (29, 4, N'微波專用加熱分隔餐盒', N'/images/products/box_06.jpg', CAST(250 AS Decimal(18, 0)), CAST(150 AS Decimal(18, 0)), N'食品級PP材質，附透氣孔方便微波', 6, 1)
+GO
+INSERT [dbo].[Products] ([Id], [CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (30, 4, N'大容量運動雙層沙拉盒', N'/images/products/box_07.jpg', CAST(400 AS Decimal(18, 0)), CAST(299 AS Decimal(18, 0)), N'附獨立沙拉醬料盒與環保叉匙', 7, 1)
+GO
+SET IDENTITY_INSERT [dbo].[Products] OFF
+GO
+SET IDENTITY_INSERT [dbo].[ReserveOrders] ON 
+GO
+INSERT [dbo].[ReserveOrders] ([Id], [MemberId], [ShiftId], [CreateAt], [Status], [PaymentMethod], [Target], [PointCost], [Price], [Memorandum]) VALUES (4, 2, 10, CAST(N'2026-03-08T13:50:13.0000000' AS DateTime2), N'已完成', N'信用卡', N'體重管理與外食挑選建議', NULL, CAST(1200.00 AS Decimal(10, 2)), N'建議減少精緻澱粉，多攝取蔬菜')
+GO
+INSERT [dbo].[ReserveOrders] ([Id], [MemberId], [ShiftId], [CreateAt], [Status], [PaymentMethod], [Target], [PointCost], [Price], [Memorandum]) VALUES (5, 1, 11, CAST(N'2026-03-08T13:50:13.0000000' AS DateTime2), N'已完成', N'點數', N'日常飲食檢視與蛋白質攝取評估', 800, NULL, N'蛋白質攝取稍微不足，已建議增加白肉比例')
+GO
+SET IDENTITY_INSERT [dbo].[ReserveOrders] OFF
+GO
+SET IDENTITY_INSERT [dbo].[Reviews] ON 
+GO
+INSERT [dbo].[Reviews] ([Id], [ReserveOrderId], [InstructorId], [MemberId], [Rating], [Comment], [CreatedAt]) VALUES (3, 4, 2, 2, 5, N'李營養師非常專業，給了很具體的外食建議，非常感謝！', CAST(N'2026-03-08T13:50:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[Reviews] ([Id], [ReserveOrderId], [InstructorId], [MemberId], [Rating], [Comment], [CreatedAt]) VALUES (4, 5, 1, 1, 4, N'講解得很清楚，但希望能多提供一些超商能買到的具體品項建議。', CAST(N'2026-03-08T13:50:13.0000000' AS DateTime2))
+GO
+SET IDENTITY_INSERT [dbo].[Reviews] OFF
+GO
+SET IDENTITY_INSERT [dbo].[RoleFunctions] ON 
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (43, 2, 18)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (44, 2, 19)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (45, 2, 20)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (46, 2, 31)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (47, 2, 32)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (48, 2, 34)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (53, 3, 18)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (54, 3, 25)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (55, 3, 26)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (56, 3, 27)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (49, 4, 18)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (50, 4, 28)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (51, 4, 29)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (52, 4, 30)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (29, 5, 18)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (30, 5, 21)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (31, 5, 22)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (32, 5, 23)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (33, 5, 24)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (34, 5, 25)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (35, 5, 26)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (36, 5, 27)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (37, 5, 28)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (38, 5, 29)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (39, 5, 30)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (40, 5, 31)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (41, 5, 32)
+GO
+INSERT [dbo].[RoleFunctions] ([Id], [RoleId], [FunctionId]) VALUES (42, 5, 33)
+GO
+SET IDENTITY_INSERT [dbo].[RoleFunctions] OFF
+GO
+SET IDENTITY_INSERT [dbo].[Roles] ON 
+GO
+INSERT [dbo].[Roles] ([Id], [RoleName], [IsActive], [Description]) VALUES (1, N'member', 1, N'登入會員，可使用飲食、生理數據紀錄、方案購買權限、購買運動用品')
+GO
+INSERT [dbo].[Roles] ([Id], [RoleName], [IsActive], [Description]) VALUES (2, N'instructor', 1, N'專業教練')
+GO
+INSERT [dbo].[Roles] ([Id], [RoleName], [IsActive], [Description]) VALUES (3, N'purchasor', 1, N'採購人員，負責上下架商品及庫存管理')
+GO
+INSERT [dbo].[Roles] ([Id], [RoleName], [IsActive], [Description]) VALUES (4, N'marketor', 1, N'行銷人員，負責制定促銷方案或活動折扣')
+GO
+INSERT [dbo].[Roles] ([Id], [RoleName], [IsActive], [Description]) VALUES (5, N'admin', 1, N'系統管理員')
+GO
+INSERT [dbo].[Roles] ([Id], [RoleName], [IsActive], [Description]) VALUES (6, N'visitor', 1, N'訪客(未登入前)，只能瀏覽網頁')
+GO
+SET IDENTITY_INSERT [dbo].[Roles] OFF
+GO
+SET IDENTITY_INSERT [dbo].[SensitiveWords] ON 
+GO
+INSERT [dbo].[SensitiveWords] ([Id], [Word]) VALUES (6, N'白癡')
+GO
+INSERT [dbo].[SensitiveWords] ([Id], [Word]) VALUES (5, N'專業')
+GO
+INSERT [dbo].[SensitiveWords] ([Id], [Word]) VALUES (2, N'靠北')
+GO
+INSERT [dbo].[SensitiveWords] ([Id], [Word]) VALUES (3, N'醜八怪')
+GO
+SET IDENTITY_INSERT [dbo].[SensitiveWords] OFF
+GO
+SET IDENTITY_INSERT [dbo].[Shifts] ON 
+GO
+INSERT [dbo].[Shifts] ([Id], [InstructorId], [ScheduleDate], [TimeSlot], [IsBooked]) VALUES (10, 2, CAST(N'2026-02-20' AS Date), N'14-15 (午)', 1)
+GO
+INSERT [dbo].[Shifts] ([Id], [InstructorId], [ScheduleDate], [TimeSlot], [IsBooked]) VALUES (11, 1, CAST(N'2026-03-01' AS Date), N'18-19 (晚)', 1)
+GO
+INSERT [dbo].[Shifts] ([Id], [InstructorId], [ScheduleDate], [TimeSlot], [IsBooked]) VALUES (58, 2, CAST(N'2026-03-30' AS Date), N'09-10 (早)', 0)
+GO
+INSERT [dbo].[Shifts] ([Id], [InstructorId], [ScheduleDate], [TimeSlot], [IsBooked]) VALUES (59, 2, CAST(N'2026-03-30' AS Date), N'14-15 (午)', 0)
+GO
+INSERT [dbo].[Shifts] ([Id], [InstructorId], [ScheduleDate], [TimeSlot], [IsBooked]) VALUES (60, 2, CAST(N'2026-03-30' AS Date), N'18-19 (晚)', 0)
+GO
+INSERT [dbo].[Shifts] ([Id], [InstructorId], [ScheduleDate], [TimeSlot], [IsBooked]) VALUES (74, 1, CAST(N'2026-03-29' AS Date), N'09-10 (早)', 0)
+GO
+INSERT [dbo].[Shifts] ([Id], [InstructorId], [ScheduleDate], [TimeSlot], [IsBooked]) VALUES (75, 1, CAST(N'2026-03-29' AS Date), N'18-19 (晚)', 0)
+GO
+SET IDENTITY_INSERT [dbo].[Shifts] OFF
+GO
+SET IDENTITY_INSERT [dbo].[TopUpPlans] ON 
+GO
+INSERT [dbo].[TopUpPlans] ([Id], [PlanName], [ImageUrl], [Price], [Points], [Description], [IsActive], [SortOrder]) VALUES (1, N'單堂體驗方案', N'/images/plans/plan_01.jpg', CAST(1000 AS Decimal(18, 0)), 1, N'購買 1 點，適合初次體驗諮詢課程的學員。', 1, 1)
+GO
+INSERT [dbo].[TopUpPlans] ([Id], [PlanName], [ImageUrl], [Price], [Points], [Description], [IsActive], [SortOrder]) VALUES (2, N'雙效入門方案', N'/images/plans/plan_02.jpg', CAST(1800 AS Decimal(18, 0)), 2, N'購買 2 點，享 9 折優惠，適合有短期諮詢需求的你。', 1, 2)
+GO
+INSERT [dbo].[TopUpPlans] ([Id], [PlanName], [ImageUrl], [Price], [Points], [Description], [IsActive], [SortOrder]) VALUES (3, N'五星進階方案', N'/images/plans/plan_03.jpg', CAST(4000 AS Decimal(18, 0)), 5, N'購買 5 點，享 8 折優惠，單次諮詢低至 800 元！', 1, 3)
+GO
+INSERT [dbo].[TopUpPlans] ([Id], [PlanName], [ImageUrl], [Price], [Points], [Description], [IsActive], [SortOrder]) VALUES (4, N'十分超值方案', N'/images/plans/plan_04.jpg', CAST(7000 AS Decimal(18, 0)), 10, N'購買 10 點，享 7 折優惠，穩定長期諮詢的最佳選擇。', 1, 4)
+GO
+INSERT [dbo].[TopUpPlans] ([Id], [PlanName], [ImageUrl], [Price], [Points], [Description], [IsActive], [SortOrder]) VALUES (5, N'尊榮鐵粉方案', N'/images/plans/plan_05.jpg', CAST(12000 AS Decimal(18, 0)), 20, N'購買 20 點，享 6 折最高優惠，單次只要 600 元，買到賺到！', 1, 5)
+GO
+SET IDENTITY_INSERT [dbo].[TopUpPlans] OFF
+GO
+SET IDENTITY_INSERT [dbo].[UserRoles] ON 
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (2006, 1, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (2007, 1, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (2, 2, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3, 3, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (6, 6, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (7, 7, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (8, 8, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (9, 9, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (11, 11, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (12, 12, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (1002, 13, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (2003, 1014, 5)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3008, 2013, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3009, 2013, 5)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3004, 2014, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3010, 2015, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3011, 2016, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3012, 2017, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3013, 2018, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3014, 2019, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3015, 2020, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3016, 2021, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3017, 2022, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3018, 2023, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3019, 2024, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3020, 2025, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3021, 2026, 2)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3022, 2027, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3023, 2028, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3024, 2029, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3025, 2030, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3026, 2031, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3027, 2032, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3028, 2033, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3029, 2034, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3030, 2035, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3031, 2036, 3)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3032, 2037, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3033, 2038, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3034, 2039, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3035, 2040, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3036, 2041, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3037, 2042, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3038, 2043, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3039, 2044, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3040, 2045, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3041, 2046, 4)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3042, 2047, 5)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3043, 2048, 5)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3044, 2049, 5)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3045, 2050, 5)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3046, 2051, 5)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3047, 2052, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3048, 2053, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3049, 2054, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3050, 2055, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3051, 2056, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3052, 2057, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3053, 2058, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3054, 2059, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3055, 2060, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3056, 2061, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3057, 2062, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3058, 2063, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3059, 2064, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3060, 2065, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3061, 2066, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3062, 2067, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3063, 2068, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3064, 2069, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3065, 2070, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3066, 2071, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3067, 2072, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3068, 2073, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3069, 2074, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3070, 2075, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3071, 2076, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3072, 2077, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3073, 2078, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3074, 2079, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3075, 2080, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3076, 2081, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3077, 2082, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3078, 2083, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3079, 2084, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3080, 2085, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3081, 2086, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3082, 2087, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3083, 2088, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3084, 2089, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3085, 2090, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3086, 2091, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3087, 2092, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3088, 2093, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3089, 2094, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3090, 2095, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3091, 2096, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3092, 2097, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3093, 2098, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3094, 2099, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3095, 2100, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3096, 2101, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3097, 2102, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3098, 2103, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3099, 2104, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3100, 2105, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3101, 2106, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3102, 2107, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3103, 2108, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3104, 2109, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3105, 2110, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3106, 2111, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3107, 2112, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3108, 2113, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3109, 2114, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3110, 2115, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3111, 2116, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3112, 2117, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3113, 2118, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3114, 2119, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3115, 2120, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3116, 2121, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3117, 2122, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3118, 2123, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3119, 2124, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3120, 2125, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3121, 2126, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3122, 2127, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3123, 2128, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3124, 2129, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3125, 2130, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3126, 2131, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3127, 2132, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3128, 2133, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3129, 2134, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3130, 2135, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3131, 2136, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3132, 2137, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3133, 2138, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3134, 2139, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3135, 2140, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3136, 2141, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3137, 2142, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3138, 2143, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3139, 2144, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3140, 2145, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3141, 2146, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3142, 2147, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3143, 2148, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3144, 2149, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3145, 2150, 1)
+GO
+INSERT [dbo].[UserRoles] ([Id], [UserId], [RoleId]) VALUES (3146, 2151, 1)
+GO
+SET IDENTITY_INSERT [dbo].[UserRoles] OFF
+GO
+SET IDENTITY_INSERT [dbo].[Users] ON 
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (1, N'liulinjin01', N'$2b$12$AAAbbbCCCdddEEEfffGGGhhhIIIjjjKKKlllMMMnnnOOO', N'劉林瑾', N'alice@example.com', N'0912345601', 1, 0, NULL, NULL, N'3e8b83608fe64a63b82f13fc9b61c02a', CAST(N'2026-03-09T17:38:06.0000000' AS DateTime2))
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2, N'chenhanmu02', N'$2b$12$BBBcccDDDeeeFFFgggHHHiiiJJJkkkLLLmmmNNNooo111', N'陳涵沐', N'bob@example.com', N'0912345602', 1, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (3, N'linlannan03', N'$2b$12$CCCdddEEEffFFFgggHHHiiiJJJkkkLLLmmmNNNooo222', N'林蘭楠', N'carol@example.com', N'0912345603', 1, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (6, N'chenshuan04', N'$2b$12$FFFghhHHHiiiJJJkkkLLLmmmNNNooo555666777888999', N'陳書安', N'frank@example.com', N'0912345606', 1, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (7, N'huqingqing05', N'$2b$12$GGGhiiIIIjjjKKKlllMMMnnnOOOppp666777888999aaa', N'胡清清', N'grace@example.com', N'0912345607', 1, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (8, N'lishilin06', N'$2b$12$HHHijjJJJkkkLLLmmmNNNooo777888999aaabbbccc111', N'李詩林', N'henry@example.com', N'0912345608', 1, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (9, N'wulangyan07', N'$2b$12$IIIjkkKKKlllMMMnnnOOOppp888999aaabbbccc222333', N'吳朗妍', N'iris@example.com', N'0912345609', 1, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (11, N'gaozhuohang08', NULL, N'高卓航', N'kevin.google@gmail.com', N'0912345611', 1, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (12, N'luomuchen09', NULL, N'羅沐晨', N'linda.google@gmail.com', N'0912345612', 1, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (13, N'xuyaoze10', N'AQAAAAIAAYagAAAAEP0mUPSkyrn6ftw1a8vThzMKvFPhVLAbw9ZYw0orGTG21UdoTbEN9jiMWPLT/y+swQ==', N'徐瑤澤', N'aaaa@bbbbb.com', N'0912345678', 0, 0, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (1014, N'zhouchenhan11', N'AQAAAAIAAYagAAAAEMj7/DwGlJfLr+SnWkq+6QFfV5sAiy+6tGqHH26BQChTjJV0YoX1XMq/spoGlW7rew==', N'周晨涵', N'admin@myfitnesscoach.com', NULL, 1, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2013, N'huqingwei12', N'AQAAAAIAAYagAAAAEFYME7wXIETzEGypBggxvBQHV6fwfcfTKMUZjdryefcjD51MX1js0yz6SFR5YwPsVQ==', N'胡青薇', N'yvonne42396@gmail.com', NULL, 1, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2014, N'liweiyin13', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'李薇音', N'eric55339944@gmail.com', NULL, 1, 1, NULL, NULL, NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2015, N'luoqinglin14', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'羅青林', N'nutri1@fitness.com', N'0912384756', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2016, N'zhouanrou15', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'周安柔', N'nutri2@fitness.com', N'0921475869', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2017, N'zhuchenyuan16', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'朱辰遠', N'nutri3@fitness.com', N'0933582417', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2018, N'linningran17', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'林寧然', N'nutri4@fitness.com', N'0975614238', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2019, N'liyaoqing18', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'李瑤清', N'nutri5@fitness.com', N'0988231457', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2020, N'herouran19', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'何柔然', N'nutri6@fitness.com', N'0919456782', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2021, N'liuweiyin20', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'劉薇音', N'nutri7@fitness.com', N'0928374651', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2022, N'lizeqing21', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'李澤清', N'nutri8@fitness.com', N'0932145698', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2023, N'linranlan22', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'林然蘭', N'nutri9@fitness.com', N'0955874123', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2024, N'maruoyun23', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'馬若雲', N'nutri10@fitness.com', N'0910234567', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2025, N'lilangyao24', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'李朗瑤', N'nutri11@fitness.com', N'0963214587', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2026, N'gaojingwei25', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'高景薇', N'nutri12@fitness.com', N'0972581436', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2027, N'gaoqingxing26', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'高清星', N'purch1@fitness.com', N'0937123456', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2028, N'wangyinning27', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'王音寧', N'purch2@fitness.com', N'0911223344', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2029, N'zhaochenting28', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'趙晨庭', N'purch3@fitness.com', N'0922334455', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2030, N'gaoshining29', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'高詩寧', N'purch4@fitness.com', N'0955667788', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2031, N'maruoyao30', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'馬若瑤', N'purch5@fitness.com', N'0966778899', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2032, N'zhanglinjin31', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'張霖瑾', N'purch6@fitness.com', N'0977889900', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2033, N'wuqingyang32', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'吳青揚', N'purch7@fitness.com', N'0988990011', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2034, N'heyaze33', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'何雅澤', N'purch8@fitness.com', N'0900112233', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2035, N'liuchenrou34', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'劉晨柔', N'purch9@fitness.com', N'0911558899', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2036, N'huangyanghang35', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'黃揚航', N'purch10@fitness.com', N'0922446688', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2037, N'zhaoyuqing36', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'趙宇清', N'market1@fitness.com', N'0910001111', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2038, N'chenrouchen37', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'陳柔辰', N'market2@fitness.com', N'0920002222', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2039, N'yangyangyuan38', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'楊揚遠', N'market3@fitness.com', N'0930003333', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2040, N'huanghanya39', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'黃涵雅', N'market4@fitness.com', N'0940004444', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2041, N'sunnanqing40', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'孫楠清', N'market5@fitness.com', N'0950005555', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2042, N'zhanglangwei41', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'張朗薇', N'market6@fitness.com', N'0960006666', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2043, N'zhaoweimu42', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'趙薇沐', N'market7@fitness.com', N'0970007777', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2044, N'sunanwei43', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'孫安薇', N'market8@fitness.com', N'0980008888', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2045, N'liushumu44', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'劉書沐', N'market9@fitness.com', N'0990009999', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2046, N'linchenshu45', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'林辰書', N'market10@fitness.com', N'0900000000', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2047, N'lilinnan46', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'李霖楠', N'admin1@fitness.com', N'0912121212', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2048, N'huangyanning47', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'黃妍寧', N'admin2@fitness.com', N'0923232323', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2049, N'zhouranhang48', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'周然航', N'admin3@fitness.com', N'0934343434', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2050, N'liuyangrou49', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'劉揚柔', N'admin4@fitness.com', N'0945454545', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2051, N'gaochenze50', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'高晨澤', N'admin5@fitness.com', N'0956565656', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2052, N'linxuanyu51', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'林軒宇', N'member001@fitness.com', N'0960000001', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2053, N'liuyuanlang52', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'劉遠朗', N'member002@fitness.com', N'0960000002', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2054, N'huangyunyang53', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'黃雲揚', N'member003@fitness.com', N'0960000003', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2055, N'guohanqing54', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'郭涵清', N'member004@fitness.com', N'0960000004', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2056, N'sunyanshi55', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'孫妍詩', N'member005@fitness.com', N'0960000005', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2057, N'chenlinwei56', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'陳林薇', N'member006@fitness.com', N'0960000006', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2058, N'luoxinghao57', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'羅星皓', N'member007@fitness.com', N'0960000007', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2059, N'xuyangan58', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'徐揚安', N'member008@fitness.com', N'0960000008', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2060, N'xuweizhuo59', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'徐薇卓', N'member009@fitness.com', N'0960000009', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2061, N'huangqingjin60', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'黃青瑾', N'member010@fitness.com', N'0960000010', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2062, N'liuhaoya61', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'劉皓雅', N'member011@fitness.com', N'0960000011', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2063, N'guoxinglang62', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'郭星朗', N'member012@fitness.com', N'0960000012', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2064, N'sunlanran63', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'孫蘭然', N'member013@fitness.com', N'0960000013', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2065, N'mayarou64', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'馬雅柔', N'member014@fitness.com', N'0960000014', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2066, N'chenshuxuan65', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'陳書軒', N'member015@fitness.com', N'0960000015', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2067, N'huqinghan66', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'胡清涵', N'member016@fitness.com', N'0960000016', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2068, N'wuxuanwei67', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'吳軒薇', N'member017@fitness.com', N'0960000017', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2069, N'guomuan68', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'郭沐安', N'member018@fitness.com', N'0960000018', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2070, N'zhangchenyao69', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'張晨瑤', N'member019@fitness.com', N'0960000019', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2071, N'heyunshu70', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'何雲書', N'member020@fitness.com', N'0960000020', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2072, N'luoweiwei71', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'羅薇薇', N'member021@fitness.com', N'0960000021', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2073, N'zhuyinyuan72', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'朱音遠', N'member022@fitness.com', N'0960000022', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2074, N'zhaohaoshi73', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'趙皓詩', N'member023@fitness.com', N'0960000023', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2075, N'maqingrou74', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'馬清柔', N'member024@fitness.com', N'0960000024', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2076, N'liuyaoze75', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'劉瑤澤', N'member025@fitness.com', N'0960000025', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2077, N'liuanhang76', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'劉安航', N'member026@fitness.com', N'0960000026', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2078, N'zhangzhuoqing77', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'張卓晴', N'member027@fitness.com', N'0960000027', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2079, N'guolinwei78', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'郭霖薇', N'member028@fitness.com', N'0960000028', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2080, N'zhangmulan79', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'張沐蘭', N'member029@fitness.com', N'0960000029', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2081, N'zhujinting80', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'朱瑾庭', N'member030@fitness.com', N'0960000030', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2082, N'maboze81', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'馬柏澤', N'member031@fitness.com', N'0960000031', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2083, N'zhoumuqing82', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'周沐青', N'member032@fitness.com', N'0960000032', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2084, N'zhaojingze83', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'趙景澤', N'member033@fitness.com', N'0960000033', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2085, N'zhangmuning84', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'張沐寧', N'member034@fitness.com', N'0960000034', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2086, N'zhaotingjing85', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'趙庭景', N'member035@fitness.com', N'0960000035', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2087, N'mananzhuo86', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'馬楠卓', N'member036@fitness.com', N'0960000036', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2088, N'guozhuolang87', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'郭卓朗', N'member037@fitness.com', N'0960000037', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2089, N'yangzechen88', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'楊澤辰', N'member038@fitness.com', N'0960000038', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2090, N'wuxinghao89', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'吳星皓', N'member039@fitness.com', N'0960000039', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2091, N'luozehan90', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'羅澤涵', N'member040@fitness.com', N'0960000040', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2092, N'sunhanyin91', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'孫涵音', N'member041@fitness.com', N'0960000041', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2093, N'luoqingning92', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'羅清寧', N'member042@fitness.com', N'0960000042', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2094, N'wulangchuan93', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'吳朗川', N'member043@fitness.com', N'0960000043', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2095, N'liyalin94', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'李雅霖', N'member044@fitness.com', N'0960000044', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2096, N'huyanting95', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'胡言庭', N'member045@fitness.com', N'0960000045', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2097, N'zhangchenya96', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'張辰雅', N'member046@fitness.com', N'0960000046', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2098, N'chenyuchen97', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'陳宇晨', N'member047@fitness.com', N'0960000047', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2099, N'zhanganyang98', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'張安揚', N'member048@fitness.com', N'0960000048', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2100, N'xuchenyun99', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'徐辰雲', N'member049@fitness.com', N'0960000049', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2101, N'zhurouqing100', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'朱柔青', N'member050@fitness.com', N'0960000050', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2102, N'gaomuyan101', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'高沐言', N'member051@fitness.com', N'0960000051', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2103, N'zhangxuanting102', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'張軒庭', N'member052@fitness.com', N'0960000052', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2104, N'yangnanhang103', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'楊楠航', N'member053@fitness.com', N'0960000053', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2105, N'luoyaoyan104', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'羅瑤妍', N'member054@fitness.com', N'0960000054', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2106, N'majingyin105', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'馬景音', N'member055@fitness.com', N'0960000055', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2107, N'xubaihao106', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'徐柏皓', N'member056@fitness.com', N'0960000056', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2108, N'zhuoruolang107', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'朱若朗', N'member057@fitness.com', N'0960000057', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2109, N'yangyuyang108', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'楊宇揚', N'member058@fitness.com', N'0960000058', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2110, N'zhaoyaoqing109', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'趙瑤清', N'member059@fitness.com', N'0960000059', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2111, N'heweihao110', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'何薇皓', N'member060@fitness.com', N'0960000060', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2112, N'zhouhangyu111', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'周航宇', N'member061@fitness.com', N'0960000061', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2113, N'wuweiyang112', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'吳薇揚', N'member062@fitness.com', N'0960000062', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2114, N'wulinyao113', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'吳霖瑤', N'member063@fitness.com', N'0960000063', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2115, N'zhouyunya114', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'周雲雅', N'member064@fitness.com', N'0960000064', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2116, N'zhouyanyang115', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'周言揚', N'member065@fitness.com', N'0960000065', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2117, N'sunbaihao116', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'孫柏皓', N'member066@fitness.com', N'0960000066', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2118, N'sunruozhuo117', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'孫若卓', N'member067@fitness.com', N'0960000067', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2119, N'sunmumu118', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'孫沐沐', N'member068@fitness.com', N'0960000068', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2120, N'zhoulinyan119', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'周林妍', N'member069@fitness.com', N'0960000069', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2121, N'linzeting120', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'林澤庭', N'member070@fitness.com', N'0960000070', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2122, N'hejinze121', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'何瑾澤', N'member071@fitness.com', N'0960000071', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2123, N'wunanlin122', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'吳楠霖', N'member072@fitness.com', N'0960000072', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2124, N'wuyanhan123', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'吳言涵', N'member073@fitness.com', N'0960000073', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2125, N'luoweiyan124', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'羅薇言', N'member074@fitness.com', N'0960000074', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2126, N'heweihao125', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'何薇皓', N'member075@fitness.com', N'0960000075', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2127, N'zhoutingzhuo126', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'周庭卓', N'member076@fitness.com', N'0960000076', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2128, N'wuranze127', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'吳然澤', N'member077@fitness.com', N'0960000077', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2129, N'lizemu128', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'李澤沐', N'member078@fitness.com', N'0960000078', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2130, N'linyinting129', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'林音庭', N'member079@fitness.com', N'0960000079', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2131, N'heyuruo130', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'何宇若', N'member080@fitness.com', N'0960000080', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2132, N'gaoanqing131', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'高安清', N'member081@fitness.com', N'0960000081', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2133, N'zhaolangyao132', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'趙朗瑤', N'member082@fitness.com', N'0960000082', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2134, N'wangjinjin133', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'王瑾瑾', N'member083@fitness.com', N'0960000083', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2135, N'gaoyunan134', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'高雲安', N'member084@fitness.com', N'0960000084', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2136, N'malangyan135', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'馬朗妍', N'member085@fitness.com', N'0960000085', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2137, N'gaoqingan136', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'高晴安', N'member086@fitness.com', N'0960000086', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2138, N'liulinran137', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'劉霖然', N'member087@fitness.com', N'0960000087', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2139, N'huningya138', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'胡寧雅', N'member088@fitness.com', N'0960000088', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2140, N'zhouhangjing139', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'周航景', N'member089@fitness.com', N'0960000089', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2141, N'huqingyang140', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'胡晴揚', N'member090@fitness.com', N'0960000090', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2142, N'huyanshi141', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'胡言詩', N'member091@fitness.com', N'0960000091', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2143, N'zhuhaolin142', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'朱皓林', N'member092@fitness.com', N'0960000092', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2144, N'xumuyang143', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'徐沐揚', N'member093@fitness.com', N'0960000093', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2145, N'wuhanghang144', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'吳航航', N'member094@fitness.com', N'0960000094', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2146, N'wuyuxing145', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'吳宇星', N'member095@fitness.com', N'0960000095', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2147, N'huangshijing146', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'黃詩景', N'member096@fitness.com', N'0960000096', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2148, N'heyanyun147', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'何言雲', N'member097@fitness.com', N'0960000097', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2149, N'gaoyangbai148', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'高揚柏', N'member098@fitness.com', N'0960000098', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2150, N'zhuqinghan149', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'朱青涵', N'member099@fitness.com', N'0960000099', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+INSERT [dbo].[Users] ([Id], [Account], [HashedPassword], [UserName], [Email], [Mobile], [IsConfirmed], [IsActive], [NewMemberConfirmCode], [NewMemberConfirmCodeExpiry], [ResetPasswordConfirmCode], [ResetPasswordConfirmCodeExpiry]) VALUES (2151, N'zhangxingnan150', N'AQAAAAIAAYagAAAAEP55tPFRA+060E7a1jD4Q+h5/eTw7Tx1YONAEud0TZGOnZHB1t0UnPQqoyheaOXRSg==', N'張星楠', N'member100@fitness.com', N'0960000100', 1, 1, N'd516b394-c7dc-4d99-b17f-277bfa2627db', CAST(N'2026-03-08T09:49:59.0000000' AS DateTime2), NULL, NULL)
+GO
+SET IDENTITY_INSERT [dbo].[Users] OFF
+GO
+SET IDENTITY_INSERT [dbo].[UserWallets] ON 
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (1, 1, CAST(2000.00 AS Decimal(10, 2)), CAST(N'2026-03-08T09:40:56.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (2, 2, CAST(500.00 AS Decimal(10, 2)), CAST(N'2026-03-08T09:40:56.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (3, 7, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (4, 8, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (5, 9, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (6, 10, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (7, 11, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (8, 12, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (9, 13, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (10, 14, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (11, 15, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (12, 16, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (13, 17, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (14, 18, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (15, 19, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (16, 20, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (17, 21, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (18, 22, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (19, 23, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (20, 24, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (21, 25, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (22, 26, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (23, 27, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (24, 28, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (25, 29, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (26, 30, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (27, 31, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (28, 32, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (29, 33, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (30, 34, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (31, 35, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (32, 36, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (33, 37, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (34, 38, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (35, 39, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (36, 40, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (37, 41, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (38, 42, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (39, 43, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (40, 44, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (41, 45, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (42, 46, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (43, 47, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (44, 48, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (45, 49, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (46, 50, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (47, 51, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (48, 52, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (49, 53, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (50, 54, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (51, 55, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (52, 56, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (53, 57, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (54, 58, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (55, 59, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (56, 60, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (57, 61, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (58, 62, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (59, 63, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (60, 64, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (61, 65, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (62, 66, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (63, 67, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (64, 68, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (65, 69, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (66, 70, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (67, 71, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (68, 72, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (69, 73, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (70, 74, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (71, 75, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:12.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (72, 76, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (73, 77, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (74, 78, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (75, 79, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (76, 80, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (77, 81, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (78, 82, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (79, 83, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (80, 84, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (81, 85, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (82, 86, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (83, 87, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (84, 88, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (85, 89, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (86, 90, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (87, 91, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (88, 92, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (89, 93, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (90, 94, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (91, 95, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (92, 96, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (93, 97, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (94, 98, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (95, 99, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (96, 100, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (97, 101, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (98, 102, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (99, 103, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (100, 104, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (101, 105, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+INSERT [dbo].[UserWallets] ([Id], [MemberId], [CurrentBalance], [LastUpdated]) VALUES (102, 106, CAST(1000.00 AS Decimal(10, 2)), CAST(N'2026-03-15T21:04:13.0000000' AS DateTime2))
+GO
+SET IDENTITY_INSERT [dbo].[UserWallets] OFF
+GO
+/****** Object:  Index [UQ_MemberViolations_MemberId]    Script Date: 2026/3/15 下午 09:51:38 ******/
+ALTER TABLE [dbo].[MemberViolations] ADD  CONSTRAINT [UQ_MemberViolations_MemberId] UNIQUE NONCLUSTERED 
+(
+	[MemberId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [UQ_RoleFunctions]    Script Date: 2026/3/15 下午 09:51:38 ******/
+ALTER TABLE [dbo].[RoleFunctions] ADD  CONSTRAINT [UQ_RoleFunctions] UNIQUE NONCLUSTERED 
+(
+	[RoleId] ASC,
+	[FunctionId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ_Roles_RoleName]    Script Date: 2026/3/15 下午 09:51:38 ******/
+ALTER TABLE [dbo].[Roles] ADD  CONSTRAINT [UQ_Roles_RoleName] UNIQUE NONCLUSTERED 
+(
+	[RoleName] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ_SensitiveWords_Word]    Script Date: 2026/3/15 下午 09:51:38 ******/
+ALTER TABLE [dbo].[SensitiveWords] ADD  CONSTRAINT [UQ_SensitiveWords_Word] UNIQUE NONCLUSTERED 
+(
+	[Word] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [UQ_UserRoles]    Script Date: 2026/3/15 下午 09:51:38 ******/
+ALTER TABLE [dbo].[UserRoles] ADD  CONSTRAINT [UQ_UserRoles] UNIQUE NONCLUSTERED 
+(
+	[UserId] ASC,
+	[RoleId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ_Users_Email]    Script Date: 2026/3/15 下午 09:51:38 ******/
+ALTER TABLE [dbo].[Users] ADD  CONSTRAINT [UQ_Users_Email] UNIQUE NONCLUSTERED 
+(
+	[Email] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UX_Users_Account]    Script Date: 2026/3/15 下午 09:51:38 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [UX_Users_Account] ON [dbo].[Users]
+(
+	[Account] ASC
+)
+WHERE ([Account] IS NOT NULL)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Object:  Index [UQ_UserWallets_Member]    Script Date: 2026/3/15 下午 09:51:38 ******/
+ALTER TABLE [dbo].[UserWallets] ADD  CONSTRAINT [UQ_UserWallets_Member] UNIQUE NONCLUSTERED 
+(
+	[MemberId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[FoodCategories] ADD  DEFAULT ((1)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[FoodRecords] ADD  DEFAULT (getdate()) FOR [EatDT]
+GO
+ALTER TABLE [dbo].[Foods] ADD  DEFAULT ((0)) FOR [IsDeleted]
+GO
+ALTER TABLE [dbo].[Functions] ADD  DEFAULT ((0)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[Instructors] ADD  DEFAULT ((1)) FOR [CancelCount]
+GO
+ALTER TABLE [dbo].[Instructors] ADD  DEFAULT ((1)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[Members] ADD  DEFAULT ((1)) FOR [CancelCount]
+GO
+ALTER TABLE [dbo].[MemberViolations] ADD  DEFAULT ((0)) FOR [WarningCount]
+GO
+ALTER TABLE [dbo].[MemberViolations] ADD  DEFAULT ((0)) FOR [IsSuspended]
+GO
+ALTER TABLE [dbo].[Notifications] ADD  DEFAULT ((0)) FOR [IsRead]
+GO
+ALTER TABLE [dbo].[Notifications] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[PointOrders] ADD  CONSTRAINT [DF__PointOrde__Creat__70DDC3D8]  DEFAULT (getdate()) FOR [CreateAt]
+GO
+ALTER TABLE [dbo].[PointsRecordDetails] ADD  DEFAULT (getdate()) FOR [CreateAt]
+GO
+ALTER TABLE [dbo].[ProductCategories] ADD  DEFAULT ((1)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[ProductOrders] ADD  DEFAULT (getdate()) FOR [CreateAt]
+GO
+ALTER TABLE [dbo].[Products] ADD  CONSTRAINT [DF__Products__IsActi__7E37BEF6]  DEFAULT ((1)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[ReserveOrders] ADD  DEFAULT (getdate()) FOR [CreateAt]
+GO
+ALTER TABLE [dbo].[Reviews] ADD  DEFAULT (getdate()) FOR [CreatedAt]
+GO
+ALTER TABLE [dbo].[Roles] ADD  DEFAULT ((0)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[Shifts] ADD  DEFAULT ((0)) FOR [IsBooked]
+GO
+ALTER TABLE [dbo].[TopUpPlans] ADD  CONSTRAINT [DF__TopUpPlan__IsAct__0B91BA14]  DEFAULT ((1)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[TopUpPlans] ADD  CONSTRAINT [DF__TopUpPlan__SortO__0C85DE4D]  DEFAULT ((0)) FOR [SortOrder]
+GO
+ALTER TABLE [dbo].[Users] ADD  DEFAULT ((0)) FOR [IsConfirmed]
+GO
+ALTER TABLE [dbo].[Users] ADD  DEFAULT ((0)) FOR [IsActive]
+GO
+ALTER TABLE [dbo].[UserWallets] ADD  DEFAULT ((0)) FOR [CurrentBalance]
+GO
+ALTER TABLE [dbo].[UserWallets] ADD  DEFAULT (getdate()) FOR [LastUpdated]
+GO
+ALTER TABLE [dbo].[FoodRecords]  WITH CHECK ADD  CONSTRAINT [FK_FoodRecords_Foods] FOREIGN KEY([FoodId])
+REFERENCES [dbo].[Foods] ([Id])
+GO
+ALTER TABLE [dbo].[FoodRecords] CHECK CONSTRAINT [FK_FoodRecords_Foods]
+GO
+ALTER TABLE [dbo].[FoodRecords]  WITH CHECK ADD  CONSTRAINT [FK_FoodRecords_Members] FOREIGN KEY([MemberId])
+REFERENCES [dbo].[Members] ([Id])
+GO
+ALTER TABLE [dbo].[FoodRecords] CHECK CONSTRAINT [FK_FoodRecords_Members]
+GO
+ALTER TABLE [dbo].[Foods]  WITH CHECK ADD  CONSTRAINT [FK_Foods_FoodCategories] FOREIGN KEY([CategoryId])
+REFERENCES [dbo].[FoodCategories] ([Id])
+GO
+ALTER TABLE [dbo].[Foods] CHECK CONSTRAINT [FK_Foods_FoodCategories]
+GO
+ALTER TABLE [dbo].[Instructors]  WITH CHECK ADD  CONSTRAINT [FK_Instructors_Users] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([Id])
+GO
+ALTER TABLE [dbo].[Instructors] CHECK CONSTRAINT [FK_Instructors_Users]
+GO
+ALTER TABLE [dbo].[Members]  WITH CHECK ADD  CONSTRAINT [FK_Members_Users] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([Id])
+GO
+ALTER TABLE [dbo].[Members] CHECK CONSTRAINT [FK_Members_Users]
+GO
+ALTER TABLE [dbo].[MemberViolations]  WITH CHECK ADD  CONSTRAINT [FK_MemberViolations_Members] FOREIGN KEY([MemberId])
+REFERENCES [dbo].[Members] ([Id])
+GO
+ALTER TABLE [dbo].[MemberViolations] CHECK CONSTRAINT [FK_MemberViolations_Members]
+GO
+ALTER TABLE [dbo].[Notifications]  WITH CHECK ADD  CONSTRAINT [FK_Notifications_Users_Receiver] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([Id])
+GO
+ALTER TABLE [dbo].[Notifications] CHECK CONSTRAINT [FK_Notifications_Users_Receiver]
+GO
+ALTER TABLE [dbo].[Notifications]  WITH CHECK ADD  CONSTRAINT [FK_Notifications_Users_Sender] FOREIGN KEY([SenderId])
+REFERENCES [dbo].[Users] ([Id])
+GO
+ALTER TABLE [dbo].[Notifications] CHECK CONSTRAINT [FK_Notifications_Users_Sender]
+GO
+ALTER TABLE [dbo].[Nutrients]  WITH CHECK ADD  CONSTRAINT [FK_Nutrients_Foods] FOREIGN KEY([FoodId])
+REFERENCES [dbo].[Foods] ([Id])
+GO
+ALTER TABLE [dbo].[Nutrients] CHECK CONSTRAINT [FK_Nutrients_Foods]
+GO
+ALTER TABLE [dbo].[PointOrders]  WITH CHECK ADD  CONSTRAINT [FK_PointOrders_Members] FOREIGN KEY([MemberId])
+REFERENCES [dbo].[Members] ([Id])
+GO
+ALTER TABLE [dbo].[PointOrders] CHECK CONSTRAINT [FK_PointOrders_Members]
+GO
+ALTER TABLE [dbo].[PointOrders]  WITH CHECK ADD  CONSTRAINT [FK_PointOrders_TopUpPlans] FOREIGN KEY([TopUpPlanId])
+REFERENCES [dbo].[TopUpPlans] ([Id])
+GO
+ALTER TABLE [dbo].[PointOrders] CHECK CONSTRAINT [FK_PointOrders_TopUpPlans]
+GO
+ALTER TABLE [dbo].[PointsRecordDetails]  WITH CHECK ADD  CONSTRAINT [FK_PointsRecordDetails_PointOrders] FOREIGN KEY([PointOrderId])
+REFERENCES [dbo].[PointOrders] ([Id])
+GO
+ALTER TABLE [dbo].[PointsRecordDetails] CHECK CONSTRAINT [FK_PointsRecordDetails_PointOrders]
+GO
+ALTER TABLE [dbo].[PointsRecordDetails]  WITH CHECK ADD  CONSTRAINT [FK_PointsRecordDetails_ReserveOrders] FOREIGN KEY([ReserveOrderId])
+REFERENCES [dbo].[ReserveOrders] ([Id])
+GO
+ALTER TABLE [dbo].[PointsRecordDetails] CHECK CONSTRAINT [FK_PointsRecordDetails_ReserveOrders]
+GO
+ALTER TABLE [dbo].[PointsRecordDetails]  WITH CHECK ADD  CONSTRAINT [FK_PointsRecordDetails_UserWallets] FOREIGN KEY([UserWalletId])
+REFERENCES [dbo].[UserWallets] ([Id])
+GO
+ALTER TABLE [dbo].[PointsRecordDetails] CHECK CONSTRAINT [FK_PointsRecordDetails_UserWallets]
+GO
+ALTER TABLE [dbo].[ProductOrderDetails]  WITH CHECK ADD  CONSTRAINT [FK_ProductOrderDetails_ProductOrders] FOREIGN KEY([ProductOrderId])
+REFERENCES [dbo].[ProductOrders] ([Id])
+GO
+ALTER TABLE [dbo].[ProductOrderDetails] CHECK CONSTRAINT [FK_ProductOrderDetails_ProductOrders]
+GO
+ALTER TABLE [dbo].[ProductOrderDetails]  WITH CHECK ADD  CONSTRAINT [FK_ProductOrderDetails_Products] FOREIGN KEY([ProductId])
+REFERENCES [dbo].[Products] ([Id])
+GO
+ALTER TABLE [dbo].[ProductOrderDetails] CHECK CONSTRAINT [FK_ProductOrderDetails_Products]
+GO
+ALTER TABLE [dbo].[ProductOrders]  WITH CHECK ADD  CONSTRAINT [FK_ProductOrders_Members] FOREIGN KEY([MemberId])
+REFERENCES [dbo].[Members] ([Id])
+GO
+ALTER TABLE [dbo].[ProductOrders] CHECK CONSTRAINT [FK_ProductOrders_Members]
+GO
+ALTER TABLE [dbo].[Products]  WITH CHECK ADD  CONSTRAINT [FK_Products_ProductCategories] FOREIGN KEY([CategoryId])
+REFERENCES [dbo].[ProductCategories] ([Id])
+GO
+ALTER TABLE [dbo].[Products] CHECK CONSTRAINT [FK_Products_ProductCategories]
+GO
+ALTER TABLE [dbo].[ReserveOrders]  WITH CHECK ADD  CONSTRAINT [FK_ReserveOrders_Members] FOREIGN KEY([MemberId])
+REFERENCES [dbo].[Members] ([Id])
+GO
+ALTER TABLE [dbo].[ReserveOrders] CHECK CONSTRAINT [FK_ReserveOrders_Members]
+GO
+ALTER TABLE [dbo].[ReserveOrders]  WITH CHECK ADD  CONSTRAINT [FK_ReserveOrders_Shifts] FOREIGN KEY([ShiftId])
+REFERENCES [dbo].[Shifts] ([Id])
+GO
+ALTER TABLE [dbo].[ReserveOrders] CHECK CONSTRAINT [FK_ReserveOrders_Shifts]
+GO
+ALTER TABLE [dbo].[Reviews]  WITH CHECK ADD  CONSTRAINT [FK_Reviews_Instructors] FOREIGN KEY([InstructorId])
+REFERENCES [dbo].[Instructors] ([Id])
+GO
+ALTER TABLE [dbo].[Reviews] CHECK CONSTRAINT [FK_Reviews_Instructors]
+GO
+ALTER TABLE [dbo].[Reviews]  WITH CHECK ADD  CONSTRAINT [FK_Reviews_Members] FOREIGN KEY([MemberId])
+REFERENCES [dbo].[Members] ([Id])
+GO
+ALTER TABLE [dbo].[Reviews] CHECK CONSTRAINT [FK_Reviews_Members]
+GO
+ALTER TABLE [dbo].[Reviews]  WITH CHECK ADD  CONSTRAINT [FK_Reviews_ReserveOrders] FOREIGN KEY([ReserveOrderId])
+REFERENCES [dbo].[ReserveOrders] ([Id])
+GO
+ALTER TABLE [dbo].[Reviews] CHECK CONSTRAINT [FK_Reviews_ReserveOrders]
+GO
+ALTER TABLE [dbo].[RoleFunctions]  WITH CHECK ADD  CONSTRAINT [FK_RoleFunctions_Function] FOREIGN KEY([FunctionId])
+REFERENCES [dbo].[Functions] ([Id])
+GO
+ALTER TABLE [dbo].[RoleFunctions] CHECK CONSTRAINT [FK_RoleFunctions_Function]
+GO
+ALTER TABLE [dbo].[RoleFunctions]  WITH CHECK ADD  CONSTRAINT [FK_RoleFunctions_Role] FOREIGN KEY([RoleId])
+REFERENCES [dbo].[Roles] ([Id])
+GO
+ALTER TABLE [dbo].[RoleFunctions] CHECK CONSTRAINT [FK_RoleFunctions_Role]
+GO
+ALTER TABLE [dbo].[Shifts]  WITH CHECK ADD  CONSTRAINT [FK_Shifts_Instructors] FOREIGN KEY([InstructorId])
+REFERENCES [dbo].[Instructors] ([Id])
+GO
+ALTER TABLE [dbo].[Shifts] CHECK CONSTRAINT [FK_Shifts_Instructors]
+GO
+ALTER TABLE [dbo].[UserExternalLogins]  WITH CHECK ADD  CONSTRAINT [FK_ExternalLogins_Users] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([Id])
+GO
+ALTER TABLE [dbo].[UserExternalLogins] CHECK CONSTRAINT [FK_ExternalLogins_Users]
+GO
+ALTER TABLE [dbo].[UserRoles]  WITH CHECK ADD  CONSTRAINT [FK_UserRoles_Role] FOREIGN KEY([RoleId])
+REFERENCES [dbo].[Roles] ([Id])
+GO
+ALTER TABLE [dbo].[UserRoles] CHECK CONSTRAINT [FK_UserRoles_Role]
+GO
+ALTER TABLE [dbo].[UserRoles]  WITH CHECK ADD  CONSTRAINT [FK_UserRoles_User] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([Id])
+GO
+ALTER TABLE [dbo].[UserRoles] CHECK CONSTRAINT [FK_UserRoles_User]
+GO
+ALTER TABLE [dbo].[UserWallets]  WITH CHECK ADD  CONSTRAINT [FK_UserWallets_Members] FOREIGN KEY([MemberId])
+REFERENCES [dbo].[Members] ([Id])
+GO
+ALTER TABLE [dbo].[UserWallets] CHECK CONSTRAINT [FK_UserWallets_Members]
+GO
+USE [master]
+GO
+ALTER DATABASE [MyFitnessCoachDb] SET  READ_WRITE 
+GO
