@@ -151,7 +151,7 @@ namespace Project_MyFitnessCoach
                 name: "default",
                 pattern: "{controller=Account}/{action=Login}/{id?}");
 
-            // --- Seed Admin User ---
+            /* --- Seed Admin User ---
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<MyFitnessCoachDbContext>();
@@ -189,7 +189,7 @@ namespace Project_MyFitnessCoach
                     }
                 }
             }
-            // -----------------------
+            */ 
 
             app.Run();
         }

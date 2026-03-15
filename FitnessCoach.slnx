@@ -20,6 +20,7 @@
   </Folder>
   <Folder Name="/SqlCodes/">
     <File Path="//172.22.35.100/shares/MyFitnessCoach_Db.sql" />
+    <File Path="SqlCodes/MyFitnessCoachDb.sql" />
   </Folder>
   <Project Path="Project-MyFitnessCoach/Project-MyFitnessCoach.csproj" Id="3c0b97ec-6f4c-4122-9581-b622a33095a2" />
 </Solution>
