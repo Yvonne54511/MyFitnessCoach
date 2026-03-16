@@ -122,53 +122,56 @@
         let html = '';
 
         html += `
-            <div class="alert alert-success d-flex align-items-center month-control shadow-sm mb-4">
-                <input class="form-check-input me-3 mt-0" type="checkbox" id="${treeData.id}" onchange="handleCheck('${treeData.id}')"
+            <div class="alert alert-secondary d-flex align-items-center month-control shadow-sm mb-4 py-3" style="background-color: #f8f9fc; border-left: 4px solid #858796;">
+                <input class="form-check-input mr-3" type="checkbox" id="${treeData.id}" onchange="handleCheck('${treeData.id}')"
                     ${treeData.checked ? 'checked' : ''} ${treeData.disabled ? 'disabled' : ''}>
-                <label class="mb-0 cursor-pointer" for="${treeData.id}">${treeData.label} - ${L.fullMonthOpen}</label>
+                <label class="mb-0 cursor-pointer font-weight-bold text-secondary" for="${treeData.id}" style="font-size: 1.1rem;">
+                    <i class='bx bx-calendar-check mr-1'></i> ${treeData.label} - ${L.fullMonthOpen}
+                </label>
             </div>
         `;
 
-        // 佈局修正：每兩週一行
-        html += `<div class="row row-cols-1 row-cols-xl-2 g-4">`;
+        html += `<div class="row">`;
 
         treeData.children.forEach(weekNode => {
-            const weekColorClass = weekNode.checked ? 'text-danger fw-bold' : 'text-success';
+            const weekColorClass = weekNode.checked ? 'text-danger font-weight-bold' : 'text-secondary';
 
             html += `
-                <div class="col">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-header week-header bg-success bg-opacity-10 ${weekColorClass} d-flex align-items-center border-bottom-0">
-                            <input class="form-check-input me-2 mt-0" type="checkbox" id="${weekNode.id}" onchange="handleCheck('${weekNode.id}')"
+                <div class="col-xl-6 mb-4">
+                    <div class="card shadow mb-0 h-100">
+                        <div class="card-header week-header bg-light ${weekColorClass} d-flex align-items-center">
+                            <input class="form-check-input mr-2" type="checkbox" id="${weekNode.id}" onchange="handleCheck('${weekNode.id}')"
                                 ${weekNode.checked ? 'checked' : ''} ${weekNode.disabled ? 'disabled' : ''}>
-                            <label class="mb-0 cursor-pointer" for="${weekNode.id}">${weekNode.label}</label>
+                            <label class="mb-0 cursor-pointer font-weight-bold" for="${weekNode.id}">
+                                <i class='bx bx-calendar-star mr-1'></i> ${weekNode.label}
+                            </label>
                         </div>
                         <div class="card-body p-0">
             `;
 
             weekNode.children.forEach(dayNode => {
-                const dayColorClass = dayNode.checked ? 'text-danger fw-bold' : 'text-dark';
+                const dayColorClass = dayNode.checked ? 'text-danger font-weight-bold' : 'text-dark';
 
                 html += `<div class="d-flex align-items-center p-2 border-bottom day-row-hover">`;
 
                 html += `
                     <div class="day-label d-flex align-items-center ${dayColorClass}">
-                        <input class="form-check-input me-2 mt-0" type="checkbox" id="${dayNode.id}" onchange="handleCheck('${dayNode.id}')"
+                        <input class="form-check-input mr-2" type="checkbox" id="${dayNode.id}" onchange="handleCheck('${dayNode.id}')"
                             ${dayNode.checked ? 'checked' : ''} ${dayNode.disabled ? 'disabled' : ''}>
-                        <label class="mb-0 cursor-pointer fw-medium" for="${dayNode.id}">${dayNode.label}</label>
+                        <label class="mb-0 cursor-pointer font-weight-bold" for="${dayNode.id}">${dayNode.label}</label>
                     </div>
                 `;
 
-                html += `<div class="slot-container flex-grow-1">`;
+                html += `<div class="slot-container d-flex flex-wrap flex-grow-1">`;
                 dayNode.children.forEach(slotNode => {
-                    const textColor = slotNode.isBooked ? 'text-danger fw-bold' : 'text-secondary';
+                    const textColor = slotNode.isBooked ? 'text-danger font-weight-bold' : 'text-secondary';
                     const displayText = slotNode.isBooked ? `${slotNode.label} ${L.savedMark}` : slotNode.label;
 
                     html += `
-                        <label class="d-flex align-items-center p-1 rounded cursor-pointer slot-item-hover mb-0 ${textColor}">
-                            <input class="form-check-input me-1 mt-0" type="checkbox" id="${slotNode.id}" onchange="handleCheck('${slotNode.id}')"
+                        <label class="d-flex align-items-center px-2 py-1 rounded cursor-pointer slot-item-hover mb-0 ${textColor}">
+                            <input class="form-check-input mr-1" type="checkbox" id="${slotNode.id}" onchange="handleCheck('${slotNode.id}')"
                                 ${slotNode.checked ? 'checked' : ''} ${slotNode.disabled ? 'disabled' : ''}>
-                            <span style="font-size: 0.9em;">${displayText}</span>
+                            <span style="font-size: 0.85rem;">${displayText}</span>
                         </label>
                     `;
                 });

@@ -237,7 +237,7 @@ namespace Project_MyFitnessCoach.Services
                 Id = f.Id,
                 FunctionName = f.FunctionName,
                 Description = f.Description,
-                api_path = f.api_path,
+                ApiPath = f.ApiPath,
                 IsActive = f.IsActive
             });
         }
@@ -248,7 +248,7 @@ namespace Project_MyFitnessCoach.Services
             {
                 FunctionName = dto.FunctionName,
                 Description = dto.Description,
-                api_path = dto.api_path,
+                ApiPath = dto.ApiPath,
                 IsActive = dto.IsActive
             });
             return new StaffResultDto { IsSuccess = true, Message = "功能建立成功" };
@@ -261,7 +261,7 @@ namespace Project_MyFitnessCoach.Services
                 Id = dto.Id,
                 FunctionName = dto.FunctionName,
                 Description = dto.Description,
-                api_path = dto.api_path,
+                ApiPath = dto.ApiPath,
                 IsActive = dto.IsActive
             });
             return new StaffResultDto { IsSuccess = true, Message = "功能更新成功" };

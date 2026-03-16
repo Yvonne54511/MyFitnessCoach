@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.DTOs;
-using Project_MyFitnessCoach.Models.Infra;
+using Project_MyFitnessCoach.Models.ViewModels;
 using System.Threading.Tasks;
+using System.Linq;
+using Project_MyFitnessCoach.Models.Infra;
 
 namespace Project_MyFitnessCoach.Controllers
 {
@@ -31,8 +33,34 @@ namespace Project_MyFitnessCoach.Controllers
         // GET: ProductOrders/Dashboard
         public async Task<IActionResult> Dashboard()
         {
-            var data = await _service.GetDashboardDataAsync();
-            return View(data);
+            var dto = await _service.GetDashboardDataAsync();
+            
+            var viewModel = new ProductOrderDashboardViewModel
+            {
+                TotalOrdersThisMonth = dto.TotalOrdersThisMonth,
+                TotalOrdersChangePercentage = dto.TotalOrdersChangePercentage,
+                PendingShipmentCount = dto.PendingShipmentCount,
+                PendingShipmentChangePercentage = dto.PendingShipmentChangePercentage,
+                DisputedCount = dto.DisputedCount,
+                DisputedChangePercentage = dto.DisputedChangePercentage,
+                OrderTrends = dto.OrderTrends.Select(t => new OrderTrendViewModel
+                {
+                    Date = t.Date,
+                    Count = t.Count
+                }).ToList(),
+                CityDistributions = dto.CityDistributions.Select(c => new CityDistributionViewModel
+                {
+                    City = c.City,
+                    Count = c.Count
+                }).ToList(),
+                CategoryRankings = dto.CategoryRankings.Select(c => new CategoryRankingViewModel
+                {
+                    CategoryName = c.CategoryName,
+                    TotalSold = c.TotalSold
+                }).ToList()
+            };
+
+            return View(viewModel);
         }
 
         // GET: ProductOrders/Details/5
@@ -43,14 +71,43 @@ namespace Project_MyFitnessCoach.Controllers
                 return NotFound();
             }
 
-            var order = await _service.GetByIdAsync(id.Value);
+            var dto = await _service.GetByIdAsync(id.Value);
 
-            if (order == null)
+            if (dto == null)
             {
                 return NotFound();
             }
 
-            return View(order);
+            var viewModel = new ProductOrderViewModel
+            {
+                Id = dto.Id,
+                MemberId = dto.MemberId,
+                MemberName = dto.MemberName,
+                CreateAt = dto.CreateAt,
+                OriginalAmount = dto.OriginalAmount,
+                DiscountAmount = dto.DiscountAmount,
+                Receiver = dto.Receiver,
+                Address = dto.Address,
+                Mobile = dto.Mobile,
+                TaxNumber = dto.TaxNumber?.ToString(),
+                Status = dto.Status,
+                Memo = dto.Memo,
+                OrderDetails = dto.OrderDetails.Select(d => new ProductOrderDetailViewModel
+                {
+                    Id = d.Id,
+                    ProductOrderId = d.ProductOrderId,
+                    ProductId = d.ProductId,
+                    ProductName = d.ProductName,
+                    UnitPrice = d.UnitPrice,
+                    Qty = d.Qty,
+                    SubTotal = d.SubTotal,
+                    DiscountedPrice = d.DiscountedPrice,
+                    ImageUrl = d.ImageUrl,
+                    Memo = d.Memo
+                }).ToList()
+            };
+
+            return View(viewModel);
         }
 
         // POST: ProductOrders/UpdateStatus

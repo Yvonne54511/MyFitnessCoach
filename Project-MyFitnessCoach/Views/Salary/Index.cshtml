@@ -1,0 +1,140 @@
+@using Project_MyFitnessCoach.Models.ViewModels
+@model SalaryIndexViewModel
+
+@{
+    ViewData["Title"] = "薪資核發系統";
+}
+
+<div class="container-fluid mt-4">
+    <!-- Top Section: Instructor List & Salary Detail -->
+    <div class="row mb-5" style="min-height: 500px;">
+        <!-- Sidebar: Instructor List -->
+        <div class="col-md-3 border-end">
+            <h4 class="mb-4 text-secondary"><i class="fas fa-user-nurse me-2"></i>營養師列表</h4>
+            <div class="list-group list-group-flush shadow-sm rounded overflow-auto" style="max-height: 600px;">
+                @foreach (var instructor in Model.Instructors)
+                {
+                    <a href="javascript:void(0)" class="list-group-item list-group-item-action instructor-item py-3" 
+                       data-id="@instructor.Id" onclick="loadSalaryDetail(@instructor.Id)">
+                        <div class="d-flex align-items-center">
+                            @if (!string.IsNullOrEmpty(instructor.ImageUrl))
+                            {
+                                <img src="@instructor.ImageUrl" class="rounded-circle me-3" style="width: 45px; height: 45px; object-fit: cover;" alt="@instructor.Name">
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                            }
+                            <span class="h6 mb-0">@instructor.Name</span>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+
+        <!-- Main Content: Salary Details -->
+        <div class="col-md-9">
+            <div id="salary-detail-container">
+                <div class="card h-100 border-0 shadow-sm d-flex align-items-center justify-content-center bg-light">
+                    <div class="text-center text-muted p-5">
+                        <i class="fas fa-hand-holding-usd fa-4x mb-4 text-gray-300"></i>
+                        <h5>請從左側選擇一位營養師以查看薪資詳情</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Section: Horizontal Rankings -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow border-0 overflow-hidden">
+                <div class="card-header bg-gradient-dark text-white py-3" style="background: #4e73df;">
+                    <h5 class="mb-0 text-center fw-bold"><i class="fas fa-crown me-2 text-warning"></i>營養師績效指標排名</h5>
+                </div>
+                <div class="card-body bg-white py-4">
+                    <div class="row">
+                        <!-- Top Booked -->
+                        <div class="col-md-4 border-end">
+                            <div class="text-center mb-3">
+                                <div class="icon-circle bg-primary text-white mx-auto mb-2" style="width: 50px; height: 50px; line-height: 50px; border-radius: 50%;">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <h6 class="fw-bold text-primary">預約最多</h6>
+                            </div>
+                            <ul class="list-group list-group-flush px-3">
+                                @foreach (var item in Model.Rankings.TopBooked)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-0 py-2">
+                                        <span>@item.InstructorName</span>
+                                        <span class="badge bg-primary rounded-pill px-3">@item.Value</span>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+
+                        <!-- Top Rated -->
+                        <div class="col-md-4 border-end">
+                            <div class="text-center mb-3">
+                                <div class="icon-circle bg-warning text-dark mx-auto mb-2" style="width: 50px; height: 50px; line-height: 50px; border-radius: 50%;">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <h6 class="fw-bold text-warning text-dark">評分最高</h6>
+                            </div>
+                            <ul class="list-group list-group-flush px-3">
+                                @foreach (var item in Model.Rankings.TopRated)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-0 py-2">
+                                        <span>@item.InstructorName</span>
+                                        <span class="badge bg-warning text-dark rounded-pill px-3">@item.Value</span>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+
+                        <!-- Most Positive -->
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <div class="icon-circle bg-success text-white mx-auto mb-2" style="width: 50px; height: 50px; line-height: 50px; border-radius: 50%;">
+                                    <i class="fas fa-thumbs-up"></i>
+                                </div>
+                                <h6 class="fw-bold text-success">好評最多</h6>
+                            </div>
+                            <ul class="list-group list-group-flush px-3">
+                                @foreach (var item in Model.Rankings.MostPositiveReviews)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-0 py-2">
+                                        <span>@item.InstructorName</span>
+                                        <span class="badge bg-success rounded-pill px-3">@item.Value</span>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadSalaryDetail(instructorId) {
+            // Highlight selected item
+            $('.instructor-item').removeClass('active');
+            $(`.instructor-item[data-id="${instructorId}"]`).addClass('active');
+
+            // Show loading state
+            $('#salary-detail-container').html('<div class="card h-100 border-0 shadow-sm d-flex align-items-center justify-content-center bg-light"><div class="text-center"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">載入中...</p></div></div>');
+
+            // Fetch detail via AJAX
+            $.get('@Url.Action("GetSalaryDetail", "Salary")', { instructorId: instructorId }, function (data) {
+                $('#salary-detail-container').html(data);
+            }).fail(function () {
+                $('#salary-detail-container').html('<div class="alert alert-danger mt-3">載入失敗，請稍後再試。</div>');
+            });
+        }
+    </script>
+}

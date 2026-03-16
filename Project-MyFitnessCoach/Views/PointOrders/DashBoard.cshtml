@@ -1,4 +1,5 @@
-@model dynamic
+@using Project_MyFitnessCoach.Models.ViewModels
+@model PointOrderDashboardViewModel
 @{
     ViewData["Title"] = "點數儲值數據概覽";
 }
@@ -24,15 +25,15 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">今日營收</div>
-                            <div class="h3 mb-0 font-weight-bold text-gray-800">NT$ @(ViewBag.TodayRevenue?.ToString("N0") ?? "0")</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">NT$ @Model.TodayRevenue.ToString("N0")</div>
                             <div class="mt-2 mb-0 text-muted text-xs">
-                                @if (ViewBag.RevenueTrend >= 0)
+                                @if (Model.RevenueTrend >= 0)
                                 {
-                                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> @ViewBag.RevenueTrend%</span>
+                                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> @Model.RevenueTrend%</span>
                                 }
                                 else
                                 {
-                                    <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(ViewBag.RevenueTrend)%</span>
+                                    <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(Model.RevenueTrend)%</span>
                                 }
                                 <span>較昨日同期</span>
                             </div>
@@ -52,15 +53,15 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">本月儲值總計</div>
-                            <div class="h3 mb-0 font-weight-bold text-gray-800">NT$ @(ViewBag.MonthTotal?.ToString("N0") ?? "0")</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">NT$ @Model.MonthTotal.ToString("N0")</div>
                             <div class="mt-2 mb-0 text-muted text-xs">
-                                @if (ViewBag.MonthComparison >= 0)
+                                @if (Model.MonthComparison >= 0)
                                 {
-                                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> @ViewBag.MonthComparison%</span>
+                                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> @Model.MonthComparison%</span>
                                 }
                                 else
                                 {
-                                    <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(ViewBag.MonthComparison)%</span>
+                                    <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(Model.MonthComparison)%</span>
                                 }
                                 <span>較上月同期</span>
                             </div>
@@ -80,7 +81,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">總流通點數 (系統負債)</div>
-                            <div class="h3 mb-0 font-weight-bold text-gray-800">@(ViewBag.TotalCirculatingPoints?.ToString("N0") ?? "0") P</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">@Model.TotalCirculatingPoints.ToString("N0") P</div>
                             <div class="mt-2 mb-0 text-muted text-xs">
                                 <span>目前系統內所有會員持有之剩餘點數</span>
                             </div>
@@ -139,7 +140,7 @@
         var rechargeTrendChart = new Chart(ctxTrend, {
             type: 'line',
             data: {
-                labels: @Html.Raw(Json.Serialize(ViewBag.TrendLabels)),
+                labels: @Html.Raw(Json.Serialize(Model.TrendLabels)),
                 datasets: [{
                     label: "實際支付金額",
                     lineTension: 0.3,
@@ -153,7 +154,7 @@
                     pointHoverBorderColor: "rgba(78, 115, 223, 1)",
                     pointHitRadius: 10,
                     pointBorderWidth: 2,
-                    data: @Html.Raw(Json.Serialize(ViewBag.ActualPaymentData)),
+                    data: @Html.Raw(Json.Serialize(Model.ActualPaymentData)),
                 }, {
                     label: "系統贈送點數",
                     lineTension: 0.3,
@@ -167,7 +168,7 @@
                     pointHoverBorderColor: "rgba(28, 200, 138, 1)",
                     pointHitRadius: 10,
                     pointBorderWidth: 2,
-                    data: @Html.Raw(Json.Serialize(ViewBag.BonusPointsData)),
+                    data: @Html.Raw(Json.Serialize(Model.BonusPointsData)),
                 }],
             },
             options: {
@@ -236,13 +237,13 @@
         var popularPlansChart = new Chart(ctxPlans, {
             type: 'horizontalBar',
             data: {
-                labels: @Html.Raw(Json.Serialize(ViewBag.PlanNames)),
+                labels: @Html.Raw(Json.Serialize(Model.PlanNames)),
                 datasets: [{
                     label: "銷售次數",
                     backgroundColor: "#4e73df",
                     hoverBackgroundColor: "#2e59d9",
                     borderColor: "#4e73df",
-                    data: @Html.Raw(Json.Serialize(ViewBag.PlanSales)),
+                    data: @Html.Raw(Json.Serialize(Model.PlanSales)),
                 }],
             },
             options: {

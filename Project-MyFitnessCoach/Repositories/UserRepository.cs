@@ -189,7 +189,7 @@ namespace Project_MyFitnessCoach.Repositories
             {
                 existing.FunctionName = function.FunctionName;
                 existing.Description = function.Description;
-                existing.api_path = function.api_path;
+                existing.ApiPath = function.ApiPath;
                 existing.IsActive = function.IsActive;
                 await _context.SaveChangesAsync();
             }

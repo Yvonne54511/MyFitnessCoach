@@ -11,8 +11,10 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public string MemberName { get; set; }
         public int Rating { get; set; }
         public string Comment { get; set; }
-        public string ReportMessage { get; set; } // ?°å?ï¼šæª¢?‰å…§å®?
+        public string ReportMessage { get; set; }
         public DateTime CreatedAt { get; set; }
-        public bool IsUserActive { get; set; } // ?¨æ–¼?¤æ–·?ƒå“¡?¯å¦å·²è¢«?œæ?
+        public bool IsUserActive { get; set; }
+        public bool IsBanned { get; set; }
+        public int WarningCount { get; set; }
     }
 }

@@ -1,0 +1,48 @@
+@model dynamic
+@{
+    int selectedYear = ViewBag.SelectedYear ?? Model?.SelectedYear ?? DateTime.Now.Year;
+    int selectedMonth = ViewBag.SelectedMonth ?? Model?.SelectedMonth ?? DateTime.Now.Month;
+    string actionName = ViewContext.RouteData.Values["action"]?.ToString() ?? "Index";
+}
+
+<div class="card shadow mb-4 bg-light border-left-primary">
+    <div class="card-body py-3">
+        <form method="get" asp-action="@actionName" class="form-inline d-flex justify-content-between">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-filter text-primary mr-3"></i>
+                <h6 class="m-0 font-weight-bold text-primary mr-4">數據篩選週期</h6>
+                
+                <div class="input-group mr-3">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text bg-white" for="yearSelect">年度</label>
+                    </div>
+                    <select name="year" id="yearSelect" class="form-control" onchange="this.form.submit()">
+                        @for (int y = 2024; y <= DateTime.Now.Year + 1; y++)
+                        {
+                            <option value="@y" selected="@(y == selectedYear)">@(y) 年</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text bg-white" for="monthSelect">月份</label>
+                    </div>
+                    <select name="month" id="monthSelect" class="form-control" onchange="this.form.submit()">
+                        <option value="0" selected="@(selectedMonth == 0)">全年度 / 累計</option>
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            <option value="@m" selected="@(m == selectedMonth)">@(m) 月</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            
+            <div class="text-right">
+                <span class="badge badge-primary px-3 py-2">
+                    <i class="far fa-calendar-check mr-1"></i> 正在查看: @(selectedYear)年 @(selectedMonth == 0 ? "全年度" : selectedMonth + "月")
+                </span>
+            </div>
+        </form>
+    </div>
+</div>

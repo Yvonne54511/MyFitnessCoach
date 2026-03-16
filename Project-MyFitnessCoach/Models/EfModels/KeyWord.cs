@@ -5,9 +5,13 @@ using System.Collections.Generic;
 
 namespace Project_MyFitnessCoach.Models.EfModels;
 
-public partial class SensitiveWord
+public partial class KeyWord
 {
     public int Id { get; set; }
 
     public string Word { get; set; }
+
+    public int Category { get; set; }
+
+    public int Weight { get; set; }
 }

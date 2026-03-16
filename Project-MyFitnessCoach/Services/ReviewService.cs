@@ -26,16 +26,17 @@ namespace Project_MyFitnessCoach.Services
         public async Task<IEnumerable<ReviewDto>> GetAdminReviewsAsync()
         {
             var entities = (await _repo.GetAllReviewsAsync()).ToList();
-            var sensitiveWords = await _db.SensitiveWords.Select(s => s.Word).ToListAsync();
+            var sensitiveWords = await _db.KeyWords.Where(k => k.Category == -1).Select(s => s.Word).ToListAsync();
 
-            // 取得檢舉類型的通知 (Report1)，只選取需要的欄位以避開資料庫中不存在的 ReferenceId
+            // 取得檢舉類型的通知 (Report1)
             var reports = await _db.Notifications
                 .Where(n => n.NotifyType == "Report1")
-                .Select(n => new { n.NotifyType, n.Content })
+                .Select(n => new { n.NotifyType, n.Content, n.CreatedAt })
+                .OrderBy(n => n.CreatedAt)
                 .ToListAsync();
 
             return entities.Select(e => {
-                var report = reports.FirstOrDefault(n => n.Content != null && 
+                var report = reports.LastOrDefault(n => n.Content != null && 
                     (n.Content.Contains($"?id={e.Id}") || n.Content.Contains($"id={e.Id}")));
                 
                 string displayReason = report?.Content;
@@ -71,7 +72,9 @@ namespace Project_MyFitnessCoach.Services
                     Comment = maskedComment,
                     ReportMessage = displayReason,
                     CreatedAt = e.CreatedAt,
-                    IsUserActive = e.Member?.User?.IsActive ?? true
+                    IsUserActive = (e.Member?.User?.IsActive ?? true) && !(e.Member?.MemberViolation?.IsSuspended ?? false),
+                    IsBanned = e.IsBanned,
+                    WarningCount = e.Member?.MemberViolation?.WarningCount ?? 0
                 };
             });
         }
@@ -79,7 +82,7 @@ namespace Project_MyFitnessCoach.Services
         public async Task<IEnumerable<ReviewDto>> GetInstructorReviewsAsync(int instructorId)
         {
             var entities = await _repo.GetReviewsByInstructorIdAsync(instructorId);
-            var sensitiveWords = await _db.SensitiveWords.Select(s => s.Word).ToListAsync();
+            var sensitiveWords = await _db.KeyWords.Where(k => k.Category == -1).Select(s => s.Word).ToListAsync();
 
             return entities.Select(e => {
                 string maskedComment = e.Comment;
@@ -105,24 +108,26 @@ namespace Project_MyFitnessCoach.Services
             });
         }
 
-        public async Task DeleteReviewAsync(int id)
+        public async Task<(int NewCount, bool IsSuspended)> BanReviewAsync(int id)
         {
             var review = await _repo.GetReviewByIdAsync(id);
             if (review != null)
             {
                 int memberId = review.MemberId;
-                await _repo.DeleteReviewAsync(id);
-                await _repo.IncrementMemberWarningCountAsync(memberId, "惡意評論被管理員刪除");
+                await _repo.BanReviewAsync(id);
+                int newCount = await _repo.IncrementMemberWarningCountAsync(memberId, "惡意評論被管理員封鎖");
+                
+                var violation = await _db.MemberViolations.FirstOrDefaultAsync(v => v.MemberId == memberId);
+                bool isSuspended = violation?.IsSuspended ?? false;
+
+                return (newCount, isSuspended);
             }
+            return (0, false);
         }
 
-        public async Task SuspendMemberAsync(int memberId)
+        public async Task SuspendMemberAsync(int memberId, string reason)
         {
-            var userId = await _repo.GetUserIdByMemberIdAsync(memberId);
-            if (userId.HasValue)
-            {
-                await _repo.UpdateUserStatusAsync(userId.Value, false);
-            }
+            await _repo.SuspendMemberAsync(memberId, reason);
         }
 
         public async Task ReportReviewAsync(int id, int instructorUserId, string reason)

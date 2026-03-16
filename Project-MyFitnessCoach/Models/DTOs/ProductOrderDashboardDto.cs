@@ -16,6 +16,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
 
         public List<OrderTrendDto> OrderTrends { get; set; }
         public List<CityDistributionDto> CityDistributions { get; set; }
+        public List<CategoryRankingDto> CategoryRankings { get; set; }
     }
 
     public class OrderTrendDto
@@ -28,5 +29,11 @@ namespace Project_MyFitnessCoach.Models.DTOs
     {
         public string City { get; set; }
         public int Count { get; set; }
+    }
+
+    public class CategoryRankingDto
+    {
+        public string CategoryName { get; set; }
+        public int TotalSold { get; set; }
     }
 }
