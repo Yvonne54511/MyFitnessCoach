@@ -65,10 +65,14 @@
                                 int lightness = Math.Max(10, 50 - (item.Weight * 8));
                                 badgeStyle = $"background-color: hsl(120, 70%, {lightness}%); color: white;";
                             }
-                            else
+                            else if (item.Category == -1)
                             {
                                 int lightness = Math.Max(10, 50 - (item.Weight * 8));
                                 badgeStyle = $"background-color: hsl(0, 80%, {lightness}%); color: white;";
+                            }
+                            else if (item.Category == 0)
+                            {
+                                badgeStyle = "background-color: #858796; color: white;";
                             }
 
                             <tr data-id="@item.Id">
@@ -79,6 +83,7 @@
                                     <select class="form-control form-control-sm category-select mx-auto" onchange="updateCategory(@item.Id, this.value, this)">
                                         <!option value="1" @(item.Category == 1 ? "selected" : "")>正向 (1)</!option>
                                         <!option value="-1" @(item.Category == -1 ? "selected" : "")>負向 (-1)</!option>
+                                        <!option value="0" @(item.Category == 0 ? "selected" : "")>忽略 (0)</!option>
                                     </select>
                                 </td>
                                 <td>
@@ -178,11 +183,13 @@
 
             var style = "";
             if (category === 1) {
-                var lightness = Math.max(10, 50 - (weight * 8));
+                var lightness = Math.Max(10, 50 - (weight * 8));
                 style = "background-color: hsl(120, 70%, " + lightness + "%); color: white;";
-            } else {
-                var lightness = Math.max(10, 50 - (weight * 8));
+            } else if (category === -1) {
+                var lightness = Math.Max(10, 50 - (weight * 8));
                 style = "background-color: hsl(0, 80%, " + lightness + "%); color: white;";
+            } else if (category === 0) {
+                style = "background-color: #858796; color: white;";
             }
             $badge.attr('style', style);
         }

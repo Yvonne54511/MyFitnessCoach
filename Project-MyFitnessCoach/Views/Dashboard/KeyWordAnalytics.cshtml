@@ -149,13 +149,17 @@
                     <div class="form-group">
                         <label class="font-weight-bold">類別判定</label>
                         <div class="d-flex justify-content-between">
-                            <button type="button" id="btnPos" class="btn btn-outline-success btn-block mr-2 py-3 active" onclick="setCategory(1)">
+                            <button type="button" id="btnPos" class="btn btn-outline-success btn-block mr-1 py-3 active" onclick="setCategory(1)">
                                 <i class="fas fa-smile fa-2x d-block mb-1"></i>
-                                正向詞彙
+                                正向
                             </button>
-                            <button type="button" id="btnNeg" class="btn btn-outline-danger btn-block ml-2 py-3" onclick="setCategory(-1)">
+                            <button type="button" id="btnNeg" class="btn btn-outline-danger btn-block mx-1 py-3" onclick="setCategory(-1)">
                                 <i class="fas fa-frown fa-2x d-block mb-1"></i>
-                                負向詞彙
+                                負向
+                            </button>
+                            <button type="button" id="btnIgnore" class="btn btn-outline-secondary btn-block ml-1 py-3" onclick="setCategory(0)">
+                                <i class="fas fa-eye-slash fa-2x d-block mb-1"></i>
+                                忽略
                             </button>
                         </div>
                         <input type="hidden" id="modalCategory" value="1">
@@ -183,6 +187,42 @@
     </div>
 </div>
 
+<!-- MicroModal 結構 -->
+<div class="modal-micromodal" id="modal-alert" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-alert-title">
+            <header class="modal__header">
+                <h2 class="modal__title" id="modal-alert-title">提示</h2>
+                <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+            </header>
+            <main class="modal__content" id="modal-alert-content">
+                這是提示內容
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn modal__btn-primary" data-micromodal-close>確定</button>
+            </footer>
+        </div>
+    </div>
+</div>
+
+<div class="modal-micromodal" id="modal-confirm" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-confirm-title">
+            <header class="modal__header">
+                <h2 class="modal__title" id="modal-confirm-title">確認操作</h2>
+                <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+            </header>
+            <main class="modal__content" id="modal-confirm-content">
+                您確定要執行此操作嗎？
+            </main>
+            <footer class="modal__footer">
+                <button class="modal__btn modal__btn-primary" id="modal-confirm-yes">確定</button>
+                <button class="modal__btn" data-micromodal-close>取消</button>
+            </footer>
+        </div>
+    </div>
+</div>
+
 @section Styles {
     <style>
         .clickable-row {
@@ -201,12 +241,68 @@
             background-color: #e74a3b !important;
             color: white !important;
         }
+        .btn-outline-secondary.active {
+            background-color: #858796 !important;
+            color: white !important;
+        }
+
+        /* MicroModal Styles */
+        .modal-micromodal { display: none; }
+        .modal-micromodal.is-open { display: block; }
+        .modal__overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); display: flex;
+            justify-content: center; align-items: center; z-index: 9999;
+        }
+        .modal__container {
+            background-color: #fff; padding: 25px; max-width: 450px;
+            max-height: 100vh; border-radius: 12px; overflow-y: auto; 
+            box-sizing: border-box; border-top: 6px solid #8d6e63;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .modal__header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f1f1; padding-bottom: 12px; }
+        .modal__title { margin-top: 0; margin-bottom: 0; font-weight: 700; font-size: 1.15rem; line-height: 1.25; color: #5d4037; box-sizing: border-box; }
+        .modal__close { background: transparent; border: 0; cursor: pointer; color: #a1887f; font-size: 1.2rem; }
+        .modal__close:hover { color: #5d4037; }
+        .modal__header .modal__close:before { content: "\2715"; }
+        .modal__content { margin-top: 1.5rem; margin-bottom: 1.5rem; line-height: 1.6; color: #6d4c41; font-size: 0.95rem; }
+        .modal__footer { display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f1f1f1; padding-top: 15px; }
+        .modal__btn {
+            font-size: .85rem; padding: 0.6rem 1.2rem;
+            background-color: #efebe9;
+            color: #8d6e63; border-radius: .5rem; border: none;
+            cursor: pointer; transition: all 0.2s ease-in-out;
+            font-weight: 600;
+        }
+        .modal__btn:hover { background-color: #d7ccc8; color: #5d4037; transform: translateY(-1px); }
+        .modal__btn-primary { background-color: #8d6e63; color: #fff; }
+        .modal__btn-primary:hover { background-color: #6d4c41; color: #fff; box-shadow: 0 4px 12px rgba(141, 110, 99, 0.3); }
     </style>
 }
 
 @section Scripts {
     <script src="~/vendor/chart.js/Chart.min.js"></script>
+    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
     <script>
+        // 初始化 MicroModal
+        MicroModal.init();
+
+        function showMicroAlert(title, message) {
+            $('#modal-alert-title').text(title);
+            $('#modal-alert-content').text(message);
+            MicroModal.show('modal-alert');
+        }
+
+        function showMicroConfirm(title, message, onConfirm) {
+            $('#modal-confirm-title').text(title);
+            $('#modal-confirm-content').text(message);
+            $('#modal-confirm-yes').off('click').on('click', function() {
+                MicroModal.close('modal-confirm');
+                onConfirm();
+            });
+            MicroModal.show('modal-confirm');
+        }
+
         // 設定預設
         Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
         Chart.defaults.global.defaultFontColor = '#858796';
@@ -312,13 +408,26 @@
         }
 
         function setCategory(cat) {
+            if (cat === 0) {
+                showMicroConfirm('確認忽略', '您確定要忽略此字詞嗎？忽略後該字詞將不再出現在分析明細中。', function() {
+                    $('#modalCategory').val(0);
+                    $('#btnPos, #btnNeg').removeClass('active');
+                    $('#btnIgnore').addClass('active');
+                    // 忽略通常不需要調整權重，可以直接提交
+                    submitQuickAdd();
+                });
+                return;
+            }
+
             $('#modalCategory').val(cat);
+            // 移除所有 active 狀態
+            $('#btnPos, #btnNeg, #btnIgnore').removeClass('active');
+            
+            // 根據選擇增加 active 狀態
             if (cat === 1) {
                 $('#btnPos').addClass('active');
-                $('#btnNeg').removeClass('active');
-            } else {
+            } else if (cat === -1) {
                 $('#btnNeg').addClass('active');
-                $('#btnPos').removeClass('active');
             }
         }
 
@@ -327,20 +436,41 @@
         }
 
         function submitQuickAdd() {
+            var word = $('#modalWord').val();
+            var category = parseInt($('#modalCategory').val());
+            var weight = parseInt($('#modalWeight').val());
+
             var data = {
-                word: $('#modalWord').val(),
-                category: parseInt($('#modalCategory').val()),
-                weight: parseInt($('#modalWeight').val())
+                word: word,
+                category: category,
+                weight: weight
             };
 
             $.post('/Dashboard/CreateKeyWord', data, function(response) {
                 if (response.success) {
                     $('#quickAddModal').modal('hide');
-                    alert(response.message);
-                    location.reload(); // 重新整理頁面以更新分析結果
+                    
+                    // 找到對應的行並移除，提供即時回饋
+                    var $targetRow = $(`.kw-row[data-word="${word}"]`);
+                    $targetRow.fadeOut(400, function() {
+                        $(this).remove();
+                        applyFilters(); // 重新觸發篩選邏輯，處理「找不到結果」的顯示
+                    });
+
+                    showMicroAlert('成功', response.message);
+                    
+                    // 清除舊的事件綁定，避免重複觸發
+                    $(document).off('click', '#modal-alert .modal__btn-primary');
+                    
+                    // 只有當類別不是「忽略」(0) 時，才需要重整頁面以更新圖表
+                    if (category !== 0) {
+                        $(document).on('click', '#modal-alert .modal__btn-primary', function() {
+                            location.reload();
+                        });
+                    }
                 }
             }).fail(function(xhr) {
-                alert('儲存失敗：' + xhr.responseText);
+                showMicroAlert('儲存失敗', xhr.responseText);
             });
         }
     </script>

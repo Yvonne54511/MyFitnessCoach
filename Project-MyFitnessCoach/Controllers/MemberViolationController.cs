@@ -1,12 +1,16 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModels;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Services;
 using System.Linq;
 
 namespace Project_MyFitnessCoach.Controllers
 {
+    [Authorize]
+    [Function("edit_MemberViolations")]
     public class MemberViolationController : Controller
     {
         private readonly IMemberViolationService _service;

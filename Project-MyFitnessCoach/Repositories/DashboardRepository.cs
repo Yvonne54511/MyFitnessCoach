@@ -111,14 +111,16 @@ namespace Project_MyFitnessCoach.Repositories
             var dbWordSet = new HashSet<string>(dbKeyWords.Select(k => k.Word));
 
             // 1. 統計資料庫已有關鍵字的次數
-            var results = dbKeyWords.Select(kw => new KeyWordFrequencyDto
+            var results = dbKeyWords
+                .Where(kw => kw.Category != 0)
+                .Select(kw => new KeyWordFrequencyDto
             {
                 Word = kw.Word,
                 Category = kw.Category,
                 Count = rawReviews.Sum(r => (r.Length - r.Replace(kw.Word, "").Length) / kw.Word.Length)
             }).Where(k => k.Count > 0).ToList();
 
-            // 2. 挖掘新的高頻詞彙 (重複出現 > 5次，長度 2~4)
+            // 2. 挖掘新的高頻詞彙 (重複出現 > 5次，長度 2~5)
             var nGramCounts = new Dictionary<string, int>();
             char[] separators = new[] { ' ', ',', '.', '!', '?', '(', ')', '[', ']', '，', '。', '！', '？', '\r', '\n', '\t', '、', '：', '；' };
 
@@ -130,7 +132,7 @@ namespace Project_MyFitnessCoach.Repositories
                 {
                     if (segment.Length < 2) continue;
 
-                    for (int len = 2; len <= 4; len++)
+                    for (int len = 2; len <= 5; len++)
                     {
                         for (int i = 0; i <= segment.Length - len; i++)
                         {
@@ -146,16 +148,37 @@ namespace Project_MyFitnessCoach.Repositories
             }
 
             // 3. 過濾出重複 > 5次 且 不在資料庫裡的字詞
-            var discoveredGrams = nGramCounts
+            var rawDiscovered = nGramCounts
                 .Where(kvp => kvp.Value >= 5 && !dbWordSet.Contains(kvp.Key))
                 .Select(kvp => new KeyWordFrequencyDto
                 {
                     Word = kvp.Key,
                     Category = null, // 未分類
                     Count = kvp.Value
-                });
+                })
+                .OrderByDescending(k => k.Word.Length)
+                .ToList();
 
-            // 4. 合併結果並排序
+            // 4. 過濾冗餘子字串 (考慮新詞與資料庫既有詞)
+            var discoveredGrams = new List<KeyWordFrequencyDto>();
+            // 建立一個包含「既有詞」與「新詞」的參考清單，用來做比較
+            var allReferenceWords = results.Concat(rawDiscovered).ToList();
+
+            foreach (var current in rawDiscovered)
+            {
+                // 檢查是否已被包含在一個更長且次數接近的字詞中 (既有詞或新詞皆列入考慮)
+                bool isRedundant = allReferenceWords.Any(longer => 
+                    longer.Word.Length > current.Word.Length && 
+                    longer.Word.Contains(current.Word) && 
+                    longer.Count >= current.Count * 0.9);
+
+                if (!isRedundant)
+                {
+                    discoveredGrams.Add(current);
+                }
+            }
+
+            // 5. 合併結果並排序
             return results.Concat(discoveredGrams).OrderByDescending(k => k.Count).ToList();
         }
 

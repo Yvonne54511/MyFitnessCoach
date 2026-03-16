@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Project_MyFitnessCoach.Controllers
 {
     [Authorize]
-    [Function("edit_Salary")]
+    [Function("view_Salary")]
     public class SalaryController : Controller
     {
         private readonly ISalaryService _salaryService;

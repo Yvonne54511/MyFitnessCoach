@@ -9,7 +9,7 @@ using Project_MyFitnessCoach.Models.Infra;
 namespace Project_MyFitnessCoach.Controllers
 {
     [Authorize]
-    [Function("edit_SensitiveWords")]
+    [Function("view_KeyWords")]
     public class KeyWordsController : Controller
     {
         private readonly IKeyWordService _service;
@@ -41,7 +41,8 @@ namespace Project_MyFitnessCoach.Controllers
         // POST: KeyWords/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(KeyWordViewModel vm)
+		[Function("create_KeyWords")]
+		public async Task<IActionResult> Create(KeyWordViewModel vm)
         {
             if (ModelState.IsValid)
             {
@@ -67,7 +68,8 @@ namespace Project_MyFitnessCoach.Controllers
 
         // AJAX 更新類別
         [HttpPost]
-        public async Task<IActionResult> UpdateCategory(int id, int category)
+		[Function("edit_KeyWords")]
+		public async Task<IActionResult> UpdateCategory(int id, int category)
         {
             await _service.UpdateCategoryAsync(id, category);
             return Ok();
@@ -75,7 +77,8 @@ namespace Project_MyFitnessCoach.Controllers
 
         // AJAX 更新權重
         [HttpPost]
-        public async Task<IActionResult> UpdateWeight(int id, int weight)
+        [Function("edit_KeyWords")]
+		public async Task<IActionResult> UpdateWeight(int id, int weight)
         {
             await _service.UpdateWeightAsync(id, weight);
             return Ok();

@@ -59,7 +59,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [Authorize]
-        [Function("edit_IntructorDetails")]
+        [Function("edit_InstructorDetails")]
         [HttpGet]
         public async Task<IActionResult> InstructorDetails()
         {
@@ -79,7 +79,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [Authorize]
-        [Function("edit_IntructorDetails")]
+        [Function("edit_InstructorDetails")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> InstructorDetails(InstructorDto dto, IFormFile? imageFile)

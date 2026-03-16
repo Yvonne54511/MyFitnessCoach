@@ -47,8 +47,9 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
-        [ValidateAntiForgeryToken]
+        [Authorize]
+		[Function("edit_Comments_admin")]
+		[ValidateAntiForgeryToken]
         public async Task<IActionResult> BanReview(int id)
         {
             var (newCount, isSuspended) = await _service.BanReviewAsync(id);
@@ -63,7 +64,8 @@ namespace Project_MyFitnessCoach.Controllers
         }
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
+		[Function("edit_Comments_admin")]
+		[ValidateAntiForgeryToken]
         public async Task<IActionResult> SuspendMember(int memberId, string reason)
         {
             await _service.SuspendMemberAsync(memberId, reason);
@@ -73,7 +75,8 @@ namespace Project_MyFitnessCoach.Controllers
 
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
+		[Function("edit_Comments_instructor")]
+		[ValidateAntiForgeryToken]
         public async Task<IActionResult> ReportReview(int id, string reason)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
