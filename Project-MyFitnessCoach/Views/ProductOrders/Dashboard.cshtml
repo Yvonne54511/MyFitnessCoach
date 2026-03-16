@@ -70,30 +70,34 @@
             </a>
         </div>
 
-        <!-- City Distribution Card (Moved Up) -->
+        <!-- City Distribution Card -->
         <div class="col-xl-4 col-md-12 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body p-2">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">縣市分布</div>
-                            <div class="d-flex justify-content-between align-items-center mt-1">
-                                <div class="chart-pie" style="height: 65px; width: 65px;">
-                                    <canvas id="cityDistributionChart"></canvas>
+            <div class="card shadow h-100 mb-4">
+                <!-- Card Header - Dropdown -->
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-info text-uppercase">縣市分布</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="cityDropdownLink"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                             aria-labelledby="cityDropdownLink">
+                            <div class="dropdown-header">銷售統計 (全部縣市)</div>
+                            @foreach (var city in Model.CityDistributions)
+                            {
+                                <div class="dropdown-item d-flex justify-content-between align-items-center">
+                                    <span>@city.City</span>
+                                    <span class="badge badge-info badge-pill ml-2">@city.Count</span>
                                 </div>
-                                <div class="small ml-2 flex-grow-1">
-                                    <div class="row">
-                                        @foreach (var city in Model.CityDistributions.Take(3))
-                                        {
-                                            <div class="col-4 text-center px-1">
-                                                <div class="font-weight-bold" style="font-size: 0.7rem;">@city.City</div>
-                                                <div class="text-gray-800" style="font-size: 0.8rem;">@city.Count</div>
-                                            </div>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
+                            }
                         </div>
+                    </div>
+                </div>
+                <!-- Card Body -->
+                <div class="card-body">
+                    <div class="chart-pie" style="height: 250px; position: relative;">
+                        <canvas id="cityDistributionChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -221,19 +225,19 @@
             }
         });
 
-        // --- City Distribution Chart (Donut style) ---
+        // --- City Distribution Chart (Pie style) ---
         var cityLabels = @Html.Raw(Json.Serialize(Model.CityDistributions.Select(c => c.City)));
         var cityData = @Html.Raw(Json.Serialize(Model.CityDistributions.Select(c => c.Count)));
 
         var ctxCity = document.getElementById("cityDistributionChart");
         var myPieChart = new Chart(ctxCity, {
-            type: 'doughnut',
+            type: 'pie',
             data: {
                 labels: cityLabels,
                 datasets: [{
                     data: cityData,
-                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
-                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617'],
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#5a5c69', '#2e59d9', '#17a673', '#2c9faf'],
+                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617', '#60616f', '#373840', '#1c45c3', '#13855c', '#258391'],
                     hoverBorderColor: "rgba(234, 236, 244, 1)",
                 }],
             },
@@ -252,7 +256,6 @@
                 legend: {
                     display: false
                 },
-                cutoutPercentage: 80,
             },
         });
 
