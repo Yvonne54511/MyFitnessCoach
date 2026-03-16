@@ -112,6 +112,27 @@ namespace Project_MyFitnessCoach.Controllers
             return View(viewModel);
         }
 
+        // 會員點數總覽列表
+        public async Task<IActionResult> PointRecords()
+        {
+            var wallets = await _context.UserWallets
+                .Include(w => w.Member)
+                .ThenInclude(m => m.User)
+                .OrderBy(w => w.MemberId)
+                .ToListAsync();
+
+            var viewModel = wallets.Select(w => new PointOrderViewModel
+            {
+                Id = w.Id, // 使用錢包 ID 作為記錄 ID
+                MemberId = w.MemberId,
+                MemberName = w.Member.User.UserName,
+                PointQty = (int)w.CurrentBalance, // 將目前餘額對應至 PointQty
+                CreateAt = w.LastUpdated // 將最後更新時間對應至 CreateAt
+            }).ToList();
+
+            return View(viewModel);
+        }
+
         // 儲值頁面
         public IActionResult Recharge()
         {

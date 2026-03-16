@@ -8,12 +8,7 @@
     <!-- 頂部標題 -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">點數儲值數據概覽</h1>
-        <div class="d-flex align-items-center">
-            <a asp-action="Index" class="btn btn-sm btn-primary shadow-sm mr-3">
-                <i class="fas fa-list fa-sm text-white-50 mr-1"></i> 儲值訂單管理
-            </a>
-            <div class="text-muted small">最後更新時間：@DateTime.Now.ToString("yyyy/MM/dd HH:mm")</div>
-        </div>
+       
     </div>
 
     <!-- 頂部數據列 (KPI 指標 - 3 欄位) -->
@@ -21,7 +16,7 @@
         <!-- 今日營收 -->
         <div class="col-xl-4 col-md-6 mb-4">
             <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
+                <div class="card-body" >                   
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">今日營收</div>
@@ -48,50 +43,54 @@
 
         <!-- 本月儲值總計 -->
         <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">本月儲值總計</div>
-                            <div class="h3 mb-0 font-weight-bold text-gray-800">NT$ @Model.MonthTotal.ToString("N0")</div>
-                            <div class="mt-2 mb-0 text-muted text-xs">
-                                @if (Model.MonthComparison >= 0)
-                                {
-                                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> @Model.MonthComparison%</span>
-                                }
-                                else
-                                {
-                                    <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(Model.MonthComparison)%</span>
-                                }
-                                <span>較上月同期</span>
+            <a asp-controller="PointOrders" asp-action="Index" class="text-decoration-none">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">本月儲值總計</div>
+                                <div class="h3 mb-0 font-weight-bold text-gray-800">NT$ @Model.MonthTotal.ToString("N0")</div>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                    @if (Model.MonthComparison >= 0)
+                                    {
+                                        <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> @Model.MonthComparison%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(Model.MonthComparison)%</span>
+                                    }
+                                    <span>較上月同期</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                            <div class="col-auto">
+                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- 總流通點數 (負債) -->
         <div class="col-xl-4 col-md-12 mb-4">
-            <div class="card border-left-secondary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">總流通點數 (系統負債)</div>
-                            <div class="h3 mb-0 font-weight-bold text-gray-800">@Model.TotalCirculatingPoints.ToString("N0") P</div>
-                            <div class="mt-2 mb-0 text-muted text-xs">
-                                <span>目前系統內所有會員持有之剩餘點數</span>
+            <a asp-controller="PointOrders" asp-action="PointRecords" class="text-decoration-none">
+                <div class="card border-left-secondary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">總流通點數 (系統負債)</div>
+                                <div class="h3 mb-0 font-weight-bold text-gray-800">@Model.TotalCirculatingPoints.ToString("N0") P</div>
+                                <div class="mt-2 mb-0 text-muted text-xs">
+                                    <span>目前系統內所有會員持有之剩餘點數</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-coins fa-2x text-gray-300"></i>
+                            <div class="col-auto">
+                                <i class="fas fa-coins fa-2x text-gray-300"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
