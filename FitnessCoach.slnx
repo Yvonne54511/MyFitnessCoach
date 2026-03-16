@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/SqlCodes/">
+    <File Path="../MyFitnessCoach_Db/MyFitnessCoachDb_03161614.sql" />
     <File Path="SqlCodes/MyFitnessCoachDb.sql" />
   </Folder>
 </Solution>
