@@ -1,6 +1,6 @@
 @model IEnumerable<Project_MyFitnessCoach.Models.ViewModel.StaffListItemViewModel>
 @{
-    ViewData["Title"] = "員工管理";
+    ViewData["Title"] = "使用者帳號管理";
     var roles = ViewBag.Roles as IEnumerable<Project_MyFitnessCoach.Models.EfModels.Role>;
     var instructorList = ViewBag.InstructorList as List<Project_MyFitnessCoach.Models.ViewModel.StaffListItemViewModel>;
     var memberList = ViewBag.MemberList as List<Project_MyFitnessCoach.Models.ViewModel.StaffListItemViewModel>;
@@ -9,9 +9,6 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">員工管理</h1>
-        <button type="button" class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#inviteModal">
-            <i class="fas fa-plus fa-sm text-white-50"></i> 邀請新員工
-        </button>
     </div>
 
     <div class="card shadow mb-4">
@@ -31,13 +28,18 @@
         <div class="card-body">
             <div class="tab-content" id="managementTabContent">
                 <div class="tab-pane fade show active" id="staffTab" role="tabpanel" aria-labelledby="staff-tab">
+                    <div class="d-flex justify-content-end mb-3">
+                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#inviteModal">
+                            <i class="fas fa-plus"></i> 邀請新員工
+                        </button>
+                    </div>
                     <div id="staffListContainer">
                         @await Html.PartialAsync("_StaffListPartial", Model)
                     </div>
                 </div>
                 <div class="tab-pane fade" id="instructorTab" role="tabpanel" aria-labelledby="instructor-tab">
                     <div id="instructorListContainer">
-                        @await Html.PartialAsync("_StaffListNoRolePartial", instructorList ?? new List<Project_MyFitnessCoach.Models.ViewModel.StaffListItemViewModel>())
+                        @await Html.PartialAsync("_InstructorCollapsiblePartial", instructorList ?? new List<Project_MyFitnessCoach.Models.ViewModel.StaffListItemViewModel>())
                     </div>
                 </div>
                 <div class="tab-pane fade" id="memberTab" role="tabpanel" aria-labelledby="member-tab">
@@ -201,6 +203,81 @@
                     $('#staffListContainer').html(html);
                 });
             }
+
+            // === 營養師操作 ===
+
+            // 編輯營養師
+            $(document).on('click', '.btn-edit-instructor', function (e) {
+                e.stopPropagation();
+                var id = $(this).data('id');
+                $.get('@Url.Action("EditInstructor", "Staff")/' + id, function (html) {
+                    $('#instructorModalContainer').html(html);
+                    $('#editModal').modal('show');
+                }).fail(function (xhr) {
+                    alert("載入編輯資料失敗：" + xhr.status);
+                });
+            });
+
+            // 刪除營養師
+            $(document).on('click', '.btn-delete-instructor', function (e) {
+                e.stopPropagation();
+                if (confirm('確定要刪除這位營養師嗎？這將會移除其營養師身份。')) {
+                    var id = $(this).data('id');
+                    $.ajax({
+                        url: '@Url.Action("DeleteInstructor", "Staff")',
+                        type: 'POST',
+                        data: {
+                            id: id,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (result) {
+                            if (result.success) {
+                                location.reload();
+                            } else {
+                                alert(result.message);
+                            }
+                        }
+                    });
+                }
+            });
+
+            // 切換營養師狀態
+            $(document).on('change', '.toggle-instructor-active', function (e) {
+                e.stopPropagation();
+                var id = $(this).data('id');
+                $.ajax({
+                    url: '@Url.Action("ToggleInstructorActive", "Staff")',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (result) {
+                        if (result.success) {
+                            alert(result.message);
+                        } else {
+                            alert(result.message);
+                        }
+                    }
+                });
+            });
+
+            // 新增營養師
+            window.showCreateInstructorModal = function () {
+                $.get('@Url.Action("CreateInstructor", "Staff")', function (html) {
+                    $('#instructorModalContainer').html(html);
+                    $('#createModal').modal('show');
+                }).fail(function (xhr) {
+                    alert("載入新增表單失敗：" + xhr.status);
+                });
+            };
+
+            // 營養師 row hover 效果
+            $(document).on('mouseenter', '.instructor-row', function () {
+                $(this).addClass('bg-light');
+            }).on('mouseleave', '.instructor-row', function () {
+                $(this).removeClass('bg-light');
+            });
         });
     </script>
 }

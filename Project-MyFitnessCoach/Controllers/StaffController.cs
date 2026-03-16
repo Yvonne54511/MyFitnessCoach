@@ -167,6 +167,9 @@ namespace Project_MyFitnessCoach.Controllers
             ViewBag.InstructorList = allStaff
                 .Where(s => s.Roles.Any(r => r == "instructor"))
                 .ToList();
+            // 營養師詳細資料
+            var instructors = await _instructorService.GetAllInstructorsAsync();
+            ViewBag.InstructorDetails = instructors.ToList();
             // 會員列表：有 member 角色的使用者
             ViewBag.MemberList = allStaff
                 .Where(s => s.Roles.Any(r => r == "member"))

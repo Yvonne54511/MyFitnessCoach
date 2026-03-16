@@ -1,0 +1,124 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.ViewModel.StaffListItemViewModel>
+@{
+    var instructorDetails = ViewBag.InstructorDetails as List<Project_MyFitnessCoach.Models.DTOs.InstructorDto>
+        ?? new List<Project_MyFitnessCoach.Models.DTOs.InstructorDto>();
+}
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <p class="text-muted mb-3">查無資料</p>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered" width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>姓名</th>
+                    <th>Email</th>
+                    <th>帳號</th>
+                    <th>啟用狀態</th>
+                    <th>帳號確認</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var detail = instructorDetails.FirstOrDefault(d => d.UserId == item.Id);
+                    var collapseId = "instructorDetail_" + item.Id;
+
+                    <tr class="instructor-row" style="cursor: pointer;" data-toggle="collapse" data-target="#@collapseId" aria-expanded="false">
+                        <td>@item.UserName</td>
+                        <td>@item.Email</td>
+                        <td>@item.Account</td>
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="badge badge-success">已啟用</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">未啟用</span>
+                            }
+                        </td>
+                        <td>
+                            @if (item.IsConfirmed)
+                            {
+                                <span class="badge badge-primary">已確認</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-secondary">待確認</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" class="p-0 border-0">
+                            <div class="collapse" id="@collapseId">
+                                @if (detail != null)
+                                {
+                                    <div class="card card-body m-3">
+                                        <div class="row align-items-center justify-content-center text-center">
+                                            <div class="col-md-3">
+                                                <label class="font-weight-bold d-block mb-2">形象照</label>
+                                                @if (!string.IsNullOrEmpty(detail.ImageUrl))
+                                                {
+                                                    <img src="@detail.ImageUrl" alt="形象照"
+                                                         style="width: 120px; height: 120px; object-fit: contain; border: 1px solid #ddd;"
+                                                         onerror="this.src='https://via.placeholder.com/120x120?text=No+Image'" />
+                                                }
+                                                else
+                                                {
+                                                    <img src="https://via.placeholder.com/120x120?text=No+Image" alt="無照片"
+                                                         style="width: 120px; height: 120px; object-fit: contain; border: 1px solid #ddd;" />
+                                                }
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="font-weight-bold d-block text-muted mb-1">時薪</label>
+                                                <span>@detail.HourWage.ToString("C0")</span>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="font-weight-bold d-block text-muted mb-1">取消次數</label>
+                                                <span>@detail.CancelCount</span>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="font-weight-bold d-block text-muted mb-1">狀態</label>
+                                                <div class="form-check form-switch d-inline-block">
+                                                    <input class="form-check-input toggle-instructor-active" type="checkbox" role="switch"
+                                                           data-id="@detail.Id" @(detail.IsActive ? "checked" : "")>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button class="btn btn-info btn-sm mr-2 btn-edit-instructor" data-id="@detail.Id">
+                                                    <i class="fas fa-edit"></i> 編輯
+                                                </button>
+                                                <button class="btn btn-danger btn-sm btn-delete-instructor" data-id="@detail.Id">
+                                                    <i class="fas fa-trash"></i> 刪除
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="card card-body m-3 d-flex flex-row align-items-center justify-content-center">
+                                        <span class="text-muted mr-3">查無營養師詳細資料</span>
+                                        <button class="btn btn-primary btn-sm" onclick="showCreateInstructorModal()">
+                                            <i class="fas fa-plus"></i> 新增資料
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<!-- Modal Container for instructor edit/create -->
+<div id="instructorModalContainer"></div>
+@Html.AntiForgeryToken()
