@@ -29,6 +29,7 @@ namespace Project_MyFitnessCoach.Controllers
         {
             var pointOrders = await _context.PointOrders
                 .Include(p => p.PointsRecordDetails)
+                .Include(p => p.TopUpPlan)
                 .OrderByDescending(p => p.CreateAt)
                 .ToListAsync();
             return View(pointOrders);
@@ -151,6 +152,46 @@ namespace Project_MyFitnessCoach.Controllers
         public IActionResult Recharge()
         {
             return View();
+        }
+
+        // 點數儲值詳情
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var order = await _context.PointOrders
+                .Include(p => p.Member).ThenInclude(m => m.User)
+                .Include(p => p.TopUpPlan)
+                .Include(p => p.PointsRecordDetails)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (order == null) return NotFound();
+
+            var viewModel = new PointOrderViewModel
+            {
+                Id = order.Id,
+                MemberId = order.MemberId,
+                MemberName = order.Member.User.UserName,
+                TopUpPlanId = order.TopUpPlanId,
+                PlanName = order.TopUpPlan?.PlanName ?? "手動儲值",
+                CreateAt = order.CreateAt,
+                PointQty = order.PointQty,
+                OriginalPrice = order.OriginalPrice,
+                DiscountedPrice = order.DiscountedPrice,
+                Status = order.Status,
+                RecordDetails = order.PointsRecordDetails.Select(d => new PointsRecordDetailViewModel
+                {
+                    Id = d.Id,
+                    PointOrderId = d.PointOrderId,
+                    UserWalletId = d.UserWalletId,
+                    CreateAt = d.CreateAt,
+                    PointAmount = d.PointAmount,
+                    MerchandiseCategory = d.MerchandiseCategory,
+                    ReserveOrderId = d.ReserveOrderId
+                }).ToList()
+            };
+
+            return View(viewModel);
         }
 
         // 處理儲值請求

@@ -13,6 +13,9 @@ namespace Project_MyFitnessCoach.Models.ViewModels
 
         public int TopUpPlanId { get; set; }
 
+        [Display(Name = "方案名稱")]
+        public string PlanName { get; set; }
+
         [Display(Name = "會員姓名")]
         public string MemberName { get; set; }
 
