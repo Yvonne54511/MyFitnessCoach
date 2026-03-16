@@ -21,6 +21,8 @@ public partial class Notification
 
     public bool IsRead { get; set; }
 
+    public int? ReferenceId { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public virtual User Sender { get; set; }
