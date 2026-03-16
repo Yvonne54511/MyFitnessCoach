@@ -1,0 +1,56 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.ViewModel.StaffListItemViewModel>
+
+<div class="table-responsive">
+    <table class="table table-bordered" width="100%" cellspacing="0">
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>Email</th>
+                <th>帳號</th>
+                <th>啟用狀態</th>
+                <th>帳號確認</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.UserName</td>
+                    <td>@item.Email</td>
+                    <td>@item.Account</td>
+                    <td>
+                        @if (item.IsActive)
+                        {
+                            <span class="badge badge-success">已啟用</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">未啟用</span>
+                        }
+                    </td>
+                    <td>
+                        @if (item.IsConfirmed)
+                        {
+                            <span class="badge badge-primary">已確認</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">待確認</span>
+                        }
+                    </td>
+                    <td>
+                        <button class="btn btn-warning btn-sm btn-edit" data-id="@item.Id">
+                            <i class="fas fa-edit"></i> 編輯
+                        </button>
+                        <button class="btn btn-danger btn-sm btn-delete" data-id="@item.Id">
+                            <i class="fas fa-trash"></i> 刪除
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@Html.AntiForgeryToken()
