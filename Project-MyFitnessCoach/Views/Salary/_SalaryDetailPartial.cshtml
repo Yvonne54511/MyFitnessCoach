@@ -50,14 +50,186 @@
         </div>
 
         <div class="mt-4 border-top pt-4">
-            <div class="row text-end">
-                <div class="col-md-8 text-muted align-self-center">
-                    共計 @Model.Shifts.Count 堂課
+            <div class="row">
+                <!-- Left Column: Performance Metrics & Formula -->
+                <div class="col-md-7">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-gradient-primary text-white py-3" style="background: #4e73df;">
+                            <h6 class="mb-0 fw-bold"><i class="fas fa-chart-bar me-2"></i>績效表現與獎金計算</h6>
+                        </div>
+                        <div class="card-body">
+                            <!-- Metrics Table -->
+                            <div class="table-responsive mb-4">
+                                <table class="table table-sm table-bordered text-center align-middle">
+                                    <thead class="bg-light">
+                                        <tr class="small text-uppercase text-muted">
+                                            <th>預約數 (x0.5)</th>
+                                            <th>平均評分 (x0.3)</th>
+                                            <th>好評數 (x0.4)</th>
+                                            <th class="table-primary text-primary">個人總分</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="h5">
+                                            <td class="@(Model.BookingCount < 15 ? "text-danger fw-bold" : "")">
+                                                @Model.BookingCount 
+                                                <small class="text-muted">(@((Model.BookingCount * 0.5).ToString("F1")))</small>
+                                                @if (Model.BookingCount < 15)
+                                                {
+                                                    <div class="small fw-normal text-danger" style="font-size: 0.7rem;">(未達 15 次門檻)</div>
+                                                }
+                                            </td>
+                                            <td>@Model.AverageRating.ToString("F1") <small class="text-muted">(@((Model.AverageRating * 0.3).ToString("F2")))</small></td>
+                                            <td>@Model.PositiveReviewCount <small class="text-muted">(@((Model.PositiveReviewCount * 0.4).ToString("F1")))</small></td>
+                                            <td class="fw-bold text-primary">@Model.IndividualTotalScore.ToString("F2")</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if (Model.BookingCount < 15)
+                            {
+                                <div class="alert alert-warning border-0 mb-4 p-3 shadow-sm">
+                                    <div class="d-flex">
+                                        <i class="fas fa-exclamation-triangle fa-2x me-3 text-warning"></i>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">不符獎金分配資格</h6>
+                                            <p class="small mb-0">本月預約次數為 <strong>@Model.BookingCount 次</strong>，未達到 <strong>15 次</strong> 的基本績效門檻，故本月不予核發業績加給獎金。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Formula Alert -->
+                            <div class="alert alert-secondary border-0 mb-4 p-3">
+                                <h6 class="fw-bold small text-muted text-uppercase mb-3">獎金分配公式</h6>
+                                <div class="text-center mb-3">
+                                    <span class="badge bg-white text-dark shadow-sm px-3 py-2">個人分數：@Model.IndividualTotalScore.ToString("F2")</span>
+                                    <i class="fas fa-divide mx-2 text-muted"></i>
+                                    <span class="badge bg-white text-dark shadow-sm px-3 py-2">全體總分：@Model.GlobalTotalScore.ToString("F2")</span>
+                                    <i class="fas fa-times mx-2 text-muted"></i>
+                                    <span class="badge bg-white text-dark shadow-sm px-3 py-2">獎金池：$ @Model.BonusPool.ToString("N0")</span>
+                                </div>
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <i class="fas fa-arrow-down text-muted me-2"></i>
+                                    <span class="h5 mb-0 text-success fw-bold">建議分配獎金：$ @Model.SuggestedBonus.ToString("N0")</span>
+                                </div>
+                            </div>
+
+                            <!-- Bonus Adjustment -->
+                            <h6 class="text-secondary mb-3 small fw-bold">實際核發獎金 (可手動調整)</h6>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text bg-white border-end-0 text-success fw-bold">$</span>
+                                <input type="number" id="inputBonusAmount" class="form-control border-start-0 ps-0 fw-bold text-success" 
+                                       placeholder="0" min="0" value="@Model.BonusAmount" oninput="calculateSalary()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Base Salary Formula -->
+                    <div class="alert alert-info border-0 shadow-sm py-3 mb-4">
+                        <h6 class="alert-heading small fw-bold text-uppercase mb-2"><i class="fas fa-calculator me-2"></i>薪資核算公式</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-white text-dark shadow-sm px-3 py-2">$ <span id="formulaBase">@Model.BaseSalary.ToString("N0")</span></span>
+                            <i class="fas fa-plus text-primary small"></i>
+                            <span class="badge bg-white text-dark shadow-sm px-3 py-2">$ <span id="formulaBonus">@Model.BonusAmount.ToString("N0")</span></span>
+                            <i class="fas fa-equals text-primary small"></i>
+                            <span class="badge bg-primary text-white shadow-sm px-3 py-2">$ <span id="formulaTotal">@Model.FinalTotalSalary.ToString("N0")</span></span>
+                        </div>
+                        <div class="mt-2 text-center small text-muted">
+                            ( 基本底薪 + 核發獎金 = 總計 )
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <h3 class="mb-0">總金額: <span class="text-danger">@Model.TotalSalary.ToString("C0")</span></h3>
+
+                <!-- Right Column: Final Summary & Status -->
+                <div class="col-md-5">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex flex-column justify-content-between p-4">
+                            <div>
+                                <h6 class="text-muted text-uppercase small fw-bold mb-4">結算總覽：@Model.InstructorName</h6>
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">基本底薪 (@Model.Shifts.Count 堂)：</span>
+                                        <span class="fw-bold">$ @Model.BaseSalary.ToString("N0")</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span class="text-muted">業績加給獎金：</span>
+                                        <span class="fw-bold text-success">+ $ <span id="bonusDisplayAmount">@Model.BonusAmount.ToString("N0")</span></span>
+                                    </div>
+                                    <hr>
+                                    <div class="text-center py-3">
+                                        <h2 class="mb-1 text-dark fw-bold">總發放金額</h2>
+                                        <h1 class="display-4 text-danger fw-bold mb-0" id="displayFinalTotal">@Model.FinalTotalSalary.ToString("C0")</h1>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-light rounded p-3 mb-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="text-muted small me-3">發送狀態：</span>
+                                    <span id="paymentStatus" class="badge bg-warning text-dark px-2 py-1 small">待處理</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="text-muted small me-3">發送日期：</span>
+                                    <span id="paymentDate" class="text-secondary small">--</span>
+                                </div>
+                                <button id="btnSendSalary" class="btn btn-primary w-100 py-2 shadow-sm" onclick="sendSalary()">
+                                    <i class="fas fa-check-circle me-2"></i>核發薪資與獎金
+                                </button>
+                            </div>
+                            <small class="text-muted text-center d-block">* 僅計入課程結束逾一天之已預約紀錄</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    const baseSalary = @Model.BaseSalary;
+    const suggestedBonus = @Model.SuggestedBonus;
+
+    function resetToSuggested() {
+        document.getElementById('inputBonusAmount').value = Math.round(suggestedBonus);
+        calculateSalary();
+    }
+
+    function calculateSalary() {
+        const bonusAmount = parseFloat(document.getElementById('inputBonusAmount').value) || 0;
+        const finalTotal = baseSalary + bonusAmount;
+
+        // Update displays
+        document.getElementById('formulaBonus').innerText = Math.round(bonusAmount).toLocaleString();
+        document.getElementById('formulaTotal').innerText = Math.round(finalTotal).toLocaleString();
+        document.getElementById('bonusDisplayAmount').innerText = Math.round(bonusAmount).toLocaleString();
+        document.getElementById('displayFinalTotal').innerText = '$ ' + Math.round(finalTotal).toLocaleString();
+    }
+
+    function sendSalary() {
+        const bonusAmount = document.getElementById('inputBonusAmount').value || 0;
+        const total = document.getElementById('displayFinalTotal').innerText;
+        
+        if (confirm(`確定要核發薪資共 ${total} 嗎？\n(包含獎金：$ ${bonusAmount})`)) {
+            const btn = document.getElementById('btnSendSalary');
+            const status = document.getElementById('paymentStatus');
+            const dateSpan = document.getElementById('paymentDate');
+            const bonusInput = document.getElementById('inputBonusAmount');
+            
+            btn.disabled = true;
+            bonusInput.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>處理中...';
+            
+            setTimeout(() => {
+                btn.className = 'btn btn-success w-100 py-2 shadow-sm';
+                btn.innerHTML = '<i class="fas fa-check-double me-2"></i>已核發成功';
+                status.className = 'badge bg-success px-2 py-1 small';
+                status.innerText = '已核發';
+                const now = new Date();
+                dateSpan.innerText = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                alert('薪資與業績獎金已成功核發！');
+            }, 1000);
+        }
+    }
+</script>

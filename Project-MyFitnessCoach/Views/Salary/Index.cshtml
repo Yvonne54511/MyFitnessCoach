@@ -10,6 +10,21 @@
     <div class="row mb-5" style="min-height: 500px;">
         <!-- Sidebar: Instructor List -->
         <div class="col-md-3 border-end">
+            <!-- Bonus Pool Setting -->
+            <div class="card border-0 shadow-sm mb-4 bg-light">
+                <div class="card-body">
+                    <h6 class="text-secondary mb-3 small fw-bold text-uppercase"><i class="fas fa-coins me-2 text-warning"></i>全體獎金池設定</h6>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                        <input type="number" id="globalBonusPool" class="form-control border-start-0" value="0" min="0" step="1000">
+                        <button class="btn btn-outline-primary" type="button" onclick="triggerGlobalUpdate()" title="更新獎金池試算">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted mt-2 d-block">* 修改後請點擊藍色按鈕更新試算結果</small>
+                </div>
+            </div>
+
             <h4 class="mb-4 text-secondary"><i class="fas fa-user-nurse me-2"></i>營養師列表</h4>
             <div class="list-group list-group-flush shadow-sm rounded overflow-auto" style="max-height: 600px;">
                 @foreach (var instructor in Model.Instructors)
@@ -121,6 +136,15 @@
 
 @section Scripts {
     <script>
+        function triggerGlobalUpdate() {
+            const activeId = $('.instructor-item.active').data('id');
+            if (activeId) {
+                // We use a small timeout to debounce typing if needed, 
+                // but direct call is okay for simple updates.
+                loadSalaryDetail(activeId);
+            }
+        }
+
         function loadSalaryDetail(instructorId) {
             // Highlight selected item
             $('.instructor-item').removeClass('active');
@@ -130,7 +154,11 @@
             $('#salary-detail-container').html('<div class="card h-100 border-0 shadow-sm d-flex align-items-center justify-content-center bg-light"><div class="text-center"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">載入中...</p></div></div>');
 
             // Fetch detail via AJAX
-            $.get('@Url.Action("GetSalaryDetail", "Salary")', { instructorId: instructorId }, function (data) {
+            const poolValue = $('#globalBonusPool').val();
+            $.get('@Url.Action("GetSalaryDetail", "Salary")', { 
+                instructorId: instructorId,
+                bonusPool: poolValue
+            }, function (data) {
                 $('#salary-detail-container').html(data);
             }).fail(function () {
                 $('#salary-detail-container').html('<div class="alert alert-danger mt-3">載入失敗，請稍後再試。</div>');
