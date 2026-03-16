@@ -21,6 +21,8 @@ public partial class Review
 
     public DateTime CreatedAt { get; set; }
 
+    public bool IsBanned { get; set; }
+
     public virtual Instructor Instructor { get; set; }
 
     public virtual Member Member { get; set; }

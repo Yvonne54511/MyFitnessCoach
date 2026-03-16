@@ -1,0 +1,106 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.ViewModels.MemberViolationIndexViewModel>
+
+@{
+    ViewData["Title"] = "會員違規管理";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800">會員違規管理</h1>
+    <p class="mb-4">在此管理會員的違規紀錄、警告次數及停權狀態。</p>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">違規紀錄列表</h6>
+            <a asp-action="Create" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> 新增違規紀錄
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.MemberName)</th>
+                            <th>@Html.DisplayNameFor(model => model.MemberEmail)</th>
+                            <th>@Html.DisplayNameFor(model => model.WarningCount)</th>
+                            <th>@Html.DisplayNameFor(model => model.IsSuspended)</th>
+                            <th>@Html.DisplayNameFor(model => model.LastWarningAt)</th>
+                            <th>@Html.DisplayNameFor(model => model.SuspendedAt)</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.MemberName</td>
+                                <td>@item.MemberEmail</td>
+                                <td>
+                                    <span class="badge badge-@(item.WarningCount >= 3 ? "danger" : "warning")">
+                                        @item.WarningCount
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (item.IsSuspended)
+                                    {
+                                        <span class="badge badge-danger">已停權</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-success">正常</span>
+                                    }
+                                </td>
+                                <td>@(item.LastWarningAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                                <td>@(item.SuspendedAt?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-info btn-circle btn-sm" title="編輯">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger btn-circle btn-sm btn-delete" data-id="@item.Id" data-name="@item.MemberName" title="刪除">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">確認刪除</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">您確定要刪除 <span id="deleteMemberName" class="font-weight-bold"></span> 的違規紀錄嗎？</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
+                <form id="deleteForm" method="post" asp-action="Delete">
+                    <input type="hidden" name="id" id="deleteId" />
+                    <button type="submit" class="btn btn-danger">刪除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.btn-delete').click(function () {
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+                $('#deleteId').val(id);
+                $('#deleteMemberName').text(name);
+                $('#deleteModal').modal('show');
+            });
+        });
+    </script>
+}

@@ -29,11 +29,18 @@
             </a>
             <br>
             <hr class="sidebar-divider">
-            <li class="nav-item active">
-                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+            <div class="sidebar-heading">數據統計</div>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDashboard" aria-expanded="true" aria-controls="collapseDashboard">
                     <i class="bx bx-home-circle"></i>
                     <span>Dashboard</span>
                 </a>
+                <div id="collapseDashboard" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" asp-controller="Dashboard" asp-action="Index">後台概覽</a>
+                        <a class="collapse-item" asp-controller="Dashboard" asp-action="Rating">評論統計</a>
+                    </div>
+                </div>
             </li>
             <br />
 

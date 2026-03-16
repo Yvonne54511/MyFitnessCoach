@@ -1,4 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.EfModels;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Project_MyFitnessCoach.Repositories
 {
@@ -10,6 +14,19 @@ namespace Project_MyFitnessCoach.Repositories
         int GetActiveRoles();
         int GetActiveFunctions();
         int GetActiveInstructors();
+        
+        // Monthly stats
+        int GetMonthlyOrdersCount(int year, int month);
+        decimal GetMonthlyRevenue(int year, int month);
+        int GetMonthlyReviewsCount(int year, int month);
+        int GetMonthlyActiveMembers(int year, int month);
+
+        // Yearly stats
+        decimal[] GetMonthlyRevenueTrendData(int year);
+
+        IEnumerable<InstructorRatingDto> GetInstructorRatings(int year, int month);
+        GlobalRatingDto GetGlobalRating(int year, int month);
+        IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies(int year, int month);
     }
 
     public class DashboardRepository : IDashboardRepository
@@ -27,5 +44,222 @@ namespace Project_MyFitnessCoach.Repositories
         public int GetActiveRoles() => _db.Roles.Count(x => x.IsActive);
         public int GetActiveFunctions() => _db.Functions.Count(x => x.IsActive);
         public int GetActiveInstructors() => _db.Instructors.Count(x => x.IsActive);
+
+        public int GetMonthlyOrdersCount(int year, int month)
+        {
+            int pOrders = _db.ProductOrders.Count(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month));
+            int rOrders = _db.ReserveOrders.Count(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month));
+            return pOrders + rOrders;
+        }
+
+        public decimal GetMonthlyRevenue(int year, int month)
+        {
+            decimal pRev = _db.ProductOrders
+                .Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month))
+                .Sum(x => (decimal?)(x.OriginalAmount - x.DiscountAmount)) ?? 0;
+            
+            decimal rRev = _db.ReserveOrders
+                .Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month))
+                .Sum(x => (decimal?)x.Price) ?? 0;
+
+            decimal ptRev = _db.PointOrders
+                .Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month))
+                .Sum(x => (decimal?)x.DiscountedPrice) ?? 0;
+
+            return pRev + rRev + ptRev;
+        }
+
+        public int GetMonthlyReviewsCount(int year, int month)
+        {
+            return _db.Reviews.Count(x => x.CreatedAt.Year == year && (month == 0 || x.CreatedAt.Month == month));
+        }
+
+        public int GetMonthlyActiveMembers(int year, int month)
+        {
+            var pMembers = _db.ProductOrders.Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month)).Select(x => x.MemberId);
+            var rMembers = _db.ReserveOrders.Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month)).Select(x => x.MemberId);
+            var rvMembers = _db.Reviews.Where(x => x.CreatedAt.Year == year && (month == 0 || x.CreatedAt.Month == month)).Select(x => x.MemberId);
+            var ptMembers = _db.PointOrders.Where(x => x.CreateAt.Year == year && (month == 0 || x.CreateAt.Month == month)).Select(x => x.MemberId);
+
+            return pMembers.Union(rMembers).Union(rvMembers).Union(ptMembers).Distinct().Count();
+        }
+
+        public decimal[] GetMonthlyRevenueTrendData(int year)
+        {
+            var pOrders = _db.ProductOrders.Where(x => x.CreateAt.Year == year).Select(x => new { x.CreateAt.Month, Revenue = x.OriginalAmount - x.DiscountAmount }).ToList();
+            var rOrders = _db.ReserveOrders.Where(x => x.CreateAt.Year == year).Select(x => new { x.CreateAt.Month, Revenue = x.Price }).ToList();
+            var ptOrders = _db.PointOrders.Where(x => x.CreateAt.Year == year).Select(x => new { x.CreateAt.Month, Revenue = x.DiscountedPrice }).ToList();
+
+            decimal[] trend = new decimal[12];
+            for (int i = 1; i <= 12; i++)
+            {
+                decimal pRev = pOrders.Where(x => x.Month == i).Sum(x => (decimal?)x.Revenue) ?? 0;
+                decimal rRev = rOrders.Where(x => x.Month == i).Sum(x => (decimal?)x.Revenue) ?? 0;
+                decimal ptRev = ptOrders.Where(x => x.Month == i).Sum(x => (decimal?)x.Revenue) ?? 0;
+                trend[i - 1] = pRev + rRev + ptRev;
+            }
+            return trend;
+        }
+
+        public IEnumerable<KeyWordFrequencyDto> GetKeyWordFrequencies(int year, int month)
+        {
+            var rawReviews = _db.Reviews
+                .Where(r => !r.IsBanned && !string.IsNullOrEmpty(r.Comment) && r.CreatedAt.Year == year && (month == 0 || r.CreatedAt.Month == month))
+                .Select(r => r.Comment)
+                .ToList();
+            var dbKeyWords = _db.KeyWords.ToList();
+            var dbWordSet = new HashSet<string>(dbKeyWords.Select(k => k.Word));
+
+            // 1. 統計資料庫已有關鍵字的次數
+            var results = dbKeyWords.Select(kw => new KeyWordFrequencyDto
+            {
+                Word = kw.Word,
+                Category = kw.Category,
+                Count = rawReviews.Sum(r => (r.Length - r.Replace(kw.Word, "").Length) / kw.Word.Length)
+            }).Where(k => k.Count > 0).ToList();
+
+            // 2. 挖掘新的高頻詞彙 (重複出現 > 5次，長度 2~4)
+            var nGramCounts = new Dictionary<string, int>();
+            char[] separators = new[] { ' ', ',', '.', '!', '?', '(', ')', '[', ']', '，', '。', '！', '？', '\r', '\n', '\t', '、', '：', '；' };
+
+            foreach (var review in rawReviews)
+            {
+                // 先根據標點符號切段，避免跨標點匹配
+                var segments = review.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var segment in segments)
+                {
+                    if (segment.Length < 2) continue;
+
+                    for (int len = 2; len <= 4; len++)
+                    {
+                        for (int i = 0; i <= segment.Length - len; i++)
+                        {
+                            string gram = segment.Substring(i, len);
+                            // 排除純數字或空格
+                            if (string.IsNullOrWhiteSpace(gram) || gram.All(char.IsDigit)) continue;
+                            
+                            if (nGramCounts.ContainsKey(gram)) nGramCounts[gram]++;
+                            else nGramCounts[gram] = 1;
+                        }
+                    }
+                }
+            }
+
+            // 3. 過濾出重複 > 5次 且 不在資料庫裡的字詞
+            var discoveredGrams = nGramCounts
+                .Where(kvp => kvp.Value >= 5 && !dbWordSet.Contains(kvp.Key))
+                .Select(kvp => new KeyWordFrequencyDto
+                {
+                    Word = kvp.Key,
+                    Category = null, // 未分類
+                    Count = kvp.Value
+                });
+
+            // 4. 合併結果並排序
+            return results.Concat(discoveredGrams).OrderByDescending(k => k.Count).ToList();
+        }
+
+        public IEnumerable<InstructorRatingDto> GetInstructorRatings(int year, int month)
+        {
+            var instructors = _db.Instructors
+                .Include(i => i.User)
+                .Include(i => i.Reviews.Where(r => !r.IsBanned && r.CreatedAt.Year == year && (month == 0 || r.CreatedAt.Month == month)))
+                    .ThenInclude(r => r.Member)
+                        .ThenInclude(m => m.User)
+                .ToList();
+
+            var keyWords = _db.KeyWords.ToList();
+            // 合併所有關鍵字，並從長到短排序，確保長字詞（如「不專業」）優先於短字詞（如「專業」）被匹配
+            var sortedAllKeywords = keyWords.OrderByDescending(k => k.Word.Length).ToList();
+
+            return instructors.Select(i => {
+                var posReviews = new List<ReviewSentimentDto>();
+                var neuReviews = new List<ReviewSentimentDto>();
+                var negReviews = new List<ReviewSentimentDto>();
+
+                foreach (var review in i.Reviews)
+                {
+                    // Step 1: 基礎分
+                    int score = 0;
+                    if (review.Rating >= 4) score = 2;
+                    else if (review.Rating <= 2) score = -2;
+                    else score = 0;
+
+                    // Step 2: 關鍵字加權 (一次掃描所有關鍵字)
+                    if (!string.IsNullOrEmpty(review.Comment))
+                    {
+                        string tempComment = review.Comment;
+
+                        foreach (var kw in sortedAllKeywords)
+                        {
+                            if (tempComment.Contains(kw.Word))
+                            {
+                                // 算出該字詞出現次數
+                                int count = (tempComment.Length - tempComment.Replace(kw.Word, "").Length) / kw.Word.Length;
+                                
+                                // 根據分類加分或減分
+                                if (kw.Category == 1) score += count * kw.Weight;
+                                else if (kw.Category == -1) score -= count * kw.Weight;
+
+                                // 將已匹配的字詞移除，避免短字詞重複匹配
+                                tempComment = tempComment.Replace(kw.Word, new string(' ', kw.Word.Length));
+                            }
+                        }
+                    }
+
+                    var reviewDto = new ReviewSentimentDto
+                    {
+                        Comment = review.Comment,
+                        Rating = review.Rating,
+                        CalculatedScore = score,
+                        MemberName = review.Member?.User?.UserName ?? "匿名會員",
+                        CreatedAt = review.CreatedAt
+                    };
+
+                    // Step 3: 最終判定
+                    if (score > 0) posReviews.Add(reviewDto);
+                    else if (score < 0) negReviews.Add(reviewDto);
+                    else neuReviews.Add(reviewDto);
+                }
+
+                return new InstructorRatingDto
+                {
+                    InstructorId = i.Id,
+                    InstructorName = i.User.UserName,
+                    ImageUrl = i.ImageUrl,
+                    TotalReviews = i.Reviews.Count(),
+                    AverageRating = i.Reviews.Any() ? i.Reviews.Average(r => r.Rating) : 0,
+                    TotalScore = posReviews.Sum(r => r.CalculatedScore) + neuReviews.Sum(r => r.CalculatedScore) + negReviews.Sum(r => r.CalculatedScore),
+                    Star5Count = i.Reviews.Count(r => r.Rating == 5),
+                    Star4Count = i.Reviews.Count(r => r.Rating == 4),
+                    Star3Count = i.Reviews.Count(r => r.Rating == 3),
+                    Star2Count = i.Reviews.Count(r => r.Rating == 2),
+                    Star1Count = i.Reviews.Count(r => r.Rating == 1),
+                    PositiveCount = posReviews.Count,
+                    NeutralCount = neuReviews.Count,
+                    NegativeCount = negReviews.Count,
+                    PositiveReviews = posReviews.OrderByDescending(r => r.CreatedAt).ToList(),
+                    NeutralReviews = neuReviews.OrderByDescending(r => r.CreatedAt).ToList(),
+                    NegativeReviews = negReviews.OrderByDescending(r => r.CreatedAt).ToList()
+                };
+            }).ToList();
+        }
+
+        public GlobalRatingDto GetGlobalRating(int year, int month)
+        {
+            var reviews = _db.Reviews.Where(r => !r.IsBanned && r.CreatedAt.Year == year && (month == 0 || r.CreatedAt.Month == month)).ToList();
+            if (!reviews.Any()) return new GlobalRatingDto();
+
+            return new GlobalRatingDto
+            {
+                TotalReviews = reviews.Count,
+                AverageRating = reviews.Average(r => r.Rating),
+                Star5Count = reviews.Count(r => r.Rating == 5),
+                Star4Count = reviews.Count(r => r.Rating == 4),
+                Star3Count = reviews.Count(r => r.Rating == 3),
+                Star2Count = reviews.Count(r => r.Rating == 2),
+                Star1Count = reviews.Count(r => r.Rating == 1)
+            };
+        }
     }
 }

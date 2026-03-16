@@ -39,6 +39,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[KeyWords]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Members]",
          "ObjectType": 0
       },
@@ -92,10 +96,6 @@
       },
       {
          "Name": "[dbo].[Roles]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[SensitiveWords]",
          "ObjectType": 0
       },
       {
