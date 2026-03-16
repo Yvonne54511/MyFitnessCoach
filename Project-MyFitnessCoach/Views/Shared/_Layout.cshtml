@@ -80,6 +80,7 @@
                 bool canEditCommentsAdmin = userFunctions.Contains("edit_Comments_admin");
                 bool canEditCommentsInstructor = userFunctions.Contains("edit_Comments_instructor");
                 bool canEditSensitiveWords = userFunctions.Contains("edit_SensitiveWords");
+                bool canEditSalary = userFunctions.Contains("edit_Salary");
             }
 
             <hr class="sidebar-divider">
@@ -130,12 +131,12 @@
                 </li>
             }
 
-            @if (canEditInstructorShifts || canViewInstructorShifts || User.HasClaim(c => c.Type == "InstructorId"))
+            @if (canEditInstructorShifts || canViewInstructorShifts || User.HasClaim(c => c.Type == "InstructorId") || canEditSalary)
             {
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTutor" aria-expanded="true" aria-controls="collapseTutor">
                         <i class="fa-regular fa-calendar-check"></i>
-                        <span>班表與預約管理</span>
+                        <span>班表與薪資管理</span>
                     </a>
                     <div id="collapseTutor" class="collapse" data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
@@ -146,6 +147,10 @@
                             @if (canViewInstructorShifts)
                             {
                                 <a class="collapse-item" asp-controller="Shift" asp-action="AllShifts">所有營養師班表(管理)</a>
+                            }
+                            @if (canEditSalary)
+                            {
+                                <a class="collapse-item" asp-controller="Salary" asp-action="Index">營養師薪資核算</a>
                             }
                             @if (User.HasClaim(c => c.Type == "InstructorId"))
                             {
@@ -172,11 +177,11 @@
                             }
                             @if (canViewClientFoodRecords)
                             {
-                                <a class="collapse-item" href="#">客戶飲食紀錄</a>
+                                <a class="collapse-item" asp-controller="Dashboard" asp-action="FoodRecords">客戶飲食紀錄</a>
                             }
                             @if (canViewClientBodyData)
                             {
-                                <a class="collapse-item" href="#">客戶身體數據</a>
+                                <a class="collapse-item" asp-controller="Dashboard" asp-action="BodyData">客戶身體數據</a>
                             }
                         </div>
                     </div>
@@ -260,7 +265,7 @@
                             }
                             @if (canEditSensitiveWords)
                             {
-                                <a class="collapse-item" asp-controller="SensitiveWords" asp-action="Index">敏感字詞管理</a>
+                                <a class="collapse-item" asp-controller="KeyWords" asp-action="Index">敏感字詞管理</a>
                             }
                         </div>
                     </div>

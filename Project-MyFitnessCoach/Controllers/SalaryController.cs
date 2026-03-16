@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.ViewModels;
 using Project_MyFitnessCoach.Services;
+using Project_MyFitnessCoach.Models.Infra;
 using System;
 using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Controllers
 {
-    [Authorize(Roles = "Admin")] // Match the existing convention
+    [Authorize]
+    [Function("edit_Salary")]
     public class SalaryController : Controller
     {
         private readonly ISalaryService _salaryService;

@@ -4,9 +4,12 @@ using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModels;
 using Project_MyFitnessCoach.Services;
 
+using Project_MyFitnessCoach.Models.Infra;
+
 namespace Project_MyFitnessCoach.Controllers
 {
-    [Authorize] // [Authorize(Roles = "Admin")]
+    [Authorize]
+    [Function("edit_SensitiveWords")]
     public class KeyWordsController : Controller
     {
         private readonly IKeyWordService _service;
