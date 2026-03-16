@@ -4,6 +4,7 @@ using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModels;
 using System.Threading.Tasks;
 using System.Linq;
+using Project_MyFitnessCoach.Models.Infra;
 
 namespace Project_MyFitnessCoach.Controllers
 {

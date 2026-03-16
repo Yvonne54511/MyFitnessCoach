@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Models.ViewModels;
 using System;
 using System.Collections.Generic;
