@@ -110,16 +110,31 @@
         </div>
     </div>
 
-    <!-- 底部圖表列：熱門儲值方案 (橫向長條圖) -->
+    <!-- 底部圖表列：熱門儲值方案與空白卡片 -->
     <div class="row">
-        <div class="col-12 mb-4">
-            <div class="card shadow mb-4">
+        <!-- 左側：熱門儲值方案 (橫向長條圖) -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow h-100">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">熱門儲值方案排行榜</h6>
                 </div>
                 <div class="card-body">
-                    <div class="chart-bar">
-                        <canvas id="popularPlansChart" style="height: 400px;"></canvas>
+                    <div class="chart-bar" style="height: 400px;">
+                        <canvas id="popularPlansChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側：平均客單價走勢 (折線圖) -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">平均客單價每月走勢 (當年度)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area" style="height: 400px;">
+                        <canvas id="avgTicketSizeChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -302,6 +317,84 @@
                         }
                     }
                 },
+            }
+        });
+
+        // 3. 平均客單價每月走勢 - 折線圖 (Line Chart)
+        var ctxAvg = document.getElementById("avgTicketSizeChart");
+        var avgTicketSizeChart = new Chart(ctxAvg, {
+            type: 'line',
+            data: {
+                labels: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+                datasets: [{
+                    label: "平均客單價",
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(54, 185, 204, 0.05)",
+                    borderColor: "rgba(54, 185, 204, 1)",
+                    pointRadius: 3,
+                    pointBackgroundColor: "rgba(54, 185, 204, 1)",
+                    pointBorderColor: "rgba(54, 185, 204, 1)",
+                    pointHoverRadius: 3,
+                    pointHoverBackgroundColor: "rgba(54, 185, 204, 1)",
+                    pointHoverBorderColor: "rgba(54, 185, 204, 1)",
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    data: @Html.Raw(Json.Serialize(Model.MonthlyAverageTicketSizes)),
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    xAxes: [{
+                        gridLines: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 12
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            maxTicksLimit: 5,
+                            padding: 10,
+                            callback: function(value, index, values) {
+                                return 'NT$ ' + value.toLocaleString();
+                            }
+                        },
+                        gridLines: {
+                            color: "rgb(234, 236, 244)",
+                            zeroLineColor: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [2],
+                            zeroLineBorderDash: [2]
+                        }
+                    }],
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    titleMarginBottom: 10,
+                    titleFontColor: '#6e707e',
+                    titleFontSize: 14,
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    intersect: false,
+                    mode: 'index',
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(tooltipItem, chart) {
+                            return '平均客單: NT$ ' + tooltipItem.yLabel.toLocaleString();
+                        }
+                    }
+                }
             }
         });
     </script>

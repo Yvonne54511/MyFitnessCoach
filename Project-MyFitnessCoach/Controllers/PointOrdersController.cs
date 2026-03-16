@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Models.ViewModels;
+using Project_MyFitnessCoach.Models.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +15,12 @@ namespace Project_MyFitnessCoach.Controllers
     public class PointOrdersController : Controller
     {
         private readonly MyFitnessCoachDbContext _context;
+        private readonly IPointOrderService _pointOrderService;
 
-        public PointOrdersController(MyFitnessCoachDbContext context)
+        public PointOrdersController(MyFitnessCoachDbContext context, IPointOrderService pointOrderService)
         {
             _context = context;
+            _pointOrderService = pointOrderService;
         }
 
         // 點數儲值首頁 (列出所有儲值紀錄)
@@ -95,6 +98,16 @@ namespace Project_MyFitnessCoach.Controllers
                 .Take(5)
                 .ToListAsync();
 
+            // 4. 每月平均客單價走勢 (1-12月)
+            var monthlyAverageTicketSizes = new List<decimal>();
+            for (int month = 1; month <= 12; month++)
+            {
+                var start = new DateTime(now.Year, month, 1);
+                var end = start.AddMonths(1).AddDays(-1);
+                var avgDto = await _pointOrderService.CalculateAverageTicketSizeAsync(start, end);
+                monthlyAverageTicketSizes.Add(avgDto.AverageTicketSize);
+            }
+
             var viewModel = new PointOrderDashboardViewModel
             {
                 TodayRevenue = todayRevenue,
@@ -106,7 +119,8 @@ namespace Project_MyFitnessCoach.Controllers
                 ActualPaymentData = actualPaymentData,
                 BonusPointsData = bonusPointsData,
                 PlanNames = popularPlans.Select(p => $"{p.Points} 點方案").ToList(),
-                PlanSales = popularPlans.Select(p => p.Count).ToList()
+                PlanSales = popularPlans.Select(p => p.Count).ToList(),
+                MonthlyAverageTicketSizes = monthlyAverageTicketSizes
             };
 
             return View(viewModel);

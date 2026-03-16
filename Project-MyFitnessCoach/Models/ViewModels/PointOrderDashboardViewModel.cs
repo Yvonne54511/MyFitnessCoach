@@ -32,5 +32,8 @@ namespace Project_MyFitnessCoach.Models.ViewModels
         // 熱門方案圖表數據
         public List<string> PlanNames { get; set; } = new List<string>();
         public List<int> PlanSales { get; set; } = new List<int>();
+
+        // 每月平均客單價趨勢 (1-12月)
+        public List<decimal> MonthlyAverageTicketSizes { get; set; } = new List<decimal>();
     }
 }

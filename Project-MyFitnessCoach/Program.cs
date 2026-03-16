@@ -54,6 +54,10 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
             builder.Services.AddScoped<IInstructorService, InstructorService>();
 
+            // 註冊 PointOrder 模組 (含平均客單計算)
+            builder.Services.AddScoped<Project_MyFitnessCoach.Models.Repositories.IPointOrderRepository, Project_MyFitnessCoach.Models.Repositories.PointOrderRepository>();
+            builder.Services.AddScoped<Project_MyFitnessCoach.Models.Services.IPointOrderService, Project_MyFitnessCoach.Models.Services.PointOrderService>();
+
 			// 註冊 ShiftRepository
 			builder.Services.AddScoped<IShiftRepository, ShiftRepository>();
 

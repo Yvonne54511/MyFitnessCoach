@@ -15,6 +15,7 @@ namespace Project_MyFitnessCoach.Models.Services
         Task<bool> ApproveOrderAsync(int id);
         Task<bool> UpdateStatusAsync(int id, int newStatus);
         Task<bool> RefundReservationAsync(int reserveOrderId);
+        Task<AverageTicketSizeDto> CalculateAverageTicketSizeAsync(DateTime? startDate = null, DateTime? endDate = null);
     }
 
     public class PointOrderService : IPointOrderService
@@ -26,6 +27,16 @@ namespace Project_MyFitnessCoach.Models.Services
         {
             _repository = repository;
             _context = context;
+        }
+
+        public async Task<AverageTicketSizeDto> CalculateAverageTicketSizeAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            if (startDate > endDate)
+            {
+                throw new ArgumentException("開始日期不能晚於結束日期");
+            }
+
+            return await _repository.GetAverageTicketSizeAsync(startDate, endDate);
         }
 
         public async Task<List<PointOrderDto>> GetAllAsync(int? status, string searchString)
