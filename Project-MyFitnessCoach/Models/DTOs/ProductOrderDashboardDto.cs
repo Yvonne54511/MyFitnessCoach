@@ -17,6 +17,8 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public List<OrderTrendDto> OrderTrends { get; set; }
         public List<CityDistributionDto> CityDistributions { get; set; }
         public List<CategoryRankingDto> CategoryRankings { get; set; }
+        public List<ProductOrderDto> TodayOrders { get; set; } = new List<ProductOrderDto>();
+        public List<ProductOrderDto> PendingOrders { get; set; } = new List<ProductOrderDto>();
     }
 
     public class OrderTrendDto

@@ -92,6 +92,41 @@ namespace Project_MyFitnessCoach.Repositories
                 .Take(5)
                 .ToListAsync();
 
+            // 今日訂單 (CreateAt 為今天，依時間降冪)
+            var todayStart = now.Date;
+            var todayOrders = await _context.ProductOrders
+                .Include(o => o.Member)
+                .ThenInclude(m => m.User)
+                .Where(o => o.CreateAt >= todayStart)
+                .OrderByDescending(o => o.CreateAt)
+                .Select(o => new ProductOrderDto
+                {
+                    Id = o.Id,
+                    MemberName = o.Member.User.UserName,
+                    CreateAt = o.CreateAt,
+                    OriginalAmount = o.OriginalAmount,
+                    DiscountAmount = o.DiscountAmount,
+                    Status = o.Status
+                })
+                .ToListAsync();
+
+            // 待處理訂單 (Status = 1 或 4，依時間降冪)
+            var pendingOrders = await _context.ProductOrders
+                .Include(o => o.Member)
+                .ThenInclude(m => m.User)
+                .Where(o => o.Status == 1 || o.Status == 4)
+                .OrderByDescending(o => o.CreateAt)
+                .Select(o => new ProductOrderDto
+                {
+                    Id = o.Id,
+                    MemberName = o.Member.User.UserName,
+                    CreateAt = o.CreateAt,
+                    OriginalAmount = o.OriginalAmount,
+                    DiscountAmount = o.DiscountAmount,
+                    Status = o.Status
+                })
+                .ToListAsync();
+
             return new ProductOrderDashboardDto
             {
                 TotalOrdersThisMonth = totalThisMonth,
@@ -102,7 +137,9 @@ namespace Project_MyFitnessCoach.Repositories
                 DisputedChangePercentage = CalculateChange(disputedThisMonth, disputedLastMonth),
                 OrderTrends = trends,
                 CityDistributions = cityData,
-                CategoryRankings = categoryRankings
+                CategoryRankings = categoryRankings,
+                TodayOrders = todayOrders,
+                PendingOrders = pendingOrders
             };
         }
 

@@ -57,6 +57,22 @@ namespace Project_MyFitnessCoach.Controllers
                 {
                     CategoryName = c.CategoryName,
                     TotalSold = c.TotalSold
+                }).ToList(),
+                TodayOrders = dto.TodayOrders.Select(o => new TodayOrderViewModel
+                {
+                    Id = o.Id,
+                    MemberName = o.MemberName,
+                    CreateAt = o.CreateAt,
+                    FinalAmount = o.OriginalAmount - o.DiscountAmount,
+                    Status = o.Status
+                }).ToList(),
+                PendingOrders = dto.PendingOrders.Select(o => new TodayOrderViewModel
+                {
+                    Id = o.Id,
+                    MemberName = o.MemberName,
+                    CreateAt = o.CreateAt,
+                    FinalAmount = o.OriginalAmount - o.DiscountAmount,
+                    Status = o.Status
                 }).ToList()
             };
 
