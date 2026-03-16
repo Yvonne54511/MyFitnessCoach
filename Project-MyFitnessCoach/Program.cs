@@ -84,6 +84,9 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<IMemberViolationRepository, MemberViolationRepository>();
             builder.Services.AddScoped<IMemberViolationService, MemberViolationService>();
 
+            // 註冊 Salary 模組
+            builder.Services.AddScoped<ISalaryService, SalaryService>();
+
 			// 註冊使用Cookie驗證服務
 			builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 				.AddCookie(options =>
