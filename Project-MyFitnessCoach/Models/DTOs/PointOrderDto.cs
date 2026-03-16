@@ -7,8 +7,9 @@ namespace Project_MyFitnessCoach.Models.DTOs
     {
         public int Id { get; set; }
         public int MemberId { get; set; }
-		public int TopUpPlanId { get; set; }
-		public string MemberName { get; set; }
+
+        public int TopUpPlanId { get; set; }
+        public string MemberName { get; set; }
         public DateTime CreateAt { get; set; }
         public int PointQty { get; set; }
         public decimal OriginalPrice { get; set; }
