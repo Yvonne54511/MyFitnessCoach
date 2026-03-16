@@ -1,4 +1,4 @@
-using Project_MyFitnessCoach.Models.Dtos;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModels;
 using Project_MyFitnessCoach.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -7,9 +7,12 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Project_MyFitnessCoach.Models.Infra;
+
 namespace Project_MyFitnessCoach.Controllers
 {
     [Authorize]
+    
     public class ReservationController : Controller
     {
         private readonly ReservationService _reservationService;
@@ -20,13 +23,14 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         // 講師查看自己已被預約的班表
-        [Authorize(Roles = "Instructor")]
+        [Authorize]
         public async Task<IActionResult> Index(DateOnly? startDate, DateOnly? endDate)
         {
             var instructorIdClaim = User.FindFirst("InstructorId")?.Value;
-            int instructorId = int.Parse(instructorIdClaim ?? "0");
-
-            if (instructorId == 0) return RedirectToAction("Index", "Login");
+            if (string.IsNullOrEmpty(instructorIdClaim) || !int.TryParse(instructorIdClaim, out int instructorId) || instructorId == 0)
+            {
+                return Forbid();
+            }
 
             var bookedShifts = await _reservationService.GetBookedShiftsAsync(instructorId, startDate, endDate);
             
@@ -50,7 +54,7 @@ namespace Project_MyFitnessCoach.Controllers
 
         // 檢視並編輯預約詳細資訊 (Memorandum)
         [HttpGet]
-        [Authorize(Roles = "Instructor")]
+        [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
             var booking = await _reservationService.GetBookingDetailsAsync(id);
@@ -79,7 +83,7 @@ namespace Project_MyFitnessCoach.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Instructor")]
+        [Authorize]
         public async Task<IActionResult> Edit([Bind("Id,Memorandum")] ReservationViewModel model)
         {
             var booking = await _reservationService.GetBookingDetailsAsync(model.Id);

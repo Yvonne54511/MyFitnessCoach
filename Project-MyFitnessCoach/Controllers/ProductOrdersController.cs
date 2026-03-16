@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.DTOs;
+using Project_MyFitnessCoach.Models.Infra;
 using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Controllers
 {
+    
     public class ProductOrdersController : Controller
     {
         private readonly ProductOrderService _service;
@@ -15,6 +17,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         // GET: ProductOrders
+        [Function("edit_ProductOrders")]
         public async Task<IActionResult> Index(int? status, string searchString)
         {
             var orders = await _service.GetAllAsync(status, searchString);

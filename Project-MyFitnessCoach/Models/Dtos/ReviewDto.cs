@@ -1,6 +1,6 @@
 using System;
 
-namespace Project_MyFitnessCoach.Models.Dtos
+namespace Project_MyFitnessCoach.Models.DTOs
 {
     public class ReviewDto
     {
@@ -11,8 +11,8 @@ namespace Project_MyFitnessCoach.Models.Dtos
         public string MemberName { get; set; }
         public int Rating { get; set; }
         public string Comment { get; set; }
-        public string ReportMessage { get; set; } // 新增：檢舉內容
+        public string ReportMessage { get; set; } // ?��?：檢?�內�?
         public DateTime CreatedAt { get; set; }
-        public bool IsUserActive { get; set; } // 用於判斷會員是否已被停權
+        public bool IsUserActive { get; set; } // ?�於?�斷?�員?�否已被?��?
     }
 }

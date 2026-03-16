@@ -1,4 +1,4 @@
-﻿namespace Project_MyFitnessCoach.Models.Dtos
+namespace Project_MyFitnessCoach.Models.DTOs
 {
 	public class ReviewDtoForInstructor
 	{

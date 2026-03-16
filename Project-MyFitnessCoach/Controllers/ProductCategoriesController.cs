@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.DTOs;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.ViewModels;
 
 namespace Project_MyFitnessCoach.Controllers
 {
+    
     public class ProductCategoriesController : Controller
     {
         private readonly CategoryService _service;
@@ -14,6 +16,7 @@ namespace Project_MyFitnessCoach.Controllers
             _service = service;
         }
 
+        [Function("edit_ProductCategories")]
         public IActionResult Index()
         {
             var categories = _service.GetAllCategories()

@@ -1,4 +1,3 @@
-using Project_MyFitnessCoach.Models.Dtos;
 using Project_MyFitnessCoach.Models.EfModels;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;

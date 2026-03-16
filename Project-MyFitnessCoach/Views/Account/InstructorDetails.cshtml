@@ -1,0 +1,125 @@
+@model Project_MyFitnessCoach.Models.DTOs.InstructorDto
+@{
+    ViewData["Title"] = "營養師資料";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">營養師個人資料</h4>
+                    <button id="btnEdit" class="btn btn-light btn-sm">編輯</button>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
+
+                    <form id="instructorForm" asp-action="InstructorDetails" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="UserId" />
+                        <input type="hidden" asp-for="ImageUrl" id="hiddenImageUrl" />
+
+                        <div class="row mb-4">
+                            <div class="col-md-4 text-center">
+                                <div class="mb-3">
+                                    <label class="form-label d-block">形象照</label>
+                                    <div class="img-preview-container mb-3" style="width: 150px; height: 150px; margin: 0 auto; border: 1px solid #ddd; overflow: hidden; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+                                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                                        {
+                                            <img id="imgPreview" src="@Model.ImageUrl" alt="形象照" style="max-width: 100%; max-height: 100%; object-fit: cover;" />
+                                        }
+                                        else
+                                        {
+                                            <img id="imgPreview" src="/img/no-image.png" alt="無照片" style="max-width: 100%; max-height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/150?text=No+Image'" />
+                                        }
+                                    </div>
+                                    <div style="max-width: 200px; margin: 0 auto;">
+                                        <input type="file" name="imageFile" id="imageFile" class="form-control-file edit-field" style="display:none;" accept=".png,.jpg,.jpeg" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label asp-for="UserName" class="form-label">姓名</label>
+                                    <input asp-for="UserName" class="form-control" readonly />
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="HourWage" class="form-label">時薪</label>
+                                    <input asp-for="HourWage" class="form-control edit-field" readonly type="number" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">個人簡介</label>
+                            <textarea asp-for="Description" class="form-control edit-field" rows="5" readonly></textarea>
+                        </div>
+
+                        <div class="text-end" id="actionButtons" style="display:none;">
+                            <button type="button" id="btnCancel" class="btn btn-secondary me-2">取消</button>
+                            <button type="submit" class="btn btn-primary">儲存</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const $btnEdit = $('#btnEdit');
+            const $btnCancel = $('#btnCancel');
+            const $actionButtons = $('#actionButtons');
+            const $editFields = $('.edit-field');
+            const $imageFile = $('#imageFile');
+            const $imgPreview = $('#imgPreview');
+            
+            // 原本的資料 (用於取消時恢復)
+            const originalData = {
+                hourWage: $('#HourWage').val(),
+                description: $('#Description').val(),
+                imgSrc: $imgPreview.attr('src')
+            };
+
+            $btnEdit.on('click', function () {
+                $(this).hide();
+                $actionButtons.show();
+                $editFields.prop('readonly', false);
+                $imageFile.show();
+            });
+
+            $btnCancel.on('click', function () {
+                $btnEdit.show();
+                $actionButtons.hide();
+                $editFields.prop('readonly', true);
+                $imageFile.hide();
+                
+                // 恢復原始資料
+                $('#HourWage').val(originalData.hourWage);
+                $('#Description').val(originalData.description);
+                $imgPreview.attr('src', originalData.imgSrc);
+                $imageFile.val('');
+            });
+
+            // 圖片預覽
+            $imageFile.on('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        $imgPreview.attr('src', event.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
+}

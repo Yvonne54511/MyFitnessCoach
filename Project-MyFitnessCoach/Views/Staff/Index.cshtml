@@ -27,6 +27,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <form id="inviteForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <h5 class="modal-title" id="inviteModalLabel">邀請新員工</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
@@ -42,18 +43,28 @@
                         <label>電子郵件</label>
                         <input name="Email" type="email" class="form-control" required />
                     </div>
-                    <div class="form-group">
+                    @* <div class="form-group">
                         <label>分配角色</label>
                         <div class="mt-2">
+                            @{
+                                var roleMapping = new Dictionary<string, string>
+                                {
+                                    
+                                    { "instructor", "營養師" },
+                                    { "purchasor", "採購人員" },
+                                    { "marketor", "行銷人員" },
+                                    { "admin", "系統管理員" }
+                                };
+                            }
                             @foreach (var role in roles)
                             {
                                 <div class="custom-control custom-checkbox custom-control-inline">
                                     <input type="checkbox" class="custom-control-input" id="role_@role.Id" name="RoleIds" value="@role.Id">
-                                    <label class="custom-control-label" for="role_@role.Id">@role.RoleName</label>
+                                    <label class="custom-control-label" for="role_@role.Id">@(roleMapping.ContainsKey(role.RoleName) ? roleMapping[role.RoleName] : role.RoleName)</label>
                                 </div>
                             }
                         </div>
-                    </div>
+                    </div> *@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
@@ -92,6 +103,9 @@
                         } else {
                             alert(response.message);
                         }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("發生錯誤：" + xhr.status + " " + error);
                     }
                 });
             });
@@ -102,6 +116,8 @@
                 $.get('@Url.Action("Edit", "Staff")/' + id, function (html) {
                     $('#editModalContent').html(html);
                     $('#editModal').modal('show');
+                }).fail(function (xhr) {
+                    alert("載入編輯資料失敗：" + xhr.status);
                 });
             });
 
@@ -120,6 +136,9 @@
                         } else {
                             alert(response.message);
                         }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("發生錯誤：" + xhr.status + " " + error);
                     }
                 });
             });
@@ -141,6 +160,9 @@
                             } else {
                                 alert(response.message);
                             }
+                        },
+                        error: function (xhr, status, error) {
+                            alert("刪除失敗：" + xhr.status + " " + error);
                         }
                     });
                 }

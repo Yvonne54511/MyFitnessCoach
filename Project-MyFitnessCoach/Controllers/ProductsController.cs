@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Project_MyFitnessCoach.Models.DTOs;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.ViewModels;
 
 namespace Project_MyFitnessCoach.Controllers
 {
+	
 	public class ProductsController : Controller
 	{
 		private readonly ProductService _service;
@@ -19,7 +21,8 @@ namespace Project_MyFitnessCoach.Controllers
             _environment = environment;
 		}
 
-		public IActionResult Index(string? name, int? categoryId)
+        [Function("edit_ProductItems")]
+        public IActionResult Index(string? name, int? categoryId)
 		{
 			var products = _service.GetAllProducts(name, categoryId)
 				.Select(p => p.ToViewModel())

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Project_MyFitnessCoach.Models.Dtos;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Models.ViewModels;
 using Project_MyFitnessCoach.Repositories;

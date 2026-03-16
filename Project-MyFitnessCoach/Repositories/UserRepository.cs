@@ -5,16 +5,32 @@ namespace Project_MyFitnessCoach.Repositories
 {
     public interface IUserRepository
     {
-        IEnumerable<User> GetAllUsers();
-        User GetUserById(int id);
-        User GetUserByEmail(string email);
-        User GetUserByConfirmCode(string code);
-        void CreateUser(User user, IEnumerable<int> roleIds);
-        void UpdateUser(User user, IEnumerable<int> roleIds);
-        void DeleteUser(int id);
-        IEnumerable<Role> GetAllRoles();
-        void UpdateUserActivation(int id, bool isActive);
-        bool AccountExists(string account);
+        Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<User?> GetUserByIdAsync(int id);
+        Task<User?> GetUserByEmailAsync(string email);
+        Task<User?> GetUserByConfirmCodeAsync(string code);
+        Task CreateUserAsync(User user, IEnumerable<int> roleIds);
+        Task UpdateUserAsync(User user, IEnumerable<int> roleIds);
+        Task DeleteUserAsync(int id);
+        Task<IEnumerable<Role>> GetAllRolesAsync();
+        Task<IEnumerable<Role>> GetAllRolesIncludeInactiveAsync();
+        Task CreateRoleAsync(Role role);
+        Task UpdateRoleAsync(Role role);
+        Task DeleteRoleAsync(int id);
+
+        Task<IEnumerable<Function>> GetAllFunctionsAsync();
+        Task CreateFunctionAsync(Function function);
+        Task UpdateFunctionAsync(Function function);
+        Task DeleteFunctionAsync(int id);
+
+        Task<IEnumerable<RoleFunction>> GetRoleFunctionsAsync();
+        Task AddRoleFunctionAsync(int roleId, int functionId);
+        Task RemoveRoleFunctionAsync(int roleId, int functionId);
+        Task UpdateRoleFunctionStatusAsync(int roleId, int functionId, bool isEnabled);
+
+        Task UpdateUserActivationAsync(int id, bool isActive);
+        Task<bool> AccountExistsAsync(string account);
+        Task SaveChangesAsync();
     }
 
     public class UserRepository : IUserRepository
@@ -26,36 +42,37 @@ namespace Project_MyFitnessCoach.Repositories
             _context = context;
         }
 
-        public IEnumerable<User> GetAllUsers()
+        // Existing User Methods... (skipped for brevity in replace, but kept in file)
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
-            return _context.Users
+            return await _context.Users
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
-                .ToList();
+                .ToListAsync();
         }
 
-        public User GetUserById(int id)
+        public async Task<User?> GetUserByIdAsync(int id)
         {
-            return _context.Users
+            return await _context.Users
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
-                .FirstOrDefault(u => u.Id == id);
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public User GetUserByEmail(string email)
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return _context.Users.FirstOrDefault(u => u.Email == email);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public User GetUserByConfirmCode(string code)
+        public async Task<User?> GetUserByConfirmCodeAsync(string code)
         {
-            return _context.Users.FirstOrDefault(u => u.NewMemberConfirmCode == code);
+            return await _context.Users.FirstOrDefaultAsync(u => u.NewMemberConfirmCode == code);
         }
 
-        public void CreateUser(User user, IEnumerable<int> roleIds)
+        public async Task CreateUserAsync(User user, IEnumerable<int> roleIds)
         {
             _context.Users.Add(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             if (roleIds != null)
             {
@@ -63,15 +80,15 @@ namespace Project_MyFitnessCoach.Repositories
                 {
                     _context.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = roleId });
                 }
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
-        public void UpdateUser(User user, IEnumerable<int> roleIds)
+        public async Task UpdateUserAsync(User user, IEnumerable<int> roleIds)
         {
-            var existingUser = _context.Users
+            var existingUser = await _context.Users
                 .Include(u => u.UserRoles)
-                .FirstOrDefault(u => u.Id == user.Id);
+                .FirstOrDefaultAsync(u => u.Id == user.Id);
 
             if (existingUser != null)
             {
@@ -98,42 +115,154 @@ namespace Project_MyFitnessCoach.Repositories
                     }
                 }
 
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
-        public void DeleteUser(int id)
+        public async Task DeleteUserAsync(int id)
         {
-            var user = _context.Users.Find(id);
+            var user = await _context.Users.FindAsync(id);
             if (user != null)
             {
-                // Due to foreign key constraints, we might want to soft delete or handle cascade
-                // For now, let's just delete the user roles and then the user
                 var roles = _context.UserRoles.Where(ur => ur.UserId == id);
                 _context.UserRoles.RemoveRange(roles);
                 _context.Users.Remove(user);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
-        public IEnumerable<Role> GetAllRoles()
+        // Role Methods
+        public async Task<IEnumerable<Role>> GetAllRolesAsync()
         {
-            return _context.Roles.Where(r => r.IsActive).ToList();
+            return await _context.Roles.Where(r => r.IsActive).ToListAsync();
         }
 
-        public void UpdateUserActivation(int id, bool isActive)
+        public async Task<IEnumerable<Role>> GetAllRolesIncludeInactiveAsync()
         {
-            var user = _context.Users.Find(id);
+            return await _context.Roles.ToListAsync();
+        }
+
+        public async Task CreateRoleAsync(Role role)
+        {
+            _context.Roles.Add(role);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateRoleAsync(Role role)
+        {
+            var existing = await _context.Roles.FindAsync(role.Id);
+            if (existing != null)
+            {
+                existing.RoleName = role.RoleName;
+                existing.Description = role.Description;
+                existing.IsActive = role.IsActive;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task DeleteRoleAsync(int id)
+        {
+            var role = await _context.Roles.FindAsync(id);
+            if (role != null)
+            {
+                _context.Roles.Remove(role);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        // Function Methods
+        public async Task<IEnumerable<Function>> GetAllFunctionsAsync()
+        {
+            return await _context.Functions.ToListAsync();
+        }
+
+        public async Task CreateFunctionAsync(Function function)
+        {
+            _context.Functions.Add(function);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateFunctionAsync(Function function)
+        {
+            var existing = await _context.Functions.FindAsync(function.Id);
+            if (existing != null)
+            {
+                existing.FunctionName = function.FunctionName;
+                existing.Description = function.Description;
+                existing.api_path = function.api_path;
+                existing.IsActive = function.IsActive;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task DeleteFunctionAsync(int id)
+        {
+            var function = await _context.Functions.FindAsync(id);
+            if (function != null)
+            {
+                _context.Functions.Remove(function);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        // RoleFunction Methods
+        public async Task<IEnumerable<RoleFunction>> GetRoleFunctionsAsync()
+        {
+            return await _context.RoleFunctions
+                .Include(rf => rf.Role)
+                .Include(rf => rf.Function)
+                .ToListAsync();
+        }
+
+        public async Task AddRoleFunctionAsync(int roleId, int functionId)
+        {
+            if (!await _context.RoleFunctions.AnyAsync(rf => rf.RoleId == roleId && rf.FunctionId == functionId))
+            {
+                _context.RoleFunctions.Add(new RoleFunction { RoleId = roleId, FunctionId = functionId });
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task RemoveRoleFunctionAsync(int roleId, int functionId)
+        {
+            var rf = await _context.RoleFunctions.FirstOrDefaultAsync(x => x.RoleId == roleId && x.FunctionId == functionId);
+            if (rf != null)
+            {
+                _context.RoleFunctions.Remove(rf);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task UpdateRoleFunctionStatusAsync(int roleId, int functionId, bool isEnabled)
+        {
+            if (isEnabled)
+            {
+                await AddRoleFunctionAsync(roleId, functionId);
+            }
+            else
+            {
+                await RemoveRoleFunctionAsync(roleId, functionId);
+            }
+        }
+
+        public async Task UpdateUserActivationAsync(int id, bool isActive)
+        {
+            var user = await _context.Users.FindAsync(id);
             if (user != null)
             {
                 user.IsActive = isActive;
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
         }
 
-        public bool AccountExists(string account)
+        public async Task<bool> AccountExistsAsync(string account)
         {
-            return _context.Users.Any(u => u.Account == account);
+            return await _context.Users.AnyAsync(u => u.Account == account);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

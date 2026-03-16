@@ -1,4 +1,4 @@
-namespace Project_MyFitnessCoach.Models.Dtos
+namespace Project_MyFitnessCoach.Models.DTOs
 {
     public class ShiftRecordDto
 	{   // 顯示講師自己的班表 (Instructor 模式)

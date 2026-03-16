@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
-using Project_MyFitnessCoach.Models.Services;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Models.ViewModel;
+using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Repositories;
 using Project_MyFitnessCoach.Services;
 
@@ -33,21 +35,24 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<ITopUpPlanRepository, TopUpPlanRepository>();
             builder.Services.AddScoped<TopUpPlanService>();
 
-            builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-            builder.Services.AddScoped<IAuthService, AuthService>();
+            // Permission Management
+            builder.Services.AddScoped<Project_MyFitnessCoach.Repositories.IRoleRepository, Project_MyFitnessCoach.Repositories.RoleRepository>();
+            builder.Services.AddScoped<Project_MyFitnessCoach.Repositories.IFunctionRepository, Project_MyFitnessCoach.Repositories.FunctionRepository>();
+            builder.Services.AddScoped<Project_MyFitnessCoach.Repositories.IRoleFunctionRepository, Project_MyFitnessCoach.Repositories.RoleFunctionRepository>();
+            builder.Services.AddScoped<PermissionService>();
+
             builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-            builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<BCryptPasswordHasher>();
+            //builder.Services.AddScoped<Microsoft.AspNetCore.Identity.IPasswordHasher<User>>(sp => sp.GetRequiredService<BCryptPasswordHasher>());
+			builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+			builder.Services.AddScoped<IMemberAccountService, MemberAccountService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
             builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
-
-            // 註冊 DbContext
-            builder.Services.AddDbContext<MyFitnessCoachDbContext>(option =>
-            {
-                option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-            });
+            builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
+            builder.Services.AddScoped<IInstructorService, InstructorService>();
 
 			// 註冊 ShiftRepository
 			builder.Services.AddScoped<IShiftRepository, ShiftRepository>();
@@ -63,10 +68,6 @@ namespace Project_MyFitnessCoach
 			// 註冊 BLL Service
 			builder.Services.AddScoped<ShiftService>();
 
-			// 註冊 LoginService
-			builder.Services.AddScoped<LoginService>();
-			// 註冊 LoginRepository（新增：介面與實作）
-			builder.Services.AddScoped<ILoginRepository, LoginRepository>();
 
             // 註冊 Review 模組
             builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
@@ -86,7 +87,7 @@ namespace Project_MyFitnessCoach
 				{
 					options.Cookie.Name = "MyFitnessCoach.Auth";
 					options.LoginPath = "/Account/Login";
-					options.AccessDeniedPath = "/Account/Login"; // 新增：權限不足時引導回登入頁
+					options.AccessDeniedPath = "/Home/Error/403"; // 修改：權限不足時導向自訂 403 頁面
 					options.Cookie.HttpOnly = true;
 					options.Cookie.SameSite = SameSiteMode.Lax; // 明確設定為 Lax
 					options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // 根據請求自動判斷 (HTTP 下不強制 Secure)
@@ -98,9 +99,15 @@ namespace Project_MyFitnessCoach
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            else
+            {
+                // 開發環境也啟用自訂錯誤頁面以便測試，或者你可以保持原樣
+                app.UseExceptionHandler("/Home/Error");
+            }
+
+            app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
 
             app.UseHttpsRedirection();
             // Serve static files and ensure text-based assets include charset=utf-8
@@ -142,9 +149,9 @@ namespace Project_MyFitnessCoach
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Account}/{action=Login}/{id?}");
 
-            // --- Seed Admin User ---
+            /* --- Seed Admin User ---
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<MyFitnessCoachDbContext>();
@@ -152,7 +159,7 @@ namespace Project_MyFitnessCoach
                 // 如果 admin 帳號不存在，才進行建立
                 if (!db.Users.Any(u => u.Account == "admin"))
                 {
-                    var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<User>();
+                    var hasher = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.IPasswordHasher<User>>();
                     var adminUser = new User
                     {
                         Account = "admin",
@@ -182,7 +189,7 @@ namespace Project_MyFitnessCoach
                     }
                 }
             }
-            // -----------------------
+            */ 
 
             app.Run();
         }

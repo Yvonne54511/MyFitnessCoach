@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Project_MyFitnessCoach.Models.DTOs;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Models.Services;
 using Project_MyFitnessCoach.Models.ViewModels;
 
 namespace Project_MyFitnessCoach.Controllers
 {
+    
     public class TopUpPlansController : Controller
     {
         private readonly TopUpPlanService _service;
@@ -16,6 +18,7 @@ namespace Project_MyFitnessCoach.Controllers
             _environment = environment;
         }
 
+        [Function("edit_Plans")]
         public IActionResult Index()
         {
             var plans = _service.GetAllPlans()

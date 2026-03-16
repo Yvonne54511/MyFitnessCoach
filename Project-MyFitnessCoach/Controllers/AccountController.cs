@@ -1,19 +1,122 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.ViewModel;
+using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Services;
+using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IAccountService _accountService;
+        private readonly IMemberAccountService _accountService;
+        private readonly IWebHostEnvironment _environment;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IMemberAccountService accountService, IWebHostEnvironment environment)
         {
             _accountService = accountService;
+            _environment = environment;
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var result = await _accountService.ChangePasswordAsync(userId, model.OldPassword, model.NewPassword);
+            if (!result.IsSuccess)
+            {
+                ModelState.AddModelError(string.Empty, result.Message);
+                return View(model);
+            }
+
+            TempData["ChangePasswordSuccess"] = "密碼修改成功！";
+            return View();
+        }
+
+        [Authorize]
+        [Function("edit_IntructorDetails")]
+        [HttpGet]
+        public async Task<IActionResult> InstructorDetails()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var dto = await _accountService.GetInstructorDetailsAsync(userId);
+            if (dto == null)
+            {
+                return NotFound();
+            }
+
+            return View(dto);
+        }
+
+        [Authorize]
+        [Function("edit_IntructorDetails")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> InstructorDetails(InstructorDto dto, IFormFile? imageFile)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            dto.UserId = userId;
+
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                var wwwRootPath = _environment.WebRootPath;
+                var filePath = Path.Combine(wwwRootPath, "img", "instructors", fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(stream);
+                }
+
+                dto.ImageUrl = "/img/instructors/" + fileName;
+            }
+
+            var result = await _accountService.UpdateInstructorDetailsAsync(dto);
+            if (result.IsSuccess)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
+
+            return RedirectToAction(nameof(InstructorDetails));
         }
 
         [HttpGet]
@@ -39,8 +142,14 @@ namespace Project_MyFitnessCoach.Controllers
                 return View(model);
             }
 
-            var result = _accountService.Login(model);
-            if (!result.Success || result.User == null)
+            var dto = new LoginDto
+            {
+                Account = model.Account,
+                Password = model.Password
+            };
+
+            var result = await _accountService.LoginAsync(dto);
+            if (!result.IsSuccess || result.User == null)
             {
                 ModelState.AddModelError(string.Empty, result.Message);
                 return View(model);
@@ -49,34 +158,27 @@ namespace Project_MyFitnessCoach.Controllers
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, result.User.Id.ToString()),
-                new(ClaimTypes.Name, result.User.UserName),
-                new(ClaimTypes.Email, result.User.Email)
+                new(ClaimTypes.Name, result.User.UserName ?? result.User.Account),
+                new(ClaimTypes.Email, result.User.Email),
+                new("Account", result.User.Account)
             };
 
-            if (result.InstructorId.HasValue)
+            if (result.User.InstructorId.HasValue)
             {
-                claims.Add(new Claim("InstructorId", result.InstructorId.Value.ToString()));
+                claims.Add(new Claim("InstructorId", result.User.InstructorId.Value.ToString()));
             }
 
-            // 寫入角色 Claims
-            foreach (var role in result.Roles)
+            foreach (var role in result.User.Roles)
             {
-                string standardizedRole = role.Trim();
-                if (string.Equals(standardizedRole, "admin", StringComparison.OrdinalIgnoreCase)) 
-                    standardizedRole = "Admin";
-                else if (string.Equals(standardizedRole, "instructor", StringComparison.OrdinalIgnoreCase)) 
-                    standardizedRole = "Instructor";
-
-                claims.Add(new Claim(ClaimTypes.Role, standardizedRole));
+                claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            // 寫入功能權限 Claims (自定義類型 Permission)
-            foreach (var func in result.Functions)
+            foreach (var func in result.User.Functions)
             {
-                claims.Add(new Claim("Permission", func));
+                claims.Add(new Claim("Function", func));
             }
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme, ClaimTypes.Name, ClaimTypes.Role);
             var principal = new ClaimsPrincipal(identity);
 
             await HttpContext.SignInAsync(
@@ -93,16 +195,6 @@ namespace Project_MyFitnessCoach.Controllers
                 return Redirect(returnUrl);
             }
 
-            if (result.Roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
-            {
-                return RedirectToAction("AllShifts", "Shift");
-            }
-
-            if (result.Roles.Any(r => r.Equals("Instructor", StringComparison.OrdinalIgnoreCase)))
-            {
-                return RedirectToAction("Index", "Shift");
-            }
-
             return RedirectToAction("Index", "Dashboard");
         }
 
@@ -114,29 +206,37 @@ namespace Project_MyFitnessCoach.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ForgetPassword(ForgetPasswordViewModel model)
+        public async Task<IActionResult> ForgetPassword(ForgetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            var result = _accountService.CreateResetPasswordRequest(
+            var result = await _accountService.CreateResetPasswordRequestAsync(
                 model.Email,
                 code => Url.Action("ResetPassword", "Account", new { code }, Request.Scheme) ?? string.Empty);
+
+            if (!result.IsSuccess)
+            {
+                ModelState.AddModelError(string.Empty, result.Message);
+                return View(model);
+            }
 
             ViewBag.Email = result.Email;
             ViewBag.IsSent = true;
             ViewBag.EmailSent = result.EmailSent;
+            ViewBag.Message = result.Message;
             return View(model);
         }
 
+        [AllowAnonymous]
         [HttpGet]
-        public IActionResult ResetPassword(string code)
+        public async Task<IActionResult> ResetPassword(string code)
         {
-            if (string.IsNullOrWhiteSpace(code) || !_accountService.IsResetPasswordCodeValid(code))
+            if (string.IsNullOrWhiteSpace(code) || !await _accountService.IsResetPasswordCodeValidAsync(code))
             {
-                TempData["ResetPasswordError"] = "���]�K�X�s���L�ĩΤw�L��";
+                TempData["ResetPasswordError"] = "重設密碼連結無效 or 已過期";
                 return RedirectToAction(nameof(ForgetPassword));
             }
 
@@ -146,17 +246,25 @@ namespace Project_MyFitnessCoach.Controllers
             });
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ResetPassword(ResetPasswordViewModel model)
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            var result = _accountService.ResetPassword(model);
-            if (!result.Success)
+            var dto = new ResetPasswordDto
+            {
+                Code = model.Code,
+                Password = model.Password,
+                ConfirmPassword = model.ConfirmPassword
+            };
+
+            var result = await _accountService.ResetPasswordAsync(dto);
+            if (!result.IsSuccess)
             {
                 ModelState.AddModelError(string.Empty, result.Message);
                 return View(model);

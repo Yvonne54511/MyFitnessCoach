@@ -1,118 +1,174 @@
 using Microsoft.AspNetCore.Identity;
+using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Models.EfModels;
-using Project_MyFitnessCoach.Models.ViewModel;
 using Project_MyFitnessCoach.Repositories;
+using System.Threading.Tasks;
 
 namespace Project_MyFitnessCoach.Services
 {
-    public interface IAccountService
+    public interface IMemberAccountService
     {
-        (bool Success, string Message, User? User, List<string> Roles, List<string> Functions, int? InstructorId) Login(LoginViewModel model);
-        (bool Success, string Email, bool EmailSent) CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory);
-        (bool Success, string Message) ResetPassword(ResetPasswordViewModel model);
-        bool IsResetPasswordCodeValid(string code);
+        Task<LoginResultDto> LoginAsync(LoginDto dto);
+        Task<ResetPasswordRequestDto> CreateResetPasswordRequestAsync(string email, Func<string, string> resetUrlFactory);
+        Task<AccountResultDto> ResetPasswordAsync(ResetPasswordDto dto);
+        Task<bool> IsResetPasswordCodeValidAsync(string code);
+        Task<AccountResultDto> ChangePasswordAsync(int userId, string oldPassword, string newPassword);
+
+        Task<InstructorDto?> GetInstructorDetailsAsync(int userId);
+        Task<AccountResultDto> UpdateInstructorDetailsAsync(InstructorDto dto);
     }
 
-    public class AccountService : IAccountService
+    public class MemberAccountService : IMemberAccountService
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IEmailService _emailService;
-        private readonly PasswordHasher<User> _passwordHasher;
-        private readonly ILogger<AccountService> _logger;
+        private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly ILogger<MemberAccountService> _logger;
 
-        public AccountService(
+        public MemberAccountService(
             IAccountRepository accountRepository,
             IEmailService emailService,
-            ILogger<AccountService> logger)
+            ILogger<MemberAccountService> logger,
+            IPasswordHasher<User> passwordHasher)
         {
             _accountRepository = accountRepository;
             _emailService = emailService;
             _logger = logger;
-            _passwordHasher = new PasswordHasher<User>();
+            _passwordHasher = passwordHasher;
         }
 
-        public (bool Success, string Message, User? User, List<string> Roles, List<string> Functions, int? InstructorId) Login(LoginViewModel model)
+        public async Task<InstructorDto?> GetInstructorDetailsAsync(int userId)
         {
-            var user = _accountRepository.GetByAccount(model.Account);
+            var user = await _accountRepository.GetByIdAsync(userId);
+            if (user == null) return null;
+
+            var instructor = await _accountRepository.GetInstructorByUserIdAsync(userId);
+            return new InstructorDto
+            {
+                UserId = user.Id,
+                UserName = user.UserName ?? user.Account,
+                ImageUrl = instructor?.ImageUrl ?? string.Empty,
+                Description = instructor?.Description ?? string.Empty,
+                HourWage = instructor?.HourWage ?? 0
+            };
+        }
+
+        public async Task<AccountResultDto> UpdateInstructorDetailsAsync(InstructorDto dto)
+        {
+            var instructor = await _accountRepository.GetInstructorByUserIdAsync(dto.UserId);
+            if (instructor == null)
+            {
+                instructor = new Instructor
+                {
+                    UserId = dto.UserId,
+                    ImageUrl = dto.ImageUrl,
+                    Description = dto.Description,
+                    HourWage = dto.HourWage,
+                    IsActive = true
+                };
+                _accountRepository.AddInstructor(instructor);
+            }
+            else
+            {
+                instructor.ImageUrl = dto.ImageUrl;
+                instructor.Description = dto.Description;
+                instructor.HourWage = dto.HourWage;
+                _accountRepository.UpdateInstructor(instructor);
+            }
+
+            await _accountRepository.SaveChangesAsync();
+            return new AccountResultDto { IsSuccess = true, Message = "資料更新成功" };
+        }
+
+        public async Task<AccountResultDto> ChangePasswordAsync(int userId, string oldPassword, string newPassword)
+        {
+            var user = await _accountRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return new AccountResultDto { IsSuccess = false, Message = "使用者不存在" };
+            }
+
+            var verification = _passwordHasher.VerifyHashedPassword(user, user.HashedPassword, oldPassword);
+            if (verification == PasswordVerificationResult.Failed)
+            {
+                return new AccountResultDto { IsSuccess = false, Message = "目前密碼錯誤" };
+            }
+
+            user.HashedPassword = _passwordHasher.HashPassword(user, newPassword);
+            _accountRepository.Update(user);
+            await _accountRepository.SaveChangesAsync();
+
+            return new AccountResultDto { IsSuccess = true, Message = "密碼修改成功" };
+        }
+
+        public async Task<LoginResultDto> LoginAsync(LoginDto dto)
+        {
+            var user = await _accountRepository.GetByAccountAsync(dto.Account);
 
             if (user == null || string.IsNullOrWhiteSpace(user.HashedPassword))
             {
-                return (false, "帳號或密碼錯誤", null, new List<string>(), new List<string>(), null);
+                return new LoginResultDto { IsSuccess = false, Message = "帳號或密碼錯誤" };
             }
 
-            string dbPassword = user.HashedPassword.Trim();
-            string inputPassword = model.Password.Trim();
-            bool isPasswordCorrect = false;
-
-            // 1. 先嘗試明文比對
-            if (dbPassword == inputPassword)
+            var result = _passwordHasher.VerifyHashedPassword(user, user.HashedPassword, dto.Password);
+            if (result == PasswordVerificationResult.Failed)
             {
-                isPasswordCorrect = true;
-            }
-            // 2. 如果明文失敗，且看起來像是加密字串 (Base64)，則嘗試加密比對
-            else if (dbPassword.Length > 20) 
-            {
-                try
-                {
-                    var result = _passwordHasher.VerifyHashedPassword(user, dbPassword, inputPassword);
-                    if (result != PasswordVerificationResult.Failed)
-                    {
-                        isPasswordCorrect = true;
-                    }
-                }
-                catch
-                {
-                    // 如果加密比對報錯 (FormatException)，代表這不是正確的 Base64，忽略即可
-                }
-            }
-
-            if (!isPasswordCorrect)
-            {
-                return (false, "帳號或密碼錯誤", null, new List<string>(), new List<string>(), null);
+                return new LoginResultDto { IsSuccess = false, Message = "帳號或密碼錯誤" };
             }
 
             if (!user.IsConfirmed)
             {
-                return (false, "帳號尚未完成驗證程序", null, new List<string>(), new List<string>(), null);
+                return new LoginResultDto { IsSuccess = false, Message = "此帳號尚未完成驗證" };
             }
 
             if (!user.IsActive)
             {
-                return (false, "帳號停用中，請聯繫管理員", null, new List<string>(), new List<string>(), null);
+                return new LoginResultDto { IsSuccess = false, Message = "此帳號目前停用中，請洽管理員" };
             }
 
-            // 抓取角色
-            var roles = user.UserRoles?
-                .Where(ur => ur.Role != null)
-                .Select(ur => ur.Role.RoleName.Trim())
-                .ToList() ?? new List<string>();
+            var instructor = await _accountRepository.GetInstructorByUserIdAsync(user.Id);
 
-            // 抓取該角色對應的所有功能清單
-            var functions = user.UserRoles?
-                .Where(ur => ur.Role != null)
-                .SelectMany(ur => ur.Role.RoleFunctions)
-                .Where(rf => rf.Function != null)
-                .Select(rf => rf.Function.FunctionName.Trim())
-                .Distinct() // 去除重複功能
-                .ToList() ?? new List<string>();
-
-            int? instructorId = user.Instructors?.FirstOrDefault()?.Id;
-
-            return (true, "登入成功", user, roles, functions, instructorId);
+            return new LoginResultDto
+            {
+                IsSuccess = true,
+                Message = "登入成功",
+                User = new UserDto
+                {
+                    Id = user.Id,
+                    Account = user.Account,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    HashedPassword = user.HashedPassword,
+                    InstructorId = instructor?.Id,
+                    Roles = user.UserRoles.Select(ur => ur.Role.RoleName).ToList(),
+                    Functions = user.UserRoles
+                        .SelectMany(ur => ur.Role.RoleFunctions)
+                        .Select(rf => rf.Function.FunctionName)
+                        .Distinct()
+                        .ToList()
+                }
+            };
         }
 
-        public (bool Success, string Email, bool EmailSent) CreateResetPasswordRequest(string email, Func<string, string> resetUrlFactory)
+        public async Task<ResetPasswordRequestDto> CreateResetPasswordRequestAsync(string email, Func<string, string> resetUrlFactory)
         {
-            var user = _accountRepository.GetByEmail(email);
+            var user = await _accountRepository.GetByEmailAsync(email);
             if (user == null)
             {
-                return (true, email, false);
+                return new ResetPasswordRequestDto 
+                { 
+                    IsSuccess = false, 
+                    Email = email, 
+                    EmailSent = false,
+                    Message = "找不到帳號，請檢查電子郵件地址並再試一次"
+                };
             }
 
             user.ResetPasswordConfirmCode = Guid.NewGuid().ToString("N");
             user.ResetPasswordConfirmCodeExpiry = DateTime.Now.AddMinutes(30);
+            
             _accountRepository.Update(user);
-            _accountRepository.SaveChanges();
+            await _accountRepository.SaveChangesAsync();
 
             var resetUrl = resetUrlFactory(user.ResetPasswordConfirmCode);
             var emailSent = false;
@@ -126,38 +182,44 @@ namespace Project_MyFitnessCoach.Services
                 _logger.LogError(ex, "Failed to send reset password email to {Email}", user.Email);
             }
 
-            return (true, user.Email, emailSent);
+            return new ResetPasswordRequestDto
+            {
+                IsSuccess = emailSent,
+                Email = user.Email,
+                EmailSent = emailSent,
+                Message = emailSent ? "重設密碼信件已寄出" : "寄送失敗"
+            };
         }
 
-        public bool IsResetPasswordCodeValid(string code)
+        public async Task<bool> IsResetPasswordCodeValidAsync(string code)
         {
-            var user = _accountRepository.GetByResetPasswordCode(code);
+            var user = await _accountRepository.GetByResetPasswordCodeAsync(code);
             return user != null
                 && user.ResetPasswordConfirmCodeExpiry.HasValue
                 && user.ResetPasswordConfirmCodeExpiry.Value >= DateTime.Now;
         }
 
-        public (bool Success, string Message) ResetPassword(ResetPasswordViewModel model)
+        public async Task<AccountResultDto> ResetPasswordAsync(ResetPasswordDto dto)
         {
-            var user = _accountRepository.GetByResetPasswordCode(model.Code);
+            var user = await _accountRepository.GetByResetPasswordCodeAsync(dto.Code);
             if (user == null)
             {
-                return (false, "���]�K�X�s�����s�b");
+                return new AccountResultDto { IsSuccess = false, Message = "重設密碼連結不存在" };
             }
 
             if (!user.ResetPasswordConfirmCodeExpiry.HasValue || user.ResetPasswordConfirmCodeExpiry.Value < DateTime.Now)
             {
-                return (false, "���]�K�X�s���w���ġA�Э��s�ӽ�");
+                return new AccountResultDto { IsSuccess = false, Message = "重設密碼連結已過期，請重新申請" };
             }
 
-            user.HashedPassword = _passwordHasher.HashPassword(user, model.Password);
+            user.HashedPassword = _passwordHasher.HashPassword(user, dto.Password);
             user.ResetPasswordConfirmCode = null!;
             user.ResetPasswordConfirmCodeExpiry = null;
 
             _accountRepository.Update(user);
-            _accountRepository.SaveChanges();
+            await _accountRepository.SaveChangesAsync();
 
-            return (true, "�K�X�w���]�����A�Э��s�n�J");
+            return new AccountResultDto { IsSuccess = true, Message = "密碼已重設完成，請重新登入" };
         }
     }
 }
