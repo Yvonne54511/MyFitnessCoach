@@ -26,14 +26,23 @@
                         </div>
                         <div class="col-md-8">
                             <div class="mb-3">
-                                <label class="form-label">選擇使用者 (僅限具營養師角色者)</label>
-                                <select asp-for="UserId" class="form-control" required>
-                                    <option value="">請選擇一位使用者...</option>
-                                    @foreach (var user in (IEnumerable<Project_MyFitnessCoach.Models.DTOs.UserDto>)ViewBag.Users)
-                                    {
-                                        <option value="@user.Id">@user.UserName (@user.Account)</option>
-                                    }
-                                </select>
+                                <label class="form-label">使用者</label>
+                                @if (ViewBag.FixedUserId != null)
+                                {
+                                    var fixedUser = ((IEnumerable<Project_MyFitnessCoach.Models.DTOs.UserDto>)ViewBag.Users).First();
+                                    <input type="hidden" name="UserId" value="@fixedUser.Id" />
+                                    <input type="text" class="form-control" value="@fixedUser.UserName (@fixedUser.Account)" readonly />
+                                }
+                                else
+                                {
+                                    <select asp-for="UserId" class="form-control" required>
+                                        <option value="">請選擇一位使用者...</option>
+                                        @foreach (var user in (IEnumerable<Project_MyFitnessCoach.Models.DTOs.UserDto>)ViewBag.Users)
+                                        {
+                                            <option value="@user.Id">@user.UserName (@user.Account)</option>
+                                        }
+                                    </select>
+                                }
                                 <span asp-validation-for="UserId" class="text-danger"></span>
                             </div>
                             <div class="mb-3">

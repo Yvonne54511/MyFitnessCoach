@@ -42,9 +42,27 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CreateInstructor()
+        public async Task<IActionResult> CreateInstructor(int? userId = null)
         {
-            ViewBag.Users = await _instructorService.GetAvailableUsersAsync();
+            var availableUsers = await _instructorService.GetAvailableUsersAsync();
+
+            if (userId.HasValue)
+            {
+                // 指定使用者：僅傳入該使用者，前端顯示為唯讀
+                var allStaff = await _userService.GetStaffListAsync();
+                var targetUser = allStaff.FirstOrDefault(u => u.Id == userId.Value);
+                if (targetUser != null)
+                {
+                    ViewBag.Users = new List<UserDto>
+                    {
+                        new UserDto { Id = targetUser.Id, UserName = targetUser.UserName, Account = targetUser.Account, Email = targetUser.Email }
+                    };
+                    ViewBag.FixedUserId = userId.Value;
+                    return PartialView("_CreateInstructorPartial", new InstructorDto { UserId = userId.Value });
+                }
+            }
+
+            ViewBag.Users = availableUsers;
             return PartialView("_CreateInstructorPartial", new InstructorDto());
         }
 

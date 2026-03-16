@@ -8,7 +8,7 @@
 
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">員工管理</h1>
+        <h1 class="h3 mb-0 text-gray-800">使用者帳號管理</h1>
     </div>
 
     <div class="card shadow mb-4">
@@ -199,9 +199,7 @@
             });
 
             function refreshList() {
-                $.get('@Url.Action("GetStaffList", "Staff")', function (html) {
-                    $('#staffListContainer').html(html);
-                });
+                location.reload();
             }
 
             // === 營養師操作 ===
@@ -262,9 +260,9 @@
                 });
             });
 
-            // 新增營養師
-            window.showCreateInstructorModal = function () {
-                $.get('@Url.Action("CreateInstructor", "Staff")', function (html) {
+            // 新增營養師（傳入指定 userId）
+            window.showCreateInstructorModal = function (userId) {
+                $.get('@Url.Action("CreateInstructor", "Staff")', { userId: userId }, function (html) {
                     $('#instructorModalContainer').html(html);
                     $('#createModal').modal('show');
                 }).fail(function (xhr) {

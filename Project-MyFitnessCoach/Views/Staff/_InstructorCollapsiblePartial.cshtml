@@ -21,6 +21,7 @@ else
                     <th>帳號</th>
                     <th>啟用狀態</th>
                     <th>帳號確認</th>
+                    <th>操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -53,9 +54,17 @@ else
                                 <span class="badge badge-secondary">待確認</span>
                             }
                         </td>
+                        <td>
+                            <button class="btn btn-warning btn-sm btn-edit mr-2" data-id="@item.Id" onclick="event.stopPropagation();">
+                                <i class="fas fa-edit"></i> 編輯
+                            </button>
+                            <button class="btn btn-danger btn-sm btn-delete" data-id="@item.Id" onclick="event.stopPropagation();">
+                                <i class="fas fa-trash"></i> 刪除
+                            </button>
+                        </td>
                     </tr>
                     <tr>
-                        <td colspan="5" class="p-0 border-0">
+                        <td colspan="6" class="p-0 border-0">
                             <div class="collapse" id="@collapseId">
                                 @if (detail != null)
                                 {
@@ -105,7 +114,7 @@ else
                                 {
                                     <div class="card card-body m-3 d-flex flex-row align-items-center justify-content-center">
                                         <span class="text-muted mr-3">查無營養師詳細資料</span>
-                                        <button class="btn btn-primary btn-sm" onclick="showCreateInstructorModal()">
+                                        <button class="btn btn-primary btn-sm" onclick="showCreateInstructorModal(@item.Id)">
                                             <i class="fas fa-plus"></i> 新增資料
                                         </button>
                                     </div>
