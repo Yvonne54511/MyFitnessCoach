@@ -12,6 +12,25 @@
         <li class="breadcrumb-item active">訂單 #@Model.Id</li>
     </ol>
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
     <div class="row">
         <!-- 儲值基本資訊 -->
         <div class="col-lg-4">
@@ -108,13 +127,24 @@
                 </div>
             </div>
             
-            <div class="mt-3">
-                <a asp-action="Index" class="btn btn-secondary shadow-sm">
+            <div class="mt-3 d-flex align-items-center">
+                <a asp-action="Index" class="btn btn-secondary shadow-sm mr-2">
                     <i class="fas fa-arrow-left me-1"></i> 返回列表
                 </a>
+                
+                @if (Model.Status != 3)
+                {
+                    <form asp-action="CancelOrder" method="post" onsubmit="return confirm('確定要取消此訂單嗎？\n如果是已完成訂單，系統將會從會員錢包扣除對應點數！')">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-danger shadow-sm mr-2">
+                            <i class="fas fa-trash-alt me-1"></i> 同意取消
+                        </button>
+                    </form>
+                }
+
                 @if (Model.Status == 0)
                 {
-                    <button class="btn btn-primary shadow-sm ml-2">
+                    <button class="btn btn-primary shadow-sm">
                         <i class="fas fa-check-circle me-1"></i> 確認收款
                     </button>
                 }
