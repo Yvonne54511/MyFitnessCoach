@@ -33,13 +33,14 @@ namespace Project_MyFitnessCoach.Controllers
             return View(viewModel);
         }
 
-        public async Task<IActionResult> GetSalaryDetail(int instructorId, int? year, int? month, double? bonusPool)
+        public async Task<IActionResult> GetSalaryDetail(int instructorId, int? year, int? month, double? monthlyBonusPool, double? annualBonusPool)
         {
             int queryYear = year ?? DateTime.Now.Year;
             int queryMonth = month ?? DateTime.Now.Month;
-            double pool = bonusPool ?? 0;
+            double mPool = monthlyBonusPool ?? 0;
+            double aPool = annualBonusPool ?? 0;
 
-            var detail = await _salaryService.GetSalaryDetailAsync(instructorId, queryYear, queryMonth, pool);
+            var detail = await _salaryService.GetSalaryDetailAsync(instructorId, queryYear, queryMonth, mPool, aPool);
             if (detail == null) return NotFound();
 
             return PartialView("_SalaryDetailPartial", detail);

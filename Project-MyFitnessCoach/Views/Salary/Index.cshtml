@@ -13,15 +13,22 @@
             <!-- Bonus Pool Setting -->
             <div class="card border-0 shadow-sm mb-4 bg-light">
                 <div class="card-body">
-                    <h6 class="text-secondary mb-3 small fw-bold text-uppercase"><i class="fas fa-coins me-2 text-warning"></i>全體獎金池設定</h6>
-                    <div class="input-group">
+                    <h6 class="text-secondary mb-3 small fw-bold text-uppercase"><i class="fas fa-coins me-2 text-warning"></i>月度獎金池設定</h6>
+                    <div class="input-group mb-3">
                         <span class="input-group-text bg-white border-end-0 text-muted">$</span>
-                        <input type="number" id="globalBonusPool" class="form-control border-start-0" value="0" min="0" step="1000">
-                        <button class="btn btn-outline-primary" type="button" onclick="triggerGlobalUpdate()" title="更新獎金池試算">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
+                        <input type="number" id="monthlyBonusPool" class="form-control border-start-0" value="0" min="0" step="1000">
                     </div>
-                    <small class="text-muted mt-2 d-block">* 修改後請點擊藍色按鈕更新試算結果</small>
+
+                    <h6 class="text-secondary mb-3 small fw-bold text-uppercase"><i class="fas fa-gift me-2 text-info"></i>年度獎金池設定</h6>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-white border-end-0 text-muted">$</span>
+                        <input type="number" id="annualBonusPool" class="form-control border-start-0" value="0" min="0" step="1000">
+                    </div>
+                    
+                    <button class="btn btn-primary w-100 shadow-sm mt-2" type="button" onclick="triggerGlobalUpdate()">
+                        <i class="fas fa-sync-alt me-2"></i>更新獎金池試算
+                    </button>
+                    <small class="text-muted mt-2 d-block text-center">* 修改獎金池後請點擊此按鈕同步數據</small>
                 </div>
             </div>
 
@@ -154,10 +161,13 @@
             $('#salary-detail-container').html('<div class="card h-100 border-0 shadow-sm d-flex align-items-center justify-content-center bg-light"><div class="text-center"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">載入中...</p></div></div>');
 
             // Fetch detail via AJAX
-            const poolValue = $('#globalBonusPool').val();
+            const monthlyPool = $('#monthlyBonusPool').val();
+            const annualPool = $('#annualBonusPool').val();
+            
             $.get('@Url.Action("GetSalaryDetail", "Salary")', { 
                 instructorId: instructorId,
-                bonusPool: poolValue
+                monthlyBonusPool: monthlyPool,
+                annualBonusPool: annualPool
             }, function (data) {
                 $('#salary-detail-container').html(data);
             }).fail(function () {

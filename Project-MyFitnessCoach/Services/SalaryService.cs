@@ -11,7 +11,7 @@ namespace Project_MyFitnessCoach.Services
     public interface ISalaryService
     {
         Task<List<SalaryInstructorViewModel>> GetInstructorsAsync();
-        Task<SalaryDetailViewModel> GetSalaryDetailAsync(int instructorId, int year, int month, double bonusPool = 0);
+        Task<SalaryDetailViewModel> GetSalaryDetailAsync(int instructorId, int year, int month, double monthlyPool = 0, double annualPool = 0);
         Task<SalaryRankingsViewModel> GetRankingsAsync();
     }
 
@@ -87,7 +87,7 @@ namespace Project_MyFitnessCoach.Services
                 .ToListAsync();
         }
 
-        public async Task<SalaryDetailViewModel> GetSalaryDetailAsync(int instructorId, int year, int month, double bonusPool = 0)
+        public async Task<SalaryDetailViewModel> GetSalaryDetailAsync(int instructorId, int year, int month, double monthlyPool = 0, double annualPool = 0)
         {
             var instructor = await _context.Instructors
                 .Include(i => i.User)
@@ -99,7 +99,7 @@ namespace Project_MyFitnessCoach.Services
             var endDate = startDate.AddMonths(1).AddDays(-1);
             var today = DateOnly.FromDateTime(DateTime.Today);
 
-            // 1. Get filtered shifts (only booked and finished) for base salary
+            // 1. Get filtered shifts
             var shifts = await _context.Shifts
                 .Where(s => s.InstructorId == instructorId &&
                             s.ScheduleDate >= startDate &&
@@ -116,37 +116,51 @@ namespace Project_MyFitnessCoach.Services
                 })
                 .ToListAsync();
 
-            // 2. Performance Metrics Calculation
-            // Booking Count: All booked sessions in this month
+            // 2. Performance Metrics Calculation (Monthly)
             int bookingCount = await _context.Shifts
                 .CountAsync(s => s.InstructorId == instructorId && s.IsBooked && s.ScheduleDate >= startDate && s.ScheduleDate <= endDate);
-
-            // Average Rating: All ratings in this month
             var reviews = _context.Reviews
                 .Where(r => r.InstructorId == instructorId && !r.IsBanned && r.CreatedAt.Year == year && r.CreatedAt.Month == month);
-            
             double avgRating = await reviews.AnyAsync() ? await reviews.AverageAsync(r => r.Rating) : 0;
-
-            // Positive Review Count: Rating >= 4 in this month
             int positiveCount = await reviews.CountAsync(r => r.Rating >= 4);
 
-            // 3. Calculate Global Total Score for all instructors to get proportion
-            // We consider all active instructors for the bonus pool
+            // 2.1 Performance Metrics Calculation (Annual)
+            int annualBookingCount = await _context.Shifts
+                .CountAsync(s => s.InstructorId == instructorId && s.IsBooked && s.ScheduleDate.Year == year);
+            var annualReviews = _context.Reviews
+                .Where(r => r.InstructorId == instructorId && !r.IsBanned && r.CreatedAt.Year == year);
+            double annualAvgRating = await annualReviews.AnyAsync() ? await annualReviews.AverageAsync(r => r.Rating) : 0;
+            int annualPositiveCount = await annualReviews.CountAsync(r => r.Rating >= 4);
+
+            // 2.2 Monthly Trend
+            var monthlyTrends = new List<int>();
+            for (int m = 1; m <= 12; m++)
+            {
+                int count = await _context.Shifts
+                    .CountAsync(s => s.InstructorId == instructorId && s.IsBooked && s.ScheduleDate.Year == year && s.ScheduleDate.Month == m);
+                monthlyTrends.Add(count);
+            }
+
+            // 3. Global Scores Calculation
             var allInstructors = await _context.Instructors.Where(i => i.IsActive).Select(i => i.Id).ToListAsync();
             double globalTotalScore = 0;
+            double annualGlobalTotalScore = 0;
 
             foreach (var id in allInstructors)
             {
-                int bCount = await _context.Shifts
-                    .CountAsync(s => s.InstructorId == id && s.IsBooked && s.ScheduleDate >= startDate && s.ScheduleDate <= endDate);
-                
-                var rvs = _context.Reviews
-                    .Where(r => r.InstructorId == id && !r.IsBanned && r.CreatedAt.Year == year && r.CreatedAt.Month == month);
-                
+                // Monthly components
+                int bCount = await _context.Shifts.CountAsync(s => s.InstructorId == id && s.IsBooked && s.ScheduleDate >= startDate && s.ScheduleDate <= endDate);
+                var rvs = _context.Reviews.Where(r => r.InstructorId == id && !r.IsBanned && r.CreatedAt.Year == year && r.CreatedAt.Month == month);
                 double aRating = await rvs.AnyAsync() ? await rvs.AverageAsync(r => r.Rating) : 0;
                 int pCount = await rvs.CountAsync(r => r.Rating >= 4);
-
                 globalTotalScore += (bCount * 0.5) + (aRating * 0.3) + (pCount * 0.4);
+
+                // Annual components
+                int annual_bCount = await _context.Shifts.CountAsync(s => s.InstructorId == id && s.IsBooked && s.ScheduleDate.Year == year);
+                var annual_rvs = _context.Reviews.Where(r => r.InstructorId == id && !r.IsBanned && r.CreatedAt.Year == year);
+                double annual_aRating = await annual_rvs.AnyAsync() ? await annual_rvs.AverageAsync(r => r.Rating) : 0;
+                int annual_pCount = await annual_rvs.CountAsync(r => r.Rating >= 4);
+                annualGlobalTotalScore += (annual_bCount * 0.3) + (annual_aRating * 0.4) + (annual_pCount * 0.5);
             }
 
             var detail = new SalaryDetailViewModel
@@ -160,12 +174,18 @@ namespace Project_MyFitnessCoach.Services
                 BookingCount = bookingCount,
                 AverageRating = avgRating,
                 PositiveReviewCount = positiveCount,
+                AnnualBookingCount = annualBookingCount,
+                AnnualAverageRating = annualAvgRating,
+                AnnualPositiveReviewCount = annualPositiveCount,
+                MonthlyBookingTrend = monthlyTrends,
                 GlobalTotalScore = globalTotalScore,
-                BonusPool = bonusPool
+                AnnualGlobalTotalScore = annualGlobalTotalScore,
+                MonthlyBonusPool = monthlyPool,
+                AnnualBonusPool = annualPool
             };
 
-            // Set initial BonusAmount to SuggestedBonus
             detail.BonusAmount = Math.Round(detail.SuggestedBonus, 0);
+            detail.AnnualBonusAmount = Math.Round(detail.AnnualSuggestedBonus, 0);
 
             return detail;
         }
