@@ -1,0 +1,100 @@
+@model List<Project_MyFitnessCoach.Models.ViewModels.SalaryInstructorViewModel>
+
+@{
+    ViewData["Title"] = "教練薪資錢包總覽";
+}
+
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>教練薪資錢包總覽</h5>
+            <a asp-action="Index" class="btn btn-sm btn-outline-light">
+                <i class="fas fa-calculator me-1"></i> 返回薪資試算
+            </a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">教練資訊</th>
+                            <th class="text-end">錢包餘額</th>
+                            <th class="text-center">最後更新</th>
+                            <th class="text-center">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;" alt="@item.Name">
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
+                                        }
+                                        <div>
+                                            <div class="fw-bold">@item.Name</div>
+                                            <small class="text-muted">ID: @item.Id</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end fw-bold text-primary pe-4">
+                                    $@item.WalletBalance.ToString("N0")
+                                </td>
+                                <td class="text-center text-muted small">
+                                    @(item.LastUpdated == DateTime.MinValue ? "無紀錄" : item.LastUpdated.ToString("yyyy/MM/dd HH:mm"))
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="loadSalaryDetail(@item.Id)" data-bs-toggle="modal" data-bs-target="#salaryDetailModal">
+                                        <i class="fas fa-search-dollar me-1"></i> 詳情
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Salary Detail Modal (Optional) -->
+<div class="modal fade" id="salaryDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title"><i class="fas fa-file-invoice-dollar me-2"></i>薪資績效詳情</h5>
+                <button type="button" class="btn-close" data-bs-target="#salaryDetailModal" data-bs-toggle="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-content">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2">載入中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadSalaryDetail(instructorId) {
+            $('#modal-content').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">載入中...</p></div>');
+            
+            $.get('@Url.Action("GetSalaryDetail", "Salary")', { 
+                instructorId: instructorId
+            }, function (data) {
+                $('#modal-content').html(data);
+            }).fail(function () {
+                $('#modal-content').html('<div class="alert alert-danger">載入失敗，請稍後再試。</div>');
+            });
+        }
+    </script>
+}

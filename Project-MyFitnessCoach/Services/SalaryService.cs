@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Models.ViewModels;
+using Project_MyFitnessCoach.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,12 +78,15 @@ namespace Project_MyFitnessCoach.Services
         {
             return await _context.Instructors
                 .Include(i => i.User)
+                .Include(i => i.InstructorWallet)
                 .Where(i => i.IsActive)
                 .Select(i => new SalaryInstructorViewModel
                 {
                     Id = i.Id,
                     Name = i.User.UserName,
-                    ImageUrl = i.ImageUrl
+                    ImageUrl = i.ImageUrl,
+                    WalletBalance = i.InstructorWallet != null ? i.InstructorWallet.CurrentBalance : 0,
+                    LastUpdated = i.InstructorWallet != null ? i.InstructorWallet.LastUpdated : DateTime.MinValue
                 })
                 .ToListAsync();
         }
@@ -116,21 +120,9 @@ namespace Project_MyFitnessCoach.Services
                 })
                 .ToListAsync();
 
-            // 2. Performance Metrics Calculation (Monthly)
-            int bookingCount = await _context.Shifts
-                .CountAsync(s => s.InstructorId == instructorId && s.IsBooked && s.ScheduleDate >= startDate && s.ScheduleDate <= endDate);
-            var reviews = _context.Reviews
-                .Where(r => r.InstructorId == instructorId && !r.IsBanned && r.CreatedAt.Year == year && r.CreatedAt.Month == month);
-            double avgRating = await reviews.AnyAsync() ? await reviews.AverageAsync(r => r.Rating) : 0;
-            int positiveCount = await reviews.CountAsync(r => r.Rating >= 4);
-
-            // 2.1 Performance Metrics Calculation (Annual)
-            int annualBookingCount = await _context.Shifts
-                .CountAsync(s => s.InstructorId == instructorId && s.IsBooked && s.ScheduleDate.Year == year);
-            var annualReviews = _context.Reviews
-                .Where(r => r.InstructorId == instructorId && !r.IsBanned && r.CreatedAt.Year == year);
-            double annualAvgRating = await annualReviews.AnyAsync() ? await annualReviews.AverageAsync(r => r.Rating) : 0;
-            int annualPositiveCount = await annualReviews.CountAsync(r => r.Rating >= 4);
+            // 2. Performance Metrics Calculation using Enum helper
+            var monthlyMetrics = await GetPeriodMetricsAsync(instructorId, year, month, SalaryPeriod.Monthly);
+            var annualMetrics = await GetPeriodMetricsAsync(instructorId, year, month, SalaryPeriod.Annual);
 
             // 2.2 Monthly Trend
             var monthlyTrends = new List<int>();
@@ -141,26 +133,18 @@ namespace Project_MyFitnessCoach.Services
                 monthlyTrends.Add(count);
             }
 
-            // 3. Global Scores Calculation
+            // 3. Global Scores Calculation using Enum helper
             var allInstructors = await _context.Instructors.Where(i => i.IsActive).Select(i => i.Id).ToListAsync();
             double globalTotalScore = 0;
             double annualGlobalTotalScore = 0;
 
             foreach (var id in allInstructors)
             {
-                // Monthly components
-                int bCount = await _context.Shifts.CountAsync(s => s.InstructorId == id && s.IsBooked && s.ScheduleDate >= startDate && s.ScheduleDate <= endDate);
-                var rvs = _context.Reviews.Where(r => r.InstructorId == id && !r.IsBanned && r.CreatedAt.Year == year && r.CreatedAt.Month == month);
-                double aRating = await rvs.AnyAsync() ? await rvs.AverageAsync(r => r.Rating) : 0;
-                int pCount = await rvs.CountAsync(r => r.Rating >= 4);
-                globalTotalScore += (bCount * 0.5) + (aRating * 0.3) + (pCount * 0.4);
+                var mMetrics = await GetPeriodMetricsAsync(id, year, month, SalaryPeriod.Monthly);
+                globalTotalScore += mMetrics.WeightedScore;
 
-                // Annual components
-                int annual_bCount = await _context.Shifts.CountAsync(s => s.InstructorId == id && s.IsBooked && s.ScheduleDate.Year == year);
-                var annual_rvs = _context.Reviews.Where(r => r.InstructorId == id && !r.IsBanned && r.CreatedAt.Year == year);
-                double annual_aRating = await annual_rvs.AnyAsync() ? await annual_rvs.AverageAsync(r => r.Rating) : 0;
-                int annual_pCount = await annual_rvs.CountAsync(r => r.Rating >= 4);
-                annualGlobalTotalScore += (annual_bCount * 0.3) + (annual_aRating * 0.4) + (annual_pCount * 0.5);
+                var aMetrics = await GetPeriodMetricsAsync(id, year, month, SalaryPeriod.Annual);
+                annualGlobalTotalScore += aMetrics.WeightedScore;
             }
 
             var detail = new SalaryDetailViewModel
@@ -171,12 +155,12 @@ namespace Project_MyFitnessCoach.Services
                 Year = year,
                 Month = month,
                 Shifts = shifts,
-                BookingCount = bookingCount,
-                AverageRating = avgRating,
-                PositiveReviewCount = positiveCount,
-                AnnualBookingCount = annualBookingCount,
-                AnnualAverageRating = annualAvgRating,
-                AnnualPositiveReviewCount = annualPositiveCount,
+                BookingCount = monthlyMetrics.BookingCount,
+                AverageRating = monthlyMetrics.AverageRating,
+                PositiveReviewCount = monthlyMetrics.PositiveReviewCount,
+                AnnualBookingCount = annualMetrics.BookingCount,
+                AnnualAverageRating = annualMetrics.AverageRating,
+                AnnualPositiveReviewCount = annualMetrics.PositiveReviewCount,
                 MonthlyBookingTrend = monthlyTrends,
                 GlobalTotalScore = globalTotalScore,
                 AnnualGlobalTotalScore = annualGlobalTotalScore,
@@ -188,6 +172,57 @@ namespace Project_MyFitnessCoach.Services
             detail.AnnualBonusAmount = Math.Round(detail.AnnualSuggestedBonus, 0);
 
             return detail;
+        }
+
+        private async Task<PeriodMetricsResult> GetPeriodMetricsAsync(int instructorId, int year, int month, SalaryPeriod period)
+        {
+            DateTime startDateTime, endDateTime;
+            DateOnly startDate, endDate;
+
+            if (period == SalaryPeriod.Monthly)
+            {
+                startDate = new DateOnly(year, month, 1);
+                endDate = startDate.AddMonths(1).AddDays(-1);
+                startDateTime = new DateTime(year, month, 1);
+                endDateTime = startDateTime.AddMonths(1).AddSeconds(-1);
+            }
+            else // Annual
+            {
+                startDate = new DateOnly(year, 1, 1);
+                endDate = new DateOnly(year, 12, 31);
+                startDateTime = new DateTime(year, 1, 1);
+                endDateTime = new DateTime(year, 12, 31, 23, 59, 59);
+            }
+
+            int bookingCount = await _context.Shifts
+                .CountAsync(s => s.InstructorId == instructorId && s.IsBooked && s.ScheduleDate >= startDate && s.ScheduleDate <= endDate);
+
+            var reviews = _context.Reviews
+                .Where(r => r.InstructorId == instructorId && !r.IsBanned && r.CreatedAt >= startDateTime && r.CreatedAt <= endDateTime);
+
+            double avgRating = await reviews.AnyAsync() ? await reviews.AverageAsync(r => r.Rating) : 0;
+            int positiveCount = await reviews.CountAsync(r => r.Rating >= 4);
+
+            // Apply different weights based on period
+            double weightedScore = (period == SalaryPeriod.Monthly)
+                ? (bookingCount * 0.5) + (avgRating * 0.3) + (positiveCount * 0.4)
+                : (bookingCount * 0.3) + (avgRating * 0.4) + (positiveCount * 0.5);
+
+            return new PeriodMetricsResult
+            {
+                BookingCount = bookingCount,
+                AverageRating = avgRating,
+                PositiveReviewCount = positiveCount,
+                WeightedScore = weightedScore
+            };
+        }
+
+        private class PeriodMetricsResult
+        {
+            public int BookingCount { get; set; }
+            public double AverageRating { get; set; }
+            public int PositiveReviewCount { get; set; }
+            public double WeightedScore { get; set; }
         }
     }
 }

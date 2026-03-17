@@ -23,6 +23,8 @@ public partial class MyFitnessCoachDbContext : DbContext
 
     public virtual DbSet<Instructor> Instructors { get; set; }
 
+    public virtual DbSet<InstructorWallet> InstructorWallets { get; set; }
+
     public virtual DbSet<KeyWord> KeyWords { get; set; }
 
     public virtual DbSet<Member> Members { get; set; }
@@ -154,6 +156,23 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Instructors_Users");
+        });
+
+        modelBuilder.Entity<InstructorWallet>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC073405EDBB");
+
+            entity.HasIndex(e => e.InstructorId, "UQ_InstructorWallets_Instructor").IsUnique();
+
+            entity.Property(e => e.CurrentBalance).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.LastUpdated)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.Instructor).WithOne(p => p.InstructorWallet)
+                .HasForeignKey<InstructorWallet>(d => d.InstructorId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_InstructorWallets_Instructors");
         });
 
         modelBuilder.Entity<KeyWord>(entity =>

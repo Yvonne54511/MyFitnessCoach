@@ -45,7 +45,7 @@
             <br />
 
             @{
-                
+
                 var userFunctions = User.FindAll("Function").Select(f => f.Value).ToList();
 
                 //人員管理
@@ -80,11 +80,12 @@
                 bool canEditCommentsAdmin = userFunctions.Contains("edit_Comments_admin");
                 bool canEditCommentsInstructor = userFunctions.Contains("edit_Comments_instructor");
                 bool canViewKeyWords = userFunctions.Contains("view_KeyWords");
-				bool canEditKeyWords = userFunctions.Contains("edit_KeyWords");
+                bool canEditKeyWords = userFunctions.Contains("edit_KeyWords");
                 bool canViewSalary = userFunctions.Contains("view_Salary");
                 bool canViewSalary2 = userFunctions.Contains("view_Salary2");
                 bool canEditViolations = userFunctions.Contains("edit_MemberViolations");
-                }
+                bool canViewWallet = userFunctions.Contains("view_MyWallet");
+            }
 
             <hr class="sidebar-divider">
 
@@ -158,9 +159,11 @@
                             @if (canViewSalary || canViewSalary2)
                             {
                                 <a class="collapse-item" asp-controller="Salary" asp-action="Index">營養師薪資核算</a>
+                                <a class="collapse-item" asp-controller="Salary" asp-action="AllWallets">教練錢包總覽</a>
                             }
                             @if (User.HasClaim(c => c.Type == "InstructorId"))
                             {
+                                <a class="collapse-item" asp-controller="Salary" asp-action="MyWallet">我的薪資錢包</a>
                                 <a class="collapse-item" asp-controller="Reservation" asp-action="Index">預約管理</a>
                             }
                         </div>

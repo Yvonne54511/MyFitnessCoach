@@ -1,0 +1,58 @@
+@model Project_MyFitnessCoach.Models.DTOs.InstructorWalletDto
+
+@{
+    ViewData["Title"] = "我的個人薪資錢包";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>我的薪資錢包</h5>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <div class="mb-4">
+                        <p class="text-muted mb-1">教練名稱</p>
+                        <h4 class="fw-bold">@Model.InstructorName</h4>
+                    </div>
+                    
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-auto">
+                            <div class="p-4 bg-light rounded-pill shadow-sm" style="min-width: 250px;">
+                                <p class="text-secondary small fw-bold text-uppercase mb-1">目前錢包餘額</p>
+                                <h1 class="display-5 fw-bold text-primary mb-0">
+                                    <span class="fs-4 text-muted me-1">$</span>@Model.CurrentBalance.ToString("N0")
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-muted small">
+                        <i class="fas fa-clock me-1"></i> 最後更新時間：@Model.LastUpdated.ToString("yyyy/MM/dd HH:mm:ss")
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 py-3 text-center">
+                    <button class="btn btn-outline-primary btn-sm me-2" onclick="location.reload()">
+                        <i class="fas fa-sync-alt me-1"></i> 重新整理
+                    </button>
+                    <a asp-action="Rating" asp-controller="Dashboard" class="btn btn-link btn-sm text-decoration-none">
+                        <i class="fas fa-tachometer-alt me-1"></i> 返回儀表板
+                    </a>
+                </div>
+            </div>
+
+            <!-- 薪資試算提示（擴充功能） -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-info-circle me-2 text-info"></i>薪資說明</h6>
+                    <ul class="text-muted small mb-0">
+                        <li class="mb-2">您的錢包餘額包含了課程鐘點費以及核發後的獎金。</li>
+                        <li class="mb-2">薪資將於每月固定時間結算並撥入您的錢包。</li>
+                        <li class="mb-0">如有任何薪資異議，請聯繫系統管理員。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
