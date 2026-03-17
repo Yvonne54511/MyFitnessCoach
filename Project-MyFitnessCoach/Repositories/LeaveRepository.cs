@@ -108,26 +108,29 @@ namespace Project_MyFitnessCoach.Repositories
                 .ToListAsync();
         }
 
-        // 步驟五：取得主管待審核的假單（Pending + CancelPending）
-        public async Task<List<LeaveRequest>> GetPendingByManagerIdAsync(int managerEmployeeId)
+        // 步驟五（5-B 更新）：取得待審核的假單（Pending + CancelPending）
+        // 一般員工：由 ManagerId 審核；主管（ManagerId=NULL）：由 WorkDelegateId 審核
+        public async Task<List<LeaveRequest>> GetPendingByManagerIdAsync(int reviewerEmployeeId)
         {
             return await _context.LeaveRequests
                 .Include(r => r.Employee).ThenInclude(e => e.User)
                 .Include(r => r.Employee).ThenInclude(e => e.Department)
                 .Include(r => r.LeaveType)
                 .Include(r => r.LeaveDelegate).ThenInclude(d => d.User)
-                .Where(r => r.Employee.ManagerId == managerEmployeeId
-                    && (r.Status == "Pending" || r.Status == "CancelPending"))
+                .Where(r => (r.Status == "Pending" || r.Status == "CancelPending")
+                    && (r.Employee.ManagerId == reviewerEmployeeId
+                        || (r.Employee.ManagerId == null && r.Employee.WorkDelegateId == reviewerEmployeeId)))
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
 
-        public async Task<int> GetPendingCountAsync(int managerEmployeeId)
+        public async Task<int> GetPendingCountAsync(int reviewerEmployeeId)
         {
             return await _context.LeaveRequests
                 .Include(r => r.Employee)
-                .CountAsync(r => r.Employee.ManagerId == managerEmployeeId
-                    && (r.Status == "Pending" || r.Status == "CancelPending"));
+                .CountAsync(r => (r.Status == "Pending" || r.Status == "CancelPending")
+                    && (r.Employee.ManagerId == reviewerEmployeeId
+                        || (r.Employee.ManagerId == null && r.Employee.WorkDelegateId == reviewerEmployeeId)));
         }
 
         // 步驟五：取得部門所有假單

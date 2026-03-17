@@ -51,6 +51,25 @@ namespace Project_MyFitnessCoach.Services
             };
         }
 
+        // ========== 步驟 5-B：審核權限判斷（共用）==========
+        // 一般員工：由 ManagerId 審核
+        // 主管（ManagerId=NULL）：由 WorkDelegateId（同部門另一位主管）審核
+        private bool CanReview(LeaveRequest request, int approverEmployeeId)
+        {
+            var emp = request.Employee;
+            if (emp == null) return false;
+
+            // 情境 1：一般員工，由直屬主管審核
+            if (emp.ManagerId == approverEmployeeId)
+                return true;
+
+            // 情境 2：主管本人（ManagerId 為 NULL），由職務代理人審核
+            if (emp.ManagerId == null && emp.WorkDelegateId == approverEmployeeId)
+                return true;
+
+            return false;
+        }
+
         // ========== 新假單審核 ==========
 
         public async Task<Result> ApproveAsync(int requestId, int approverEmployeeId)
@@ -62,8 +81,8 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "Pending")
                 return Result.Failure("此假單狀態無法核准");
 
-            if (request.Employee?.ManagerId != approverEmployeeId)
-                return Result.Failure("您不是此員工的主管，無權審核");
+            if (!CanReview(request, approverEmployeeId))
+                return Result.Failure("您無權審核此假單");
 
             request.Status = "Approved";
             request.ApprovedBy = approverEmployeeId;
@@ -86,8 +105,8 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "Pending")
                 return Result.Failure("此假單狀態無法駁回");
 
-            if (request.Employee?.ManagerId != approverEmployeeId)
-                return Result.Failure("您不是此員工的主管，無權審核");
+            if (!CanReview(request, approverEmployeeId))
+                return Result.Failure("您無權審核此假單");
 
             request.Status = "Rejected";
             request.ApprovedBy = approverEmployeeId;
@@ -124,8 +143,8 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "CancelPending")
                 return Result.Failure("此假單不是取消審核中狀態");
 
-            if (request.Employee?.ManagerId != approverEmployeeId)
-                return Result.Failure("您不是此員工的主管，無權審核");
+            if (!CanReview(request, approverEmployeeId))
+                return Result.Failure("您無權審核此假單");
 
             request.Status = "Cancelled";
             request.ApprovedBy = approverEmployeeId;
@@ -162,8 +181,8 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "CancelPending")
                 return Result.Failure("此假單不是取消審核中狀態");
 
-            if (request.Employee?.ManagerId != approverEmployeeId)
-                return Result.Failure("您不是此員工的主管，無權審核");
+            if (!CanReview(request, approverEmployeeId))
+                return Result.Failure("您無權審核此假單");
 
             // 恢復原狀態
             request.Status = request.OriginalStatus;
@@ -179,10 +198,10 @@ namespace Project_MyFitnessCoach.Services
 
         // ========== 取得單筆詳情（供 Detail 頁面使用）==========
 
-        public async Task<LeaveRequestDto> GetDetailAsync(int requestId, int managerEmployeeId)
+        public async Task<LeaveRequestDto> GetDetailAsync(int requestId, int reviewerEmployeeId)
         {
             var r = await _repo.GetByIdAsync(requestId);
-            if (r == null || r.Employee?.ManagerId != managerEmployeeId)
+            if (r == null || !CanReview(r, reviewerEmployeeId))
                 return null;
 
             return new LeaveRequestDto
