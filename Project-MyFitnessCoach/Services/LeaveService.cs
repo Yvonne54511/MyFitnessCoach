@@ -46,6 +46,7 @@ namespace Project_MyFitnessCoach.Services
                 LeaveTypeName = r.LeaveType?.Name,
                 StartDate = r.StartDate,
                 EndDate = r.EndDate,
+                HoursUsed = r.HoursUsed,
                 DaysUsed = r.DaysUsed,
                 Reason = r.Reason,
                 DelegateName = r.LeaveDelegate?.User?.UserName,
@@ -53,7 +54,11 @@ namespace Project_MyFitnessCoach.Services
                 CreatedAt = r.CreatedAt,
                 ApproverName = r.Approver?.User?.UserName,
                 ApprovedAt = r.ApprovedAt,
-                RejectReason = r.RejectReason
+                RejectReason = r.RejectReason,
+                OriginalStatus = r.OriginalStatus,
+                CancelRequestedAt = r.CancelRequestedAt,
+                CancelReason = r.CancelReason,
+                CanCancel = (r.Status == "Pending" || r.Status == "Approved")
             }).ToList();
 
             return new LeaveListViewModel
@@ -73,6 +78,7 @@ namespace Project_MyFitnessCoach.Services
                 .Include(e => e.User)
                 .Include(e => e.Department)
                 .Include(e => e.Manager).ThenInclude(m => m.User)
+                .Include(e => e.WorkDelegate).ThenInclude(d => d.User)
                 .FirstOrDefaultAsync(e => e.Id == employeeId);
 
             if (employee == null) return null;
@@ -99,6 +105,8 @@ namespace Project_MyFitnessCoach.Services
                 ManagerName = employee.Manager?.User?.UserName ?? "無",
                 StartDate = DateTime.Today,
                 EndDate = DateTime.Today,
+                DefaultDelegateId = employee.WorkDelegateId,
+                LeaveDelegateId = employee.WorkDelegateId,
                 LeaveTypeOptions = leaveTypes.Select(lt => new SelectListItem
                 {
                     Value = lt.Id.ToString(),
@@ -128,10 +136,18 @@ namespace Project_MyFitnessCoach.Services
             if (dto.StartDate > dto.EndDate)
                 return Result.Failure("開始日期不可晚於結束日期");
 
-            // 計算請假天數（排除週末）
-            decimal daysUsed = CalculateBusinessDays(dto.StartDate, dto.EndDate);
-            if (daysUsed <= 0)
-                return Result.Failure("請假天數必須大於 0");
+            // 4.2-2: 以小時為單位，計算天數
+            decimal hoursUsed = dto.HoursUsed;
+            if (hoursUsed <= 0)
+                return Result.Failure("請假小時數必須大於 0");
+
+            decimal daysUsed = Math.Round(hoursUsed / 8.0m, 1);
+
+            // 驗證小時數不超過日期區間工作日上限
+            int maxBusinessDays = (int)CalculateBusinessDays(dto.StartDate, dto.EndDate);
+            int maxHours = maxBusinessDays * 8;
+            if (hoursUsed > maxHours)
+                return Result.Failure($"請假小時數 ({hoursUsed}) 超出工作日上限 ({maxHours} 小時 / {maxBusinessDays} 天)");
 
             // 查詢假別
             var leaveType = await _db.LeaveTypes.FindAsync(dto.LeaveTypeId);
@@ -149,11 +165,10 @@ namespace Project_MyFitnessCoach.Services
             {
                 var remaining = balance.TotalDays - balance.UsedDays;
                 if (daysUsed > remaining)
-                    return Result.Failure($"「{leaveType.Name}」剩餘 {remaining} 天，不足以請 {daysUsed} 天");
+                    return Result.Failure($"「{leaveType.Name}」剩餘 {remaining:N1} 天，不足以請 {daysUsed:N1} 天");
             }
             else if (leaveType.DaysPerYear > 0)
             {
-                // 沒有餘額紀錄但有年度上限，建立一筆
                 balance = new LeaveBalance
                 {
                     EmployeeId = dto.EmployeeId,
@@ -167,7 +182,7 @@ namespace Project_MyFitnessCoach.Services
                 await _db.SaveChangesAsync();
 
                 if (daysUsed > leaveType.DaysPerYear)
-                    return Result.Failure($"「{leaveType.Name}」年度額度 {leaveType.DaysPerYear} 天，不足以請 {daysUsed} 天");
+                    return Result.Failure($"「{leaveType.Name}」年度額度 {leaveType.DaysPerYear} 天，不足以請 {daysUsed:N1} 天");
             }
 
             // 新增請假申請
@@ -177,6 +192,7 @@ namespace Project_MyFitnessCoach.Services
                 LeaveTypeId = dto.LeaveTypeId,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
+                HoursUsed = hoursUsed,
                 DaysUsed = daysUsed,
                 Reason = dto.Reason,
                 LeaveDelegateId = dto.LeaveDelegateId,
@@ -193,6 +209,58 @@ namespace Project_MyFitnessCoach.Services
                 balance.RemainingDays = balance.TotalDays - balance.UsedDays;
                 await _db.SaveChangesAsync();
             }
+
+            return Result.Success(null);
+        }
+
+        // ========== 4.2-1 代理人請假判斷 ==========
+
+        public async Task<List<SelectListItem>> GetAvailableDelegatesAsync(
+            int employeeId, int departmentId, DateTime startDate, DateTime endDate)
+        {
+            var onLeaveIds = await _repo.GetEmployeeIdsOnLeaveAsync(departmentId, startDate, endDate);
+
+            var colleagues = await _db.Employees
+                .Include(e => e.User)
+                .Where(e => e.DepartmentId == departmentId
+                    && e.Id != employeeId
+                    && e.IsActive
+                    && !onLeaveIds.Contains(e.Id))
+                .ToListAsync();
+
+            return colleagues.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = c.User?.UserName
+            }).ToList();
+        }
+
+        public async Task<bool> CheckDelegateOnLeaveAsync(int delegateId, DateTime startDate, DateTime endDate)
+        {
+            return await _repo.HasOverlappingLeaveAsync(delegateId, startDate, endDate);
+        }
+
+        // ========== 4.2-3 取消請假 ==========
+
+        public async Task<Result> RequestCancelAsync(int requestId, int employeeId, string cancelReason)
+        {
+            var request = await _repo.GetByIdAsync(requestId);
+            if (request == null)
+                return Result.Failure("找不到此假單");
+
+            if (request.EmployeeId != employeeId)
+                return Result.Failure("只能取消自己的假單");
+
+            if (request.Status != "Pending" && request.Status != "Approved")
+                return Result.Failure("此假單狀態無法取消");
+
+            // 保存原狀態，供駁回時恢復
+            request.OriginalStatus = request.Status;
+            request.Status = "CancelPending";
+            request.CancelRequestedAt = DateTime.Now;
+            request.CancelReason = cancelReason;
+
+            await _repo.UpdateAsync(request);
 
             return Result.Success(null);
         }

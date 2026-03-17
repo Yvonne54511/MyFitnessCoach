@@ -102,11 +102,26 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label asp-for="LeaveDelegateId" class="form-label"></label>
-                            <select asp-for="LeaveDelegateId" asp-items="Model.DelegateOptions" class="form-control">
+                            <select asp-for="LeaveDelegateId" class="form-control" id="delegateSelect">
+                                <option value="">-- 不指定 --</option>
+                                @foreach (var opt in Model.DelegateOptions.Where(o => !string.IsNullOrEmpty(o.Value)))
+                                {
+                                    <option value="@opt.Value" selected="@(opt.Value == Model.LeaveDelegateId?.ToString())">@opt.Text</option>
+                                }
                             </select>
                         </div>
                     </div>
                 </div>
+
+                <!-- 代理人警告 -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert alert-warning" id="delegateWarning" style="display:none;">
+                            <i class="bx bx-error"></i> <span id="delegateWarningText"></span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
@@ -124,7 +139,19 @@
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
                         <div class="alert alert-info w-100 py-2 mb-3" id="daysHint" style="display:none;">
-                            <i class="bx bx-info-circle"></i> 預估請假 <strong id="daysCount">0</strong> 個工作日
+                            <i class="bx bx-info-circle"></i> 預估請假 <strong id="daysCount">0</strong> 個工作日（上限 <strong id="maxHours">0</strong> 小時）
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="HoursUsed" class="form-label"></label>
+                            <input asp-for="HoursUsed" type="number" class="form-control" id="hoursUsed" min="1" step="1" placeholder="請輸入小時數" />
+                            <span asp-validation-for="HoursUsed" class="text-danger"></span>
+                            <small class="form-text text-muted" id="hoursToDay" style="display:none;">
+                                換算約 <strong id="hoursDayCalc">0</strong> 天
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -155,6 +182,9 @@
 @section scripts {
     <script>
         $(document).ready(function () {
+            var defaultDelegateId = @(Model.DefaultDelegateId?.ToString() ?? "null");
+
+            // 計算工作日與上限小時
             function calcDays() {
                 var start = $('#startDate').val();
                 var end = $('#endDate').val();
@@ -170,6 +200,7 @@
                             current.setDate(current.getDate() + 1);
                         }
                         $('#daysCount').text(count);
+                        $('#maxHours').text(count * 8);
                         $('#daysHint').show();
                     } else {
                         $('#daysHint').hide();
@@ -178,8 +209,80 @@
                     $('#daysHint').hide();
                 }
             }
-            $('#startDate, #endDate').on('change', calcDays);
-            calcDays();
+
+            // 小時換算天數
+            function calcHoursToDay() {
+                var hours = parseFloat($('#hoursUsed').val());
+                if (hours > 0) {
+                    var days = (hours / 8).toFixed(1);
+                    $('#hoursDayCalc').text(days);
+                    $('#hoursToDay').show();
+                } else {
+                    $('#hoursToDay').hide();
+                }
+            }
+
+            // 日期變更時：更新工作日、更新可用代理人、檢查預設代理人
+            function onDateChange() {
+                calcDays();
+
+                var start = $('#startDate').val();
+                var end = $('#endDate').val();
+                if (!start || !end) return;
+
+                var s = new Date(start);
+                var e = new Date(end);
+                if (e < s) return;
+
+                // AJAX：取得可用代理人（排除請假中的同事）
+                $.get('@Url.Action("GetAvailableDelegates", "ApplyLeave")', {
+                    startDate: start,
+                    endDate: end
+                }, function (data) {
+                    var select = $('#delegateSelect');
+                    var currentVal = select.val();
+                    select.empty();
+                    select.append('<option value="">-- 不指定 --</option>');
+                    $.each(data, function (i, item) {
+                        select.append('<option value="' + item.value + '">' + item.text + '</option>');
+                    });
+                    // 嘗試保留原選取值
+                    if (select.find('option[value="' + currentVal + '"]').length > 0) {
+                        select.val(currentVal);
+                    }
+                });
+
+                // AJAX：檢查預設代理人是否請假
+                if (defaultDelegateId) {
+                    $.get('@Url.Action("CheckDefaultDelegate", "ApplyLeave")', {
+                        startDate: start,
+                        endDate: end
+                    }, function (data) {
+                        if (data.hasDefault && data.onLeave) {
+                            $('#delegateWarningText').text(
+                                '您的預設代理人「' + data.delegateName + '」在此期間有請假，請另選代理人。'
+                            );
+                            $('#delegateWarning').show();
+                        } else {
+                            $('#delegateWarning').hide();
+                            // 如果預設代理人沒請假，自動帶入
+                            if (data.hasDefault && !data.onLeave) {
+                                var select = $('#delegateSelect');
+                                if (select.find('option[value="' + data.delegateId + '"]').length > 0) {
+                                    select.val(data.delegateId);
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            $('#startDate, #endDate').on('change', onDateChange);
+            $('#hoursUsed').on('input', calcHoursToDay);
+
+            // 初始化：計算工作日 + 檢查預設代理人
+            onDateChange();
+            calcHoursToDay();
         });
     </script>
 }

@@ -6,7 +6,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public int LeaveTypeId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public decimal DaysUsed { get; set; }
+        public decimal HoursUsed { get; set; }
         public string Reason { get; set; }
         public int? LeaveDelegateId { get; set; }
     }

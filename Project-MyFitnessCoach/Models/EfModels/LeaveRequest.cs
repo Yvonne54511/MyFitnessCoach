@@ -16,11 +16,15 @@ public partial class LeaveRequest
 
     public DateTime EndDate { get; set; }
 
+    public decimal HoursUsed { get; set; }
+
     public decimal DaysUsed { get; set; }
 
     public string Reason { get; set; }
 
     public string Status { get; set; }
+
+    public string OriginalStatus { get; set; }
 
     public int? LeaveDelegateId { get; set; }
 
@@ -29,6 +33,10 @@ public partial class LeaveRequest
     public DateTime? ApprovedAt { get; set; }
 
     public string RejectReason { get; set; }
+
+    public DateTime? CancelRequestedAt { get; set; }
+
+    public string CancelReason { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

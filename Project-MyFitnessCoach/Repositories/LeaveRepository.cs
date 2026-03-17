@@ -11,6 +11,10 @@ namespace Project_MyFitnessCoach.Repositories
         Task<LeaveStatsDto> GetStatsAsync(int employeeId, int year);
         Task AddAsync(LeaveRequest entity);
         Task UpdateAsync(LeaveRequest entity);
+
+        // 4.2-1 代理人請假判斷
+        Task<bool> HasOverlappingLeaveAsync(int employeeId, DateTime startDate, DateTime endDate);
+        Task<List<int>> GetEmployeeIdsOnLeaveAsync(int departmentId, DateTime startDate, DateTime endDate);
     }
 
     public class LeaveRepository : ILeaveRepository
@@ -60,7 +64,8 @@ namespace Project_MyFitnessCoach.Repositories
                     .Sum(r => r.DaysUsed),
                 PendingCount = requests.Count(r => r.Status == "Pending"),
                 ApprovedCount = requests.Count(r => r.Status == "Approved"),
-                RejectedCount = requests.Count(r => r.Status == "Rejected")
+                RejectedCount = requests.Count(r => r.Status == "Rejected"),
+                CancelPendingCount = requests.Count(r => r.Status == "CancelPending")
             };
         }
 
@@ -74,6 +79,28 @@ namespace Project_MyFitnessCoach.Repositories
         {
             _context.Entry(entity).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+        }
+
+        // 4.2-1: 檢查指定員工在日期區間內是否有重疊的假單（Pending 或 Approved）
+        public async Task<bool> HasOverlappingLeaveAsync(int employeeId, DateTime startDate, DateTime endDate)
+        {
+            return await _context.LeaveRequests
+                .AnyAsync(r => r.EmployeeId == employeeId
+                    && (r.Status == "Pending" || r.Status == "Approved")
+                    && r.StartDate < endDate && r.EndDate > startDate);
+        }
+
+        // 4.2-1: 取得同部門中在日期區間有 Pending/Approved 假單的所有 EmployeeId
+        public async Task<List<int>> GetEmployeeIdsOnLeaveAsync(int departmentId, DateTime startDate, DateTime endDate)
+        {
+            return await _context.LeaveRequests
+                .Include(r => r.Employee)
+                .Where(r => r.Employee.DepartmentId == departmentId
+                    && (r.Status == "Pending" || r.Status == "Approved")
+                    && r.StartDate < endDate && r.EndDate > startDate)
+                .Select(r => r.EmployeeId)
+                .Distinct()
+                .ToListAsync();
         }
     }
 }

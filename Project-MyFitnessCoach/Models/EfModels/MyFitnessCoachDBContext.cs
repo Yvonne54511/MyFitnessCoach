@@ -709,6 +709,8 @@ public partial class MyFitnessCoachDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
 
+            entity.Property(e => e.HoursUsed)
+                .HasColumnType("decimal(18, 1)");
             entity.Property(e => e.DaysUsed)
                 .HasColumnType("decimal(18, 1)");
             entity.Property(e => e.Reason)
@@ -716,7 +718,11 @@ public partial class MyFitnessCoachDbContext : DbContext
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(20);
+            entity.Property(e => e.OriginalStatus)
+                .HasMaxLength(20);
             entity.Property(e => e.RejectReason)
+                .HasMaxLength(300);
+            entity.Property(e => e.CancelReason)
                 .HasMaxLength(300);
 
             entity.HasOne(d => d.Employee).WithMany(p => p.LeaveRequests)

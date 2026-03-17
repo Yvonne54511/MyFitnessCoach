@@ -23,12 +23,22 @@
         @await Html.PartialAsync("_StatCard", ("待審核", Model.Stats.PendingCount.ToString(), "bx bx-time-five", "warning"))
         @await Html.PartialAsync("_StatCard", ("已核准", Model.Stats.ApprovedCount.ToString(), "bx bx-check-circle", "success"))
         @await Html.PartialAsync("_StatCard", ("已駁回", Model.Stats.RejectedCount.ToString(), "bx bx-x-circle", "danger"))
+        @await Html.PartialAsync("_StatCard", ("取消審核中", Model.Stats.CancelPendingCount.ToString(), "bx bx-revision", "info"))
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bx bx-check-circle mr-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bx bx-error-circle mr-2"></i>@TempData["ErrorMessage"]
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
@@ -46,6 +56,7 @@
                         <option value="Pending" selected="@(Model.StatusFilter == "Pending")">待審核</option>
                         <option value="Approved" selected="@(Model.StatusFilter == "Approved")">已核准</option>
                         <option value="Rejected" selected="@(Model.StatusFilter == "Rejected")">已駁回</option>
+                        <option value="CancelPending" selected="@(Model.StatusFilter == "CancelPending")">取消審核中</option>
                         <option value="Cancelled" selected="@(Model.StatusFilter == "Cancelled")">已取消</option>
                     </select>
                 </div>
@@ -76,7 +87,7 @@
                             <th>假別</th>
                             <th>開始日期</th>
                             <th>結束日期</th>
-                            <th>天數</th>
+                            <th>時數 / 天數</th>
                             <th>狀態</th>
                             <th>申請時間</th>
                             <th>操作</th>
@@ -92,7 +103,7 @@
                                     <td>@req.LeaveTypeName</td>
                                     <td>@req.StartDate.ToString("yyyy-MM-dd")</td>
                                     <td>@req.EndDate.ToString("yyyy-MM-dd")</td>
-                                    <td>@req.DaysUsed.ToString("0.#")</td>
+                                    <td>@req.HoursUsed.ToString("0.#") 小時 / @req.DaysUsed.ToString("0.#") 天</td>
                                     <td>
                                         @await Html.PartialAsync("_LeaveStatusBadge", req.Status)
                                     </td>
@@ -102,6 +113,13 @@
                                                 data-toggle="modal" data-target="#detailModal-@req.Id">
                                             <i class="bx bx-info-circle"></i> 詳情
                                         </button>
+                                        @if (req.CanCancel)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    data-toggle="modal" data-target="#cancelModal-@req.Id">
+                                                <i class="bx bx-x"></i> 取消
+                                            </button>
+                                        }
                                     </td>
                                 </tr>
                             }
@@ -143,7 +161,7 @@
                                     <tr><th class="text-muted">部門</th><td>@req.DepartmentName</td></tr>
                                     <tr><th class="text-muted">假別</th><td>@req.LeaveTypeName</td></tr>
                                     <tr><th class="text-muted">請假日期</th><td>@req.StartDate.ToString("yyyy-MM-dd") ~ @req.EndDate.ToString("yyyy-MM-dd")</td></tr>
-                                    <tr><th class="text-muted">天數</th><td>@req.DaysUsed.ToString("0.#") 天</td></tr>
+                                    <tr><th class="text-muted">時數</th><td>@req.HoursUsed.ToString("0.#") 小時（@req.DaysUsed.ToString("0.#") 天）</td></tr>
                                 </table>
                             </div>
                             <div class="col-md-6">
@@ -163,6 +181,11 @@
                                     {
                                         <tr><th class="text-muted text-danger">駁回原因</th><td class="text-danger">@req.RejectReason</td></tr>
                                     }
+                                    @if (req.Status == "CancelPending")
+                                    {
+                                        <tr><th class="text-muted text-warning">取消原因</th><td>@req.CancelReason</td></tr>
+                                        <tr><th class="text-muted">取消申請時間</th><td>@req.CancelRequestedAt?.ToString("yyyy-MM-dd HH:mm")</td></tr>
+                                    }
                                 </table>
                             </div>
                         </div>
@@ -173,5 +196,42 @@
                 </div>
             </div>
         </div>
+
+        @* 取消請假 Modal *@
+        @if (req.CanCancel)
+        {
+            <div class="modal fade" id="cancelModal-@req.Id" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <form asp-action="CancelRequest" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@req.Id" />
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bx bx-x-circle text-danger"></i> 取消請假申請 #@req.Id
+                                </h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>確定要取消此假單嗎？取消後需經主管審核。</p>
+                                <div class="form-group">
+                                    <label class="form-label">取消原因 <span class="text-danger">*</span></label>
+                                    <textarea name="cancelReason" class="form-control" rows="3"
+                                              placeholder="請輸入取消原因..." required></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">返回</button>
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bx bx-x"></i> 確認取消
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
     }
 }
