@@ -28,6 +28,7 @@ namespace Project_MyFitnessCoach.Controllers
         public async Task<IActionResult> Index()
         {
             var pointOrders = await _context.PointOrders
+                .Include(p => p.Member).ThenInclude(m => m.User)
                 .Include(p => p.PointsRecordDetails)
                 .Include(p => p.TopUpPlan)
                 .OrderByDescending(p => p.CreateAt)
