@@ -11,6 +11,7 @@ namespace Project_MyFitnessCoach.Repositories
     {
         Task<List<ProductOrderDto>> GetAllAsync(int? status, string searchString);
         Task<ProductOrderDto> GetByIdAsync(int id);
+        Task<List<ProductOrderDto>> GetByMemberIdAsync(int memberId);
         Task UpdateStatusAsync(int id, int newStatus);
         Task DeleteAsync(int id);
         bool Exists(int id);
@@ -19,6 +20,40 @@ namespace Project_MyFitnessCoach.Repositories
 
     public class ProductOrderRepository : IProductOrderRepository
     {
+        // ... (現有代碼)
+
+        public async Task<List<ProductOrderDto>> GetByMemberIdAsync(int memberId)
+        {
+            return await _context.ProductOrders
+                .Include(o => o.Member).ThenInclude(m => m.User)
+                .Include(o => o.ProductOrderDetails)
+                .Where(o => o.MemberId == memberId)
+                .OrderByDescending(o => o.CreateAt)
+                .Select(o => new ProductOrderDto
+                {
+                    Id = o.Id,
+                    MemberId = o.MemberId,
+                    MemberName = o.Member.User.UserName,
+                    CreateAt = o.CreateAt,
+                    OriginalAmount = o.OriginalAmount,
+                    DiscountAmount = o.DiscountAmount,
+                    Receiver = o.Receiver,
+                    Address = o.Address,
+                    Mobile = o.Mobile,
+                    Status = o.Status,
+                    Memo = o.Memo,
+                    OrderDetails = o.ProductOrderDetails.Select(d => new ProductOrderDetailDto
+                    {
+                        Id = d.Id,
+                        ProductName = d.ProductName,
+                        UnitPrice = d.UnitPrice,
+                        Qty = d.Qty,
+                        SubTotal = d.SubTotal,
+                        ImageUrl = d.ImageUrl
+                    }).ToList()
+                }).ToListAsync();
+        }
+
         private readonly MyFitnessCoachDbContext _context;
 
         public ProductOrderRepository(MyFitnessCoachDbContext context)

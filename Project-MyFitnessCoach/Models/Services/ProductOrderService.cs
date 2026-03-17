@@ -29,6 +29,11 @@ namespace Project_MyFitnessCoach.Models.Services
             return await _repository.GetByIdAsync(id);
         }
 
+        public async Task<List<ProductOrderDto>> GetByMemberIdAsync(int memberId)
+        {
+            return await _repository.GetByMemberIdAsync(memberId);
+        }
+
         public async Task UpdateStatusAsync(int id, int newStatus)
         {
             // 在此可以加入商業邏輯，例如：
