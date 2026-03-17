@@ -1,0 +1,97 @@
+@{
+    ViewData["Title"] = "營養師開放時段設定";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/date.css" asp-append-version="true">
+    <style>
+        .card-header { background-color: #f8f9fc; }
+        .text-primary { color: #858796 !important; }
+        .btn-primary { background-color: #858796; border-color: #858796; }
+        .btn-primary:hover { background-color: #717384; border-color: #6a6c7c; }
+        .alert-info { background-color: #f4f4f5; border-left: 4px solid #858796; color: #333; }
+        .font-weight-bold { font-weight: 700 !important; }
+        .text-gray-800 { color: #5a5c69 !important; }
+    </style>
+}
+
+<div class="container-fluid py-4" style="max-width: 1200px; margin: 0 auto;">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800 font-weight-bold">
+            <i class='bx bx-calendar-edit text-secondary mr-2'></i>@ViewData["Title"]
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-secondary"><i class='bx bx-info-circle'></i> 設定說明</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3 text-muted">系統會自動載入當前月份供您排班。已過期或已被預約的時段將無法修改。</p>
+                    <div class="alert alert-info d-flex align-items-center mb-0" role="alert">
+                        <i class='bx bx-shield-quarter mr-2 text-secondary' style="font-size: 1.2rem;"></i>
+                        <div>
+                            本月剩餘修改次數：<strong id="remaining-chances" class="text-secondary">--</strong> 次
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="app"></div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4 border-left-secondary">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-secondary"><i class='bx bx-list-check'></i> 已選擇的預約時段</h6>
+                </div>
+                <div class="card-body">
+                    <div id="selected-list" class="d-flex flex-wrap" style="gap: 8px;">
+                        <span class="text-secondary font-italic">尚未選擇任何時段</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-5 d-flex">
+        <button id="btn-submit" class="btn btn-secondary font-weight-bold px-4 py-2 shadow-sm mr-3" onclick="submitData(this)">
+            <i class='bx bx-check-circle mr-1'></i> 確認送出設定
+        </button>
+        <button id="btn-edit" class="btn btn-light border font-weight-bold px-4 py-2 shadow-sm" onclick="toggleEditMode()" style="display: none;">
+            <i class='bx bx-edit-alt mr-1'></i> 修改設定
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/zh-tw.js"></script>
+    <script>
+        // Labels provided by server-rendered page
+        window.__labels = {
+            monthSeparatorYear: '年',
+            monthSeparatorMonth: '月',
+            firstWeek: '第一週',
+            weekPrefix: '第',
+            weekSuffix: '週',
+            slots: ['(早)', '(午)', '(晚)'],
+            fullMonthOpen: '全月開放預約',
+            savedMark: '(已存)',
+            noneSelected: '尚未選擇任何時段',
+            savingText: '資料儲存中...',
+            saveSuccess: '成功！時段已寫入資料庫。',
+            saveFailed: '儲存失敗，請檢查網路狀態或伺服器。',
+            confirmSubmit: '確認送出設定',
+            readOnlyText: '已送出 (唯讀模式)',
+            noSelectionAlert: '請至少選擇一個預約時段，不可清空所有排班！',
+            confirmEmptySubmit: '你沒有選擇任何時段，這將會清空該月所有預約，確定嗎？'
+        };
+    </script>
+    <script src="~/js/Date/date.js" asp-append-version="true"></script>
+}

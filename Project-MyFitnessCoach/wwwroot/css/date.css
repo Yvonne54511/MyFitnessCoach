@@ -1,0 +1,76 @@
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.day-label {
+    min-width: 105px;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+}
+
+.day-row-hover {
+    transition: background-color 0.2s;
+}
+
+.day-row-hover:hover {
+    background-color: #f8f9fc;
+}
+
+.slot-container {
+    display: flex;
+    flex-wrap: wrap;
+    flex-grow: 1;
+}
+
+.slot-item-hover {
+    transition: all 0.2s;
+    margin-right: 10px;
+    border: 1px solid transparent;
+}
+
+.slot-item-hover:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+.month-control {
+    border-radius: 0.35rem;
+    border-left: 4px solid #858796;
+}
+
+.week-header {
+    font-size: 1.05rem;
+    padding: 10px 15px !important;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+#selected-list .badge {
+    transition: all 0.2s;
+    padding: 0.5em 0.8em;
+}
+
+#selected-list .badge:hover {
+    transform: scale(1.05);
+}
+
+/* 確保 checkbox 置中對齊並解決 BS4/BS5 衝突導致的文字覆蓋問題 */
+.form-check-input {
+    position: relative !important;
+    margin-top: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 8px !important;
+    cursor: pointer;
+    flex-shrink: 0;
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+/* 針對行動裝置優化 */
+@media (max-width: 576px) {
+    .slot-container {
+        flex-direction: column;
+    }
+    .day-label {
+        min-width: 90px;
+    }
+}

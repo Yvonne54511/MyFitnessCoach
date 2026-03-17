@@ -1,0 +1,384 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.Dtos.ReviewDto>
+@{
+    ViewData["Title"] = "所有評論管理 (管理員)";
+}
+
+@section Styles {
+    <!-- Custom styles for this page -->
+    <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+    <style>
+        /* MicroModal Base Styles */
+        .modal-micromodal { display: none; }
+        .modal-micromodal.is-open { display: block; }
+        .modal__overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); display: flex;
+            justify-content: center; align-items: center; z-index: 9999;
+        }
+        .modal__container {
+            background-color: #fff; padding: 25px; max-width: 500px;
+            max-height: 100vh; border-radius: 8px; overflow-y: auto;
+            box-sizing: border-box; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal__header { display: flex; justify-content: space-between; align-items: center; }
+        .modal__title { margin-top: 0; margin-bottom: 0; font-weight: 600; font-size: 1.25rem; color: #333; }
+        .modal__close { background: transparent; border: 0; cursor: pointer; font-size: 1.5rem; }
+        .modal__content { margin-top: 1.5rem; margin-bottom: 1.5rem; color: #555; line-height: 1.5; }
+        .modal__footer { display: flex; justify-content: flex-end; gap: 10px; }
+        
+        /* Animation */
+        @@keyframes mmfadein { from { opacity: 0; } to { opacity: 1; } }
+        @@keyframes mmslideIn { from { transform: translateY(15%); } to { transform: translateY(0); } }
+        .micromodal-slide[aria-hidden="false"] .modal__overlay { animation: mmfadein .3s cubic-bezier(0,0,.2,1); }
+        .micromodal-slide[aria-hidden="false"] .modal__container { animation: mmslideIn .3s cubic-bezier(0,0,.2,1); }
+
+        .row-banned { opacity: 0.6; background-color: #f8f9fc; }
+    </style>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="d-none" id="tempSuccessMessage">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["StrongWarning"] != null)
+{
+    <div class="d-none" id="tempStrongWarning">@TempData["StrongWarning"]</div>
+}
+
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary"><i class='bx bx-comment-detail'></i> @ViewData["Title"]</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="reviewDataTable" width="100%" cellspacing="0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>時間</th>
+                            <th>學員</th>
+                            <th>營養師</th>
+                            <th>評分</th>
+                            <th>內容</th>
+                            <th class="no-sort">詳細狀態</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="@(item.IsBanned ? "row-banned" : "")">
+                                <td data-order="@item.CreatedAt.Ticks">@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    @item.MemberName 
+                                    @if (!item.IsUserActive) { <span class="badge badge-danger"><i class='bx bx-user-x'></i> 已停權</span> }
+                                </td>
+                                <td>@item.InstructorName</td>
+                                <td class="text-warning" data-order="@item.Rating">
+                                    @for (int i = 0; i < item.Rating; i++) { <i class='bx bxs-star'></i> }
+                                    @for (int i = item.Rating; i < 5; i++) { <i class='bx bx-star text-muted'></i> }
+                                </td>
+                                <td>
+                                    @Html.Raw(item.Comment)
+                                    @if (item.IsBanned) { <span class="badge badge-secondary ml-1"><i class='bx bx-lock-alt'></i> 已封鎖</span> }
+                                </td>
+                                <td>
+                                    <button class="btn btn-info btn-sm detail-btn" 
+                                            data-id="@item.Id"
+                                            data-member="@item.MemberName"
+                                            data-instructor="@item.InstructorName"
+                                            data-rating="@item.Rating"
+                                            data-comment="@item.Comment"
+                                            data-report="@item.ReportMessage"
+                                            data-member-id="@item.MemberId"
+                                            data-active="@item.IsUserActive.ToString().ToLower()"
+                                            data-banned="@item.IsBanned.ToString().ToLower()"
+                                            data-warning-count="@item.WarningCount"
+                                            data-toggle="modal" 
+                                            data-target="#detailModal">
+                                        <i class='bx bx-list-ul'></i> 詳細內容
+                                        @if (!string.IsNullOrEmpty(item.ReportMessage))
+                                        {
+                                            <span class="badge badge-warning ml-1"><i class='bx bx-error-circle'></i> 有檢舉</span>
+                                        }
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Detail Modal (Bootstrap 4) -->
+<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailModalLabel"><i class='bx bx-info-circle'></i> 評論詳細資訊</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>學員：</strong> <span id="spanMember"></span></p>
+                        <p><strong>營養師：</strong> <span id="spanInstructor"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>評分：</strong> <span id="spanRating" class="text-warning"></span></p>
+                    </div>
+                </div>
+                <hr />
+                <h6>評論內容：</h6>
+                <p class="border p-3 bg-light rounded" id="pComment"></p>
+                
+                <div id="divBannedBadge" class="mt-2 d-none">
+                    <span class="badge badge-secondary p-2"><i class='bx bx-lock-alt'></i> 此留言已被管理員封鎖</span>
+                </div>
+
+                <div id="divReport" class="mt-3 d-none">
+                    <h6 class="text-danger"><i class='bx bx-error'></i> 營養師檢舉原因：</h6>
+                    <p class="border p-3 bg-light border-danger text-danger rounded" id="pReportMessage"></p>
+                </div>
+
+                <div id="divSuspendReason" class="mt-3 d-none">
+                    <hr />
+                    <h6 class="text-dark"><i class='bx bx-edit-alt'></i> 停權原因 (必填)：</h6>
+                    <textarea class="form-control border-dark" id="txtSuspendReason" rows="2" placeholder="請輸入停權該會員的原因..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form asp-action="BanReview" method="post" id="formBan" class="m-0">
+                    <input type="hidden" name="id" id="inputReviewId" />
+                    <button type="button" id="btnBanReview" class="btn btn-danger">
+                        <i class='bx bx-block'></i> 封鎖留言
+                    </button>
+                </form>
+                
+                <form asp-action="SuspendMember" method="post" id="formSuspend" class="m-0 ml-2">
+                    <input type="hidden" name="memberId" id="inputMemberId" />
+                    <input type="hidden" name="reason" id="inputSuspendReason" />
+                    <button type="button" id="btnSuspendConfirm" class="btn btn-dark">
+                        <i class='bx bx-user-x'></i> 停權學員
+                    </button>
+                </form>
+                
+                <button type="button" class="btn btn-secondary ml-2" data-dismiss="modal">
+                    <i class='bx bx-x'></i> 關閉
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MicroModal for Confirmation -->
+<div class="modal-micromodal micromodal-slide" id="modal-confirm" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-confirm-title">
+            <header class="modal__header">
+                <h2 class="modal__title" id="modal-confirm-title">確認操作</h2>
+                <button class="modal__close" aria-label="Close modal" data-micromodal-close>&times;</button>
+            </header>
+            <main class="modal__content" id="modal-confirm-content">
+                確定要執行此操作嗎？
+            </main>
+            <footer class="modal__footer">
+                <button class="btn btn-secondary" data-micromodal-close aria-label="Close this dialog window">取消</button>
+                <button class="btn btn-danger" id="modal-confirm-proceed">確定</button>
+            </footer>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Page level plugins -->
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize Notyf
+            var notyf = new Notyf({
+                duration: 3000,
+                position: { x: 'right', y: 'top' },
+                ripple: true,
+                types: [
+                    {
+                        type: 'warning',
+                        background: '#e67e22',
+                        icon: { className: 'bx bx-error', tagName: 'i', color: 'white' }
+                    },
+                    {
+                        type: 'error',
+                        background: '#e74c3c',
+                        icon: { className: 'bx bx-error-alt', tagName: 'i', color: 'white' }
+                    }
+                ]
+            });
+
+            // Initialize MicroModal
+            MicroModal.init();
+
+            // Display TempData messages
+            var successMsg = $('#tempSuccessMessage').text();
+            if (successMsg) notyf.success(successMsg);
+
+            var strongWarningMsg = $('#tempStrongWarning').text();
+            if (strongWarningMsg) {
+                notyf.open({
+                    type: 'error',
+                    duration: 10000,
+                    message: `<b>提醒！</b><br>${strongWarningMsg}`
+                });
+            }
+
+            // DataTable Initialization
+            $('#reviewDataTable').DataTable({
+                "order": [[ 0, "desc" ]],
+                "columnDefs": [
+                    { "orderable": false, "targets": 5 },
+                    { "className": "align-middle", "targets": "_all" }
+                ],
+                "language": {
+                    "search": "搜尋:",
+                    "paginate": { "previous": "上一頁", "next": "下一頁" },
+                    "info": "顯示第 _START_ 至 _END_ 項結果，共 _TOTAL_ 項"
+                }
+            });
+
+            // Use Event Delegation to support pagination
+            $(document).on('click', '.detail-btn', function() {
+                var btn = $(this);
+                $('#spanMember').text(btn.data('member'));
+                $('#spanInstructor').text(btn.data('instructor'));
+                $('#pComment').html(btn.attr('data-comment'));
+                $('#inputReviewId').val(btn.data('id'));
+                $('#inputMemberId').val(btn.data('member-id'));
+
+                // Store warning count and status for modal logic
+                $('#detailModal').data('warning-count', btn.data('warning-count'));
+                $('#detailModal').data('is-active', btn.attr('data-active'));
+                $('#detailModal').data('member-name', btn.data('member'));
+
+                var stars = '';
+                var rating = parseInt(btn.data('rating'));
+                for(var i=0; i<rating; i++) stars += '<i class="bx bxs-star"></i>';
+                for(var i=rating; i<5; i++) stars += '<i class="bx bx-star text-muted"></i>';
+                $('#spanRating').html(stars);
+
+                var reportMsg = btn.attr('data-report');
+                if (reportMsg && reportMsg.trim().length > 0) {
+                    $('#pReportMessage').text(reportMsg);
+                    $('#divReport').removeClass('d-none');
+                } else {
+                    $('#divReport').addClass('d-none');
+                }
+
+                // 封鎖狀態處理
+                if (btn.attr('data-banned') === "true") {
+                    $('#divBannedBadge').removeClass('d-none');
+                    $('#formBan').hide();
+                } else {
+                    $('#divBannedBadge').addClass('d-none');
+                    $('#formBan').show();
+                }
+
+                $('#divSuspendReason').addClass('d-none');
+                $('#txtSuspendReason').val('');
+                $('#btnSuspendConfirm').html("<i class='bx bx-user-x'></i> 停權學員").removeClass('btn-danger').addClass('btn-dark');
+                
+                if(btn.attr('data-active') === "true") {
+                    $('#formSuspend').show();
+                } else {
+                    $('#formSuspend').hide();
+                }
+            });
+
+            // Modal Close Event - Warning for 5+ violations (Passive close)
+            $('#detailModal').on('hidden.bs.modal', function () {
+                var warningCount = $(this).data('warning-count');
+                var isActive = $(this).data('is-active');
+                var memberName = $(this).data('member-name');
+
+                if (isActive === "true" && warningCount >= 5) {
+                    notyf.open({
+                        type: 'error',
+                        duration: 8000,
+                        message: `<b>強烈建議！</b>學員 <b>${memberName}</b> 違規次數已達 <b>${warningCount}</b> 次，應立即進行停權處理！`
+                    });
+                }
+            });
+
+            var pendingAction = null;
+
+            // Handle Suspend Confirmation
+            $('#btnSuspendConfirm').on('click', function() {
+                var $reasonDiv = $('#divSuspendReason');
+                if ($reasonDiv.hasClass('d-none')) {
+                    $reasonDiv.removeClass('d-none').hide().fadeIn();
+                    $('#txtSuspendReason').focus();
+                    $(this).html("<i class='bx bx-check'></i> 確認並停權").removeClass('btn-dark').addClass('btn-danger');
+                    return;
+                }
+
+                var reason = $('#txtSuspendReason').val().trim();
+                if (reason.length === 0) {
+                    notyf.open({ type: 'warning', message: '請先輸入停權原因。' });
+                    $('#txtSuspendReason').focus();
+                    return;
+                }
+                
+                $('#modal-confirm-title').text('確認停權學員');
+                $('#modal-confirm-content').text('您確定要停權此學員嗎？這將導致該學員無法預約相關課程。');
+                $('#modal-confirm-proceed').removeClass('btn-danger').addClass('btn-dark').text('確定停權');
+                
+                pendingAction = function() {
+                    $('#inputSuspendReason').val(reason);
+                    $('#formSuspend').submit();
+                };
+                MicroModal.show('modal-confirm');
+            });
+
+            // Handle Ban Confirmation (Added Pre-Action Warning)
+            $('#btnBanReview').on('click', function() {
+                var warningCount = $('#detailModal').data('warning-count');
+                var memberName = $('#detailModal').data('member-name');
+                
+                $('#modal-confirm-title').text('確定封鎖評論？');
+                var content = '<p>此動作將隱藏此留言，前端學員將無法再看到內容，且此動作也會增加該學員的一點違規次數。</p>';
+                
+                if (warningCount >= 5) {
+                    content += `<div class="alert alert-danger mb-0 mt-3"><i class='bx bx-error'></i> <b>注意：</b>學員 <b>${memberName}</b> 的目前違規次數已達 <b>${warningCount}</b> 次，封鎖後將再次累加！</div>`;
+                }
+                
+                $('#modal-confirm-content').html(content);
+                $('#modal-confirm-proceed').removeClass('btn-dark').addClass('btn-danger').text('確定封鎖');
+                
+                pendingAction = function() {
+                    $('#formBan').submit();
+                };
+                MicroModal.show('modal-confirm');
+            });
+
+            // Modal Confirm Button Logic
+            $('#modal-confirm-proceed').on('click', function() {
+                if (pendingAction) pendingAction();
+            });
+
+            $(document).on('click', '.sensitive-toggle', function() {
+                var $this = $(this);
+                if ($this.text() === $this.data('masked')) {
+                    $this.text($this.data('original')).removeClass('text-danger').addClass('text-success');
+                } else {
+                    $this.text($this.data('masked')).removeClass('text-success').addClass('text-danger');
+                }
+            });
+        });
+    </script>
+}

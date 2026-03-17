@@ -1,0 +1,50 @@
+@model Project_MyFitnessCoach.Models.ViewModel.StaffEditViewModel
+@{
+    var roles = ViewBag.Roles as IEnumerable<Project_MyFitnessCoach.Models.EfModels.Role>;
+}
+
+<form id="editForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">編輯員工資料</h5>
+        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div class="form-group">
+            <label asp-for="UserName"></label>
+            <input asp-for="UserName" class="form-control" required />
+            <span asp-validation-for="UserName" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Email"></label>
+            <input asp-for="Email" type="email" class="form-control" required />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" asp-for="IsActive">
+                <label class="custom-control-label" asp-for="IsActive">啟用此帳號</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>角色分配</label>
+            <div class="mt-2">
+                @foreach (var role in roles)
+                {
+                    <div class="custom-control custom-checkbox custom-control-inline">
+                        <input type="checkbox" class="custom-control-input" id="edit_role_@role.Id" name="RoleIds" value="@role.Id" 
+                               @(Model.RoleIds.Contains(role.Id) ? "checked" : "")>
+                        <label class="custom-control-label" for="edit_role_@role.Id">@role.RoleName</label>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
+        <button class="btn btn-primary" type="submit">儲存修改</button>
+    </div>
+</form>

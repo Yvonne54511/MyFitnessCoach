@@ -1,0 +1,324 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.ViewModels.ProductIndexItemViewModel>
+
+@{
+    ViewData["Title"] = "商品列表";
+}
+
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <h1 class="h3 mb-2 text-gray-800">商品管理</h1>
+    <p class="mb-4">
+        這裡可以管理所有的商品，包含新增、修改、下架以及查詢功能。
+    </p>
+
+    <!-- Search and Filter Section -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Index" class="form-inline">
+                <div class="form-group mr-3">
+                    <label for="name" class="mr-2 font-weight-bold text-soft">商品名稱：</label>
+                    <input type="text" name="name" id="name" class="form-control form-control-sm border-soft" 
+                           placeholder="輸入關鍵字..." value="@ViewBag.CurrentName">
+                </div>
+                <div class="form-group mr-3">
+                    <label for="categoryId" class="mr-2 font-weight-bold text-soft">商品分類：</label>
+                    <select name="categoryId" id="categoryId" class="form-control form-control-sm border-soft" 
+                            asp-items="ViewBag.Categories">
+                        <option value="">-- 全部分類 --</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm px-4 mr-2">
+                    <i class="fas fa-search fa-sm"></i> 搜尋
+                </button>
+                <a asp-action="Index" class="btn btn-secondary btn-sm px-3">
+                    <i class="fas fa-sync-alt fa-sm"></i> 重置
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">商品列表</h6>
+            <a asp-action="Create" class="btn btn-primary btn-sm shadow-sm">
+                <i class="fas fa-plus fa-sm text-white-50"></i> 新增商品
+            </a>
+        </div>
+        <div class="card-body">
+            @Html.AntiForgeryToken()
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Id)</th>
+                            <th>@Html.DisplayNameFor(model => model.CategoryName)</th>
+                            <th>@Html.DisplayNameFor(model => model.Name)</th>
+                            <th>@Html.DisplayNameFor(model => model.ImageUrl)</th>
+                            <th>@Html.DisplayNameFor(model => model.OriginalPrice)</th>
+                            <th>@Html.DisplayNameFor(model => model.UnitPrice)</th>
+                            <th>@Html.DisplayNameFor(model => model.IsActive)</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    @* <tfoot>
+                        <tr>
+                            <th>@Html.DisplayNameFor(model => model.Id)</th>
+                            <th>@Html.DisplayNameFor(model => model.CategoryName)</th>
+                            <th>@Html.DisplayNameFor(model => model.Name)</th>
+                            <th>@Html.DisplayNameFor(model => model.ImageUrl)</th>
+                            <th>@Html.DisplayNameFor(model => model.OriginalPrice)</th>
+                            <th>@Html.DisplayNameFor(model => model.UnitPrice)</th>
+                            <th>@Html.DisplayNameFor(model => model.IsActive)</th>
+                            <th>操作</th>
+                        </tr>
+                    </tfoot> *@
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@Html.DisplayFor(modelItem => item.Id)</td>
+                                <td>@Html.DisplayFor(modelItem => item.CategoryName)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.Name" class="img-thumbnail img-product-list" />
+                                    }
+                                    else
+                                    {
+                                        <div class="no-image-placeholder">無圖片</div>
+                                    }
+                                </td>
+                                <td>@item.OriginalPrice.ToString("N0")</td>
+                                <td>@item.UnitPrice.ToString("N0")</td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge badge-success">上架中</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">下架</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-info btn-circle btn-sm" title="編輯">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary btn-circle btn-sm" title="詳情">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger btn-circle btn-sm btn-delete" 
+                                            data-id="@item.Id" data-name="@item.Name" title="下架">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section styles {
+    <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-start: #fff8dc;
+            --bg-end: #ffe3b3;
+            --text-main: #3f2d1f;
+            --text-soft: #7a614d;
+            --accent: #f2a531;
+            --accent-dark: #e47b22;
+            --border: rgba(228, 123, 34, 0.18);
+            --panel: rgba(255, 255, 255, 0.88);
+            --font-main: "Trebuchet MS", "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: #fcf8f3;
+            color: var(--text-main);
+            font-family: var(--font-main);
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(165, 104, 29, 0.08);
+            background: var(--panel);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+
+        .text-primary {
+            color: var(--accent-dark) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border: none;
+            border-radius: 12px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(228, 123, 34, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(228, 123, 34, 0.3);
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+        }
+
+        .table thead th {
+            background-color: rgba(242, 165, 49, 0.1);
+            color: var(--text-main);
+            border-bottom: 2px solid var(--accent);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            padding: 1rem;
+        }
+
+        .table td {
+            vertical-align: middle;
+            color: var(--text-soft);
+            border-top: 1px solid var(--border);
+        }
+
+        .img-product-list {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: zoom-in;
+            border-radius: 8px;
+            border: 2px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .img-product-list:hover {
+            transform: scale(3.5);
+            position: relative;
+            z-index: 1050;
+            box-shadow: 0 10px 20px rgba(165, 104, 29, 0.3);
+        }
+
+        .no-image-placeholder {
+            width: 80px;
+            height: 60px;
+            background-color: #fdfaf5;
+            border: 1px dashed var(--accent);
+            color: var(--text-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            border-radius: 8px;
+        }
+
+        .badge-success {
+            background-color: #ecf8e7;
+            color: #4d9b54;
+            border: 1px solid rgba(77, 155, 84, 0.2);
+            padding: 0.5em 0.8em;
+            border-radius: 8px;
+        }
+
+        .badge-danger {
+            background-color: #ffe7e1;
+            color: #c85f47;
+            border: 1px solid rgba(200, 95, 71, 0.2);
+            padding: 0.5em 0.8em;
+            border-radius: 8px;
+        }
+
+        /* DataTables Customization */
+        .page-item.active .page-link {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .page-link {
+            color: var(--accent-dark);
+        }
+
+        .table-responsive {
+            overflow: visible !important;
+        }
+
+        h1.text-gray-800 {
+            color: var(--text-main) !important;
+            font-weight: 700;
+        }
+    </style>
+}
+
+@section scripts {
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/js/demo/datatables-demo.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            // 使用事件委派，確保 DataTables 翻頁後按鈕依然有效
+            $(document).on('click', '.btn-delete', function () {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+
+                Swal.fire({
+                    title: '確認下架？',
+                    text: `您確定要下架商品「${name}」嗎？`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e47b22', // accent-dark
+                    cancelButtonColor: '#7a614d', // text-soft
+                    confirmButtonText: '確定下架',
+                    cancelButtonText: '取消',
+                    background: '#fffdfa',
+                    borderRadius: '20px'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // 建立一個臨時表單來提交 POST 請求
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '@Url.Action("Delete")';
+
+                        const idInput = document.createElement('input');
+                        idInput.type = 'hidden';
+                        idInput.name = 'id';
+                        idInput.value = id;
+                        form.appendChild(idInput);
+
+                        // 加入 CSRF Token (如果頁面上有)
+                        const token = $('input[name="__RequestVerificationToken"]').val();
+                        if (token) {
+                            const tokenInput = document.createElement('input');
+                            tokenInput.type = 'hidden';
+                            tokenInput.name = '__RequestVerificationToken';
+                            tokenInput.value = token;
+                            form.appendChild(tokenInput);
+                        }
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
+}
