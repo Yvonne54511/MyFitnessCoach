@@ -15,6 +15,11 @@ namespace Project_MyFitnessCoach.Repositories
         // 4.2-1 代理人請假判斷
         Task<bool> HasOverlappingLeaveAsync(int employeeId, DateTime startDate, DateTime endDate);
         Task<List<int>> GetEmployeeIdsOnLeaveAsync(int departmentId, DateTime startDate, DateTime endDate);
+
+        // 步驟五：主管審核
+        Task<List<LeaveRequest>> GetPendingByManagerIdAsync(int managerEmployeeId);
+        Task<int> GetPendingCountAsync(int managerEmployeeId);
+        Task<List<LeaveRequest>> GetByDepartmentAsync(int departmentId);
     }
 
     public class LeaveRepository : ILeaveRepository
@@ -100,6 +105,40 @@ namespace Project_MyFitnessCoach.Repositories
                     && r.StartDate < endDate && r.EndDate > startDate)
                 .Select(r => r.EmployeeId)
                 .Distinct()
+                .ToListAsync();
+        }
+
+        // 步驟五：取得主管待審核的假單（Pending + CancelPending）
+        public async Task<List<LeaveRequest>> GetPendingByManagerIdAsync(int managerEmployeeId)
+        {
+            return await _context.LeaveRequests
+                .Include(r => r.Employee).ThenInclude(e => e.User)
+                .Include(r => r.Employee).ThenInclude(e => e.Department)
+                .Include(r => r.LeaveType)
+                .Include(r => r.LeaveDelegate).ThenInclude(d => d.User)
+                .Where(r => r.Employee.ManagerId == managerEmployeeId
+                    && (r.Status == "Pending" || r.Status == "CancelPending"))
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetPendingCountAsync(int managerEmployeeId)
+        {
+            return await _context.LeaveRequests
+                .Include(r => r.Employee)
+                .CountAsync(r => r.Employee.ManagerId == managerEmployeeId
+                    && (r.Status == "Pending" || r.Status == "CancelPending"));
+        }
+
+        // 步驟五：取得部門所有假單
+        public async Task<List<LeaveRequest>> GetByDepartmentAsync(int departmentId)
+        {
+            return await _context.LeaveRequests
+                .Include(r => r.Employee).ThenInclude(e => e.User)
+                .Include(r => r.LeaveType)
+                .Include(r => r.LeaveDelegate).ThenInclude(d => d.User)
+                .Where(r => r.Employee.DepartmentId == departmentId)
+                .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
     }
