@@ -347,7 +347,7 @@
                         }
                         
 
-                        <span class="text-black mt-4">@DateTime.Now.ToString("yyyy/MM/dd HH:mm")</span>
+                        <span id="clockDisplay" class="text-black mt-4 font-weight-bold"></span>
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -405,6 +405,18 @@
 
     @RenderSection("scripts", required: false)
     <script>
+        function showTime() {
+            let now = new Date();
+            let dateString = now.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            let timeString = now.toLocaleTimeString('zh-TW', { hour12: false });
+            let clockElement = document.getElementById("clockDisplay");
+            if (clockElement) {
+                clockElement.innerText = `${dateString} ${timeString}`;
+            }
+        }
+        showTime();
+        setInterval(showTime, 1000);
+
         $(document).ready(function () {
             // 初始化與定時輪詢
             fetchNotifications();
