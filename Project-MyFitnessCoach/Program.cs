@@ -77,6 +77,10 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<NotificationService>();
 
+            // 註冊 BodyData 模組
+            builder.Services.AddScoped<IBodyDataRepository, BodyDataRepository>();
+            builder.Services.AddScoped<IBodyDataService, BodyDataService>();
+
             // 註冊 KeyWord 模組
             builder.Services.AddScoped<IKeyWordRepository, KeyWordRepository>();
             builder.Services.AddScoped<IKeyWordService, KeyWordService>();

@@ -10,11 +10,13 @@ namespace Project_MyFitnessCoach.Controllers
     {
         private readonly IDashboardService _dashboardService;
         private readonly Repositories.IKeyWordRepository _keyWordRepo;
+        private readonly IBodyDataService _bodyDataService;
 
-        public DashboardController(IDashboardService dashboardService, Repositories.IKeyWordRepository keyWordRepo)
+        public DashboardController(IDashboardService dashboardService, Repositories.IKeyWordRepository keyWordRepo, IBodyDataService bodyDataService)
         {
             _dashboardService = dashboardService;
             _keyWordRepo = keyWordRepo;
+            _bodyDataService = bodyDataService;
         }
 
         public IActionResult Index(int? year, int? month)
@@ -57,6 +59,21 @@ namespace Project_MyFitnessCoach.Controllers
             ViewBag.SelectedYear = y;
             ViewBag.SelectedMonth = m;
             return View(data);
+        }
+
+        public IActionResult BodyData(string searchName, string dateFrom, string dateTo)
+        {
+            ViewBag.Title = "客戶身體數據";
+            var vm = _bodyDataService.GetBodyData(searchName, dateFrom, dateTo);
+            return View(vm);
+        }
+
+        public IActionResult MemberBodyHistory(int memberId)
+        {
+            ViewBag.Title = "會員身體數據歷史";
+            var vm = _bodyDataService.GetMemberHistory(memberId);
+            if (vm == null) return RedirectToAction("BodyData");
+            return View(vm);
         }
 
         [HttpPost]

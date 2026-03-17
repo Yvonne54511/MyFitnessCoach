@@ -39,10 +39,6 @@
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[KeyWords]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[dbo].[Members]",
          "ObjectType": 0
       },
