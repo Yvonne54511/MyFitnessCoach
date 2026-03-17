@@ -29,7 +29,16 @@ namespace Project_MyFitnessCoach.Services
                 InstructorId = wallet.InstructorId,
                 InstructorName = wallet.Instructor.User.UserName,
                 CurrentBalance = wallet.CurrentBalance,
-                LastUpdated = wallet.LastUpdated
+                LastUpdated = wallet.LastUpdated,
+                Details = wallet.InstructorWalletDetails
+                    .OrderByDescending(d => d.CreatedAt)
+                    .Select(d => new InstructorWalletDetailDto
+                    {
+                        Id = d.Id,
+                        SalaryDate = d.SalaryDate,
+                        TotalAmount = d.TotalAmount,
+                        CreatedAt = d.CreatedAt
+                    }).ToList()
             };
         }
     }

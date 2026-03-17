@@ -24,6 +24,7 @@ namespace Project_MyFitnessCoach.Repositories
             return await _db.InstructorWallets
                 .Include(w => w.Instructor)
                 .ThenInclude(i => i.User)
+                .Include(w => w.InstructorWalletDetails)
                 .FirstOrDefaultAsync(w => w.InstructorId == instructorId);
         }
 
