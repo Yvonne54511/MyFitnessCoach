@@ -145,19 +145,25 @@
                                         <tr class="history-item">
                                             <td class="ps-4 py-4">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="icon-box bg-soft-success me-3">
-                                                        <i class="fas fa-money-bill-wave"></i>
+                                                    @{
+                                                        var isAnnual = detail.Category == "年終獎金";
+                                                        var categoryName = detail.Category ?? (isAnnual ? "年終獎金" : "月薪與加給");
+                                                        var iconClass = isAnnual ? "fa-gift" : "fa-money-bill-wave";
+                                                        var bgClass = isAnnual ? "bg-soft-primary" : "bg-soft-success";
+                                                    }
+                                                    <div class="icon-box @bgClass me-3">
+                                                        <i class="fas @iconClass"></i>
                                                     </div>
                                                     <div>
-                                                        <div class="fw-bold text-dark">薪資撥付</div>
+                                                        <div class="fw-bold text-dark">@categoryName</div>
                                                         <div class="text-muted small">@detail.CreatedAt.ToString("yyyy/MM/dd HH:mm")</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <span class="badge rounded-pill bg-soft-primary px-3 py-2 me-2">@detail.SalaryDate 月</span>
-                                                    <span class="text-dark small">月度薪資結算完成</span>
+                                                    <span class="badge rounded-pill bg-soft-primary px-3 py-2 me-2">@detail.SalaryDate.Substring(0, Math.Min(detail.SalaryDate.Length, 7))</span>
+                                                    <span class="text-dark small">@(isAnnual ? "年終獎金" : "月薪與加給")</span>
                                                 </div>
                                             </td>
                                             <td class="text-end pe-4">

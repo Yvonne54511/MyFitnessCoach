@@ -17,5 +17,7 @@ public partial class InstructorWalletDetail
 
     public DateTime CreatedAt { get; set; }
 
+    public string Category { get; set; }
+
     public virtual InstructorWallet InstructorWallet { get; set; }
 }

@@ -8,7 +8,7 @@ namespace Project_MyFitnessCoach.Services
     {
         Task<InstructorWalletDto?> GetWalletByInstructorIdAsync(int instructorId);
         Task<List<InstructorWalletExportDto>> GetAllWalletDetailsForExportAsync();
-        Task<bool> AddSalaryEntryAsync(int instructorId, decimal amount, string note);
+        Task<bool> AddSalaryEntryAsync(int instructorId, decimal amount, string note, string category = "月薪與加給");
     }
 
     public class InstructorWalletService : IInstructorWalletService
@@ -22,7 +22,7 @@ namespace Project_MyFitnessCoach.Services
 
     // ... GetWalletByInstructorIdAsync ...
 
-        public async Task<bool> AddSalaryEntryAsync(int instructorId, decimal amount, string note)
+        public async Task<bool> AddSalaryEntryAsync(int instructorId, decimal amount, string note, string category = "月薪與加給")
         {
             var wallet = await _walletRepository.GetByInstructorIdAsync(instructorId);
             if (wallet == null) return false;
@@ -37,6 +37,7 @@ namespace Project_MyFitnessCoach.Services
                 InstructorWalletId = wallet.Id,
                 SalaryDate = DateTime.Now.ToString("yyyy-MM-dd"), // 修正為 string 格式
                 TotalAmount = amount, // 使用 decimal 賦值
+                Category = category,
                 CreatedAt = DateTime.Now
             };
 
@@ -66,6 +67,7 @@ namespace Project_MyFitnessCoach.Services
                         Id = d.Id,
                         SalaryDate = d.SalaryDate,
                         TotalAmount = d.TotalAmount,
+                        Category = d.Category,
                         CreatedAt = d.CreatedAt
                     }).ToList()
             };
@@ -78,7 +80,8 @@ namespace Project_MyFitnessCoach.Services
             {
                 InstructorName = d.InstructorWallet.Instructor.User.UserName,
                 SalaryDate = d.SalaryDate,
-                TotalAmount = d.TotalAmount
+                TotalAmount = d.TotalAmount,
+                Category = d.Category
             }).ToList();
         }
     }

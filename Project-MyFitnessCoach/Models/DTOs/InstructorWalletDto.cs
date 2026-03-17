@@ -18,6 +18,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public int Id { get; set; }
         public string SalaryDate { get; set; }
         public decimal TotalAmount { get; set; }
+        public string? Category { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
@@ -26,5 +27,6 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public string? InstructorName { get; set; }
         public string? SalaryDate { get; set; }
         public decimal TotalAmount { get; set; }
+        public string? Category { get; set; }
     }
 }

@@ -181,9 +181,15 @@ public partial class MyFitnessCoachDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC073680F17A");
 
+            entity.Property(e => e.Category)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasDefaultValueSql("((0))")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__Instructo__Categ__55F4C372");
             entity.Property(e => e.CreatedAt)
                 .HasPrecision(0)
-                .HasDefaultValueSql("(getdate())");
+                .HasDefaultValueSql("(getdate())")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__Instructo__Creat__540C7B00");
             entity.Property(e => e.SalaryDate)
                 .IsRequired()
                 .HasMaxLength(10);

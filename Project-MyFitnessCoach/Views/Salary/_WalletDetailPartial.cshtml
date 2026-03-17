@@ -31,17 +31,23 @@
                         <tr class="history-item-row">
                             <td class="ps-4 py-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="icon-box-sm bg-soft-success me-3">
-                                        <i class="fas fa-money-bill-wave"></i>
+                                    @{
+                                        var isAnnual = detail.Category == "年終獎金";
+                                        var categoryName = detail.Category ?? (isAnnual ? "年終獎金" : "月薪與加給");
+                                        var iconClass = isAnnual ? "fa-gift" : "fa-money-bill-wave";
+                                        var bgClass = isAnnual ? "bg-soft-primary" : "bg-soft-success";
+                                    }
+                                    <div class="icon-box-sm @bgClass me-3">
+                                        <i class="fas @iconClass"></i>
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-dark small">薪資撥付</div>
+                                        <div class="fw-bold text-dark small">@categoryName</div>
                                         <div class="text-muted" style="font-size: 0.75rem;">@detail.CreatedAt.ToString("yyyy/MM/dd HH:mm")</div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <span class="badge rounded-pill bg-soft-primary px-3 py-2">@detail.SalaryDate 月</span>
+                                <span class="badge rounded-pill bg-soft-primary px-3 py-2">@detail.SalaryDate.Substring(0, Math.Min(detail.SalaryDate.Length, 7))</span>
                             </td>
                             <td class="text-end pe-4">
                                 <div class="fw-bold text-success">+ @detail.TotalAmount.ToString("N0")</div>

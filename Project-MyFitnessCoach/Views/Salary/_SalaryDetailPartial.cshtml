@@ -1,280 +1,280 @@
 @using Project_MyFitnessCoach.Models.ViewModels
 @model SalaryDetailViewModel
 
-<div class="card shadow-sm border-0">
-    <div class="card-header bg-white py-3">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h4 class="mb-0 text-primary d-inline-block me-3">@Model.InstructorName 的薪資數據</h4>
-                <div class="btn-group shadow-sm" role="group">
-                    <button type="button" class="btn btn-primary active" id="btnMonthlyView" onclick="switchView('monthly')">
-                        <i class="fas fa-calendar-day me-1"></i> 月度核算
-                    </button>
-                    <button type="button" class="btn btn-outline-primary" id="btnAnnualView" onclick="switchView('annual')">
-                        <i class="fas fa-calendar-check me-1"></i> 年度核算
-                    </button>
+<!-- 將共用隱藏欄位放在最外層，確保年度/月度分頁都能讀取 -->
+<div class="salary-data-container" data-instructor-id="@Model.InstructorId">
+    <input type="hidden" class="hidden-instructor-id" value="@Model.InstructorId" />
+    <input type="hidden" class="hidden-paypal-email" value="@Model.InstructorEmail" />
+    <input type="hidden" class="hidden-exchange-rate" value="@Model.TwdToUsdRate" />
+    <input type="hidden" class="hidden-base-salary" value="@Model.BaseSalary" />
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-0 text-primary d-inline-block mr-3">@Model.InstructorName 的薪資數據</h4>
+                    <div class="btn-group shadow-sm" role="group">
+                        <button type="button" class="btn btn-primary active btn-monthly-view" onclick="switchSalaryView(@Model.InstructorId, 'monthly')">
+                            <i class="fas fa-calendar-day mr-1"></i> 月度核算
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-annual-view" onclick="switchSalaryView(@Model.InstructorId, 'annual')">
+                            <i class="fas fa-calendar-check mr-1"></i> 年度核算
+                        </button>
+                    </div>
                 </div>
+                <span class="badge badge-success px-3 py-2">時薪：$@Model.HourWage</span>
             </div>
-            <span class="badge bg-success fs-6">時薪：$@Model.HourWage</span>
         </div>
-    </div>
-    
-    <!-- Monthly View Content -->
-    <div id="monthlyView">
-        <div class="card-body">
-            <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light sticky-top">
-                        <tr>
-                            <th>日期 (@Model.Year/@Model.Month)</th>
-                            <th>時段</th>
-                            <th class="text-center">狀態</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.Shifts.Any())
-                        {
-                            @foreach (var shift in Model.Shifts)
+        
+        <!-- Monthly View Content -->
+        <div class="monthly-view-content">
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>日期 (@Model.Year/@Model.Month)</th>
+                                <th>時段</th>
+                                <th class="text-center">狀態</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Shifts.Any())
+                            {
+                                @foreach (var shift in Model.Shifts)
+                                {
+                                    <tr>
+                                        <td>@shift.Date.ToString("yyyy-MM-dd")</td>
+                                        <td>@shift.TimeSlot</td>
+                                        <td class="text-center">
+                                            @if (shift.IsBooked)
+                                            {
+                                                <span class="badge badge-danger">已預約</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-secondary">未預約</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
                             {
                                 <tr>
-                                    <td>@shift.Date.ToString("yyyy-MM-dd")</td>
-                                    <td>@shift.TimeSlot</td>
-                                    <td class="text-center">
-                                        @if (shift.IsBooked)
-                                        {
-                                            <span class="badge bg-danger">已預約</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">未預約</span>
-                                        }
-                                    </td>
+                                    <td colspan="3" class="text-center py-4 text-muted">本月無排班紀錄</td>
                                 </tr>
                             }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="3" class="text-center py-4 text-muted">本月無排班紀錄</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="mt-4 border-top pt-4">
+                <div class="mt-4 border-top pt-4">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-primary text-white py-3">
+                                    <h6 class="mb-0 font-weight-bold"><i class="fas fa-chart-line mr-2"></i>本月績效核算 (@Model.Month 月)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive mb-4">
+                                        <table class="table table-sm table-bordered text-center align-middle">
+                                            <thead class="bg-light">
+                                                <tr class="small text-uppercase text-muted">
+                                                    <th>預約數 (x0.5)</th>
+                                                    <th>平均評分 (x0.3)</th>
+                                                    <th>好評數 (x0.4)</th>
+                                                    <th class="table-primary text-primary">個人總分</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="h5">
+                                                    <td class="@(Model.BookingCount < 15 ? "text-danger font-weight-bold" : "")">
+                                                        @Model.BookingCount 
+                                                        <small class="text-muted">(@((Model.BookingCount * 0.5).ToString("F1")))</small>
+                                                    </td>
+                                                    <td>@Model.AverageRating.ToString("F1") <small class="text-muted">(@((Model.AverageRating * 0.3).ToString("F2")))</small></td>
+                                                    <td>@Model.PositiveReviewCount <small class="text-muted">(@((Model.PositiveReviewCount * 0.4).ToString("F1")))</small></td>
+                                                    <td class="font-weight-bold text-primary">@Model.IndividualTotalScore.ToString("F2")</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="alert alert-secondary border-0 mb-4 p-3 text-center">
+                                        <h6 class="font-weight-bold small text-muted text-uppercase mb-3">月度獎金分配試算</h6>
+                                        <div class="d-flex justify-content-center align-items-center flex-wrap mb-3">
+                                            <span class="badge badge-white text-dark shadow-sm px-3 py-2 mb-2">個人：@Model.IndividualTotalScore.ToString("F2")</span>
+                                            <i class="fas fa-divide mx-2 text-muted mb-2"></i>
+                                            <span class="badge badge-white text-dark shadow-sm px-3 py-2 mb-2">全體：@Model.GlobalTotalScore.ToString("F2")</span>
+                                            <i class="fas fa-times mx-2 text-muted mb-2"></i>
+                                            <span class="badge badge-white text-dark shadow-sm px-3 py-2 mb-2">月池：$ @Model.MonthlyBonusPool.ToString("N0")</span>
+                                        </div>
+                                        <div class="h5 mb-0 text-success font-weight-bold">建議月獎金：$ @Model.SuggestedBonus.ToString("N0")</div>
+                                    </div>
+
+                                    <h6 class="text-secondary mb-3 small font-weight-bold">實際核發獎金</h6>
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-right-0 text-success font-weight-bold">$</span>
+                                        </div>
+                                        <input type="number" class="form-control border-left-0 pl-0 font-weight-bold text-success input-monthly-bonus" 
+                                               placeholder="0" min="0" value="@Model.BonusAmount" oninput="updateSalarySummary(@Model.InstructorId)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body d-flex flex-column justify-content-between p-4 text-center">
+                                    <div>
+                                        <h6 class="text-muted text-uppercase small font-weight-bold mb-4">月度薪資核發</h6>
+                                        <div class="h4 mb-1 text-dark font-weight-bold">發放總計</div>
+                                        <div class="display-5 text-primary font-weight-bold mb-2 display-total-twd">@((Model.BaseSalary + Model.BonusAmount).ToString("C0"))</div>
+                                        <div class="h5 text-muted mb-4 display-total-usd">≈ @(((double)(Model.BaseSalary + (decimal)Model.BonusAmount) / Model.TwdToUsdRate).ToString("F2")) USD</div>
+                                        
+                                        <div class="text-left bg-light rounded p-3 mb-4">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted small">基本底薪：</span>
+                                                <span class="font-weight-bold small">$ @Model.BaseSalary.ToString("N0")</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted small">月度獎金：</span>
+                                                <span class="font-weight-bold text-success small">+ $ <span class="display-monthly-bonus">@Model.BonusAmount.ToString("N0")</span></span>
+                                            </div>
+                                            <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                                                <span class="text-muted small">匯率：</span>
+                                                <span class="text-muted small">1 USD = @Model.TwdToUsdRate TWD</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button class="btn btn-primary btn-block py-3 shadow-sm" 
+                                            onclick="executePayout(@Model.InstructorId, 'monthly', this)"
+                                            @(DateTime.Now.Day == 1 ? "" : "disabled")>
+                                        <i class="fas fa-check-circle mr-2"></i>核發月度薪資
+                                    </button>
+                                    @if (DateTime.Now.Day != 1)
+                                    {
+                                        <small class="text-danger d-block mt-2"><i class="fas fa-exclamation-triangle mr-1"></i> 僅限每月 1 號開放核發</small>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Annual View Content -->
+        <div class="annual-view-content" style="display: none;">
+            <div class="card-body">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="mb-0 font-weight-bold text-secondary"><i class="fas fa-chart-bar mr-2 text-info"></i>年度預約趨勢 (@Model.Year 年)</h6>
+                    </div>
+                    <div class="card-body py-2">
+                        <div class="table-responsive">
+                            <table class="table table-sm text-center align-middle mb-0">
+                                <tbody>
+                                    <tr class="h6 text-muted">
+                                        @for (int i = 1; i <= 12; i++) { <td style="width: 8.33%;">@(i)月</td> }
+                                    </tr>
+                                    <tr class="h5">
+                                        @foreach (var count in Model.MonthlyBookingTrend)
+                                        {
+                                            <td>
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <div class="bg-info opacity-50 rounded-top mb-1" style="width: 20px; height: @(Math.Min(count * 2, 60))px;"></div>
+                                                    <span class="font-weight-bold small">@count</span>
+                                                </div>
+                                            </td>
+                                        }
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row">
-                    <!-- Left Column: Monthly Performance Metrics -->
                     <div class="col-md-7">
                         <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-header bg-gradient-primary text-white py-3" style="background: #4e73df;">
-                                <h6 class="mb-0 fw-bold"><i class="fas fa-chart-line me-2"></i>本月績效核算 (@Model.Month 月)</h6>
+                            <div class="card-header bg-info text-white py-3">
+                                <h6 class="mb-0 font-weight-bold"><i class="fas fa-trophy mr-2"></i>年度績效核算 (@Model.Year 年)</h6>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive mb-4">
                                     <table class="table table-sm table-bordered text-center align-middle">
                                         <thead class="bg-light">
                                             <tr class="small text-uppercase text-muted">
-                                                <th>預約數 (x0.5)</th>
-                                                <th>平均評分 (x0.3)</th>
-                                                <th>好評數 (x0.4)</th>
-                                                <th class="table-primary text-primary">個人總分</th>
+                                                <th>預約總數 (x0.3)</th>
+                                                <th>平均評分 (x0.4)</th>
+                                                <th>好評總數 (x0.5)</th>
+                                                <th class="table-info text-info">年度總分</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr class="h5">
-                                                <td class="@(Model.BookingCount < 15 ? "text-danger fw-bold" : "")">
-                                                    @Model.BookingCount 
-                                                    <small class="text-muted">(@((Model.BookingCount * 0.5).ToString("F1")))</small>
-                                                </td>
-                                                <td>@Model.AverageRating.ToString("F1") <small class="text-muted">(@((Model.AverageRating * 0.3).ToString("F2")))</small></td>
-                                                <td>@Model.PositiveReviewCount <small class="text-muted">(@((Model.PositiveReviewCount * 0.4).ToString("F1")))</small></td>
-                                                <td class="fw-bold text-primary">@Model.IndividualTotalScore.ToString("F2")</td>
+                                                <td>@Model.AnnualBookingCount <small class="text-muted">(@((Model.AnnualBookingCount * 0.3).ToString("F1")))</small></td>
+                                                <td>@Model.AnnualAverageRating.ToString("F1") <small class="text-muted">(@((Model.AnnualAverageRating * 0.4).ToString("F2")))</small></td>
+                                                <td>@Model.AnnualPositiveReviewCount <small class="text-muted">(@((Model.AnnualPositiveReviewCount * 0.5).ToString("F1")))</small></td>
+                                                <td class="font-weight-bold text-info">@Model.AnnualIndividualTotalScore.ToString("F2")</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
 
-                                <!-- Formula Alert -->
                                 <div class="alert alert-secondary border-0 mb-4 p-3 text-center">
-                                    <h6 class="fw-bold small text-muted text-uppercase mb-3">月度獎金分配試算</h6>
+                                    <h6 class="font-weight-bold small text-muted text-uppercase mb-3">年度獎金分配試算</h6>
                                     <div class="d-flex justify-content-center align-items-center flex-wrap mb-3">
-                                        <span class="badge bg-white text-dark shadow-sm px-3 py-2 mb-2">個人：@Model.IndividualTotalScore.ToString("F2")</span>
+                                        <span class="badge badge-white text-dark shadow-sm px-3 py-2 mb-2">年度個人：@Model.AnnualIndividualTotalScore.ToString("F2")</span>
                                         <i class="fas fa-divide mx-2 text-muted mb-2"></i>
-                                        <span class="badge bg-white text-dark shadow-sm px-3 py-2 mb-2">全體：@Model.GlobalTotalScore.ToString("F2")</span>
+                                        <span class="badge badge-white text-dark shadow-sm px-3 py-2 mb-2">年度全體：@Model.AnnualGlobalTotalScore.ToString("F2")</span>
                                         <i class="fas fa-times mx-2 text-muted mb-2"></i>
-                                        <span class="badge bg-white text-dark shadow-sm px-3 py-2 mb-2">月池：$ @Model.MonthlyBonusPool.ToString("N0")</span>
+                                        <span class="badge badge-white text-dark shadow-sm px-3 py-2 mb-2">年池：$ @Model.AnnualBonusPool.ToString("N0")</span>
                                     </div>
-                                    <div class="h5 mb-0 text-success fw-bold">建議月獎金：$ @Model.SuggestedBonus.ToString("N0")</div>
+                                    <div class="h5 mb-0 text-info font-weight-bold">建議年終獎金：$ @Model.AnnualSuggestedBonus.ToString("N0")</div>
                                 </div>
 
-                                <!-- Bonus Adjustment -->
-                                <h6 class="text-secondary mb-3 small fw-bold">實際核發獎金</h6>
+                                <h6 class="text-secondary mb-3 small font-weight-bold">調整年度獎金</h6>
                                 <div class="input-group mb-3">
-                                    <span class="input-group-text bg-white border-end-0 text-success fw-bold">$</span>
-                                    <input type="number" id="inputBonusAmount" class="form-control border-start-0 ps-0 fw-bold text-success" 
-                                           placeholder="0" min="0" value="@Model.BonusAmount" oninput="calculateSalary()">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white border-right-0 text-info font-weight-bold">$</span>
+                                    </div>
+                                    <input type="number" class="form-control border-left-0 pl-0 font-weight-bold text-info input-annual-bonus" 
+                                           placeholder="0" min="0" value="@Model.AnnualBonusAmount" oninput="updateSalarySummary(@Model.InstructorId)">
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Right Column: Final Summary -->
                     <div class="col-md-5">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body d-flex flex-column justify-content-between p-4 text-center">
-                                <input type="hidden" id="hiddenInstructorId" value="@Model.InstructorId" />
-                                <input type="hidden" id="hiddenPayPalEmail" value="@Model.InstructorEmail" />
-                                <input type="hidden" id="hiddenExchangeRate" value="@Model.TwdToUsdRate" />
                                 <div>
-                                    <h6 class="text-muted text-uppercase small fw-bold mb-4">月度薪資結算</h6>
-                                    <div class="h4 mb-1 text-dark fw-bold">總發放金額</div>
-                                    <div class="display-5 text-danger fw-bold mb-2" id="displayFinalTotal">@Model.FinalTotalSalary.ToString("C0")</div>
-                                    <div class="h5 text-muted mb-4" id="displayFinalTotalUsd">≈ @Model.FinalTotalSalaryUsd.ToString("F2") USD</div>
+                                    <h6 class="text-muted text-uppercase small font-weight-bold mb-4">年度獎金核發</h6>
+                                    <div class="h4 mb-1 text-dark font-weight-bold">年度獎金總計</div>
+                                    <div class="display-5 text-info font-weight-bold mb-2 display-annual-total-twd">@Model.AnnualBonusAmount.ToString("C0")</div>
+                                    <div class="h5 text-muted mb-4 display-annual-total-usd">≈ @(((double)Model.AnnualBonusAmount / Model.TwdToUsdRate).ToString("F2")) USD</div>
                                     
-                                    <div class="text-start bg-light rounded p-3 mb-4">
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <span class="text-muted small">基本底薪：</span>
-                                            <span class="fw-bold small">$ @Model.BaseSalary.ToString("N0")</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <span class="text-muted small">月度獎金：</span>
-                                            <span class="fw-bold text-success small">+ $ <span id="bonusDisplayAmount">@Model.BonusAmount.ToString("N0")</span></span>
-                                        </div>
-                                        <div class="d-flex justify-content-between border-top pt-2 mt-2">
-                                            <span class="text-muted small">目前匯率：</span>
-                                            <span class="text-muted small">1 USD = @Model.TwdToUsdRate TWD</span>
+                                    <div class="text-left bg-light rounded p-3 mb-4">
+                                        <div class="small text-muted mb-2">年度結算說明：</div>
+                                        <div class="small text-secondary">
+                                            此金額為年度績效獎金加給，不含底薪。核發後將直接透過 PayPal 撥付。
+                                            <hr class="my-2">
+                                            <span class="text-danger font-weight-bold"><i class="fas fa-calendar-alt mr-1"></i> 注意：僅限每年 1 月 1 號核發</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                @if (DateTime.Now.Day == 1)
-                                {
-                                    <button id="btnSendSalary" class="btn btn-primary w-100 py-3 shadow-sm">
-                                        <i class="fas fa-check-circle me-2"></i>核發月度薪資
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button id="btnSendSalary" class="btn btn-secondary w-100 py-3 shadow-sm" disabled>
-                                        <i class="fas fa-clock me-2"></i> 非發薪日 (每月 1 號)
-                                    </button>
-                                    <div class="mt-2 small text-danger fw-bold">
-                                        * 系統目前僅限每月 1 號開放薪資核發功能（結算前一月全月薪資）。
-                                    </div>
-                                }
+                                <button class="btn btn-info text-white btn-block py-3 shadow-sm" 
+                                        onclick="executePayout(@Model.InstructorId, 'annual', this)"
+                                        @(DateTime.Now.Month == 1 && DateTime.Now.Day == 1 ? "" : "disabled")>
+                                    <i class="fas fa-gift mr-2"></i>核發年度獎金
+                                </button>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Annual View Content -->
-    <div id="annualView" style="display: none;">
-        <div class="card-body">
-            <!-- Annual Trend Chart Area -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3">
-                    <h6 class="mb-0 fw-bold text-secondary"><i class="fas fa-chart-bar me-2 text-info"></i>年度預約趨勢 (@Model.Year 年)</h6>
-                </div>
-                <div class="card-body py-2">
-                    <div class="table-responsive">
-                        <table class="table table-sm text-center align-middle mb-0">
-                            <tbody>
-                                <tr class="h6 text-muted">
-                                    @for (int i = 1; i <= 12; i++) { <td style="width: 8.33%;">@(i)月</td> }
-                                </tr>
-                                <tr class="h5">
-                                    @foreach (var count in Model.MonthlyBookingTrend)
-                                    {
-                                        <td>
-                                            <div class="d-flex flex-column align-items-center">
-                                                <div class="bg-info opacity-50 rounded-top mb-1" style="width: 20px; height: @(Math.Min(count * 2, 60))px;"></div>
-                                                <span class="fw-bold small">@count</span>
-                                            </div>
-                                        </td>
-                                    }
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <!-- Left Column: Annual Performance Metrics -->
-                <div class="col-md-7">
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-gradient-info text-white py-3" style="background: #36b9cc;">
-                            <h6 class="mb-0 fw-bold"><i class="fas fa-trophy me-2"></i>年度績效核算 (@Model.Year 年)</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive mb-4">
-                                <table class="table table-sm table-bordered text-center align-middle">
-                                    <thead class="bg-light">
-                                        <tr class="small text-uppercase text-muted">
-                                            <th>預約總數 (x0.3)</th>
-                                            <th>平均評分 (x0.4)</th>
-                                            <th>好評總數 (x0.5)</th>
-                                            <th class="table-info text-info">年度總分</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="h5">
-                                            <td>@Model.AnnualBookingCount <small class="text-muted">(@((Model.AnnualBookingCount * 0.3).ToString("F1")))</small></td>
-                                            <td>@Model.AnnualAverageRating.ToString("F1") <small class="text-muted">(@((Model.AnnualAverageRating * 0.4).ToString("F2")))</small></td>
-                                            <td>@Model.AnnualPositiveReviewCount <small class="text-muted">(@((Model.AnnualPositiveReviewCount * 0.5).ToString("F1")))</small></td>
-                                            <td class="fw-bold text-info">@Model.AnnualIndividualTotalScore.ToString("F2")</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Annual Formula Alert -->
-                            <div class="alert alert-secondary border-0 mb-4 p-3 text-center">
-                                <h6 class="fw-bold small text-muted text-uppercase mb-3">年度獎金分配試算</h6>
-                                <div class="d-flex justify-content-center align-items-center flex-wrap mb-3">
-                                    <span class="badge bg-white text-dark shadow-sm px-3 py-2 mb-2">年度個人：@Model.AnnualIndividualTotalScore.ToString("F2")</span>
-                                    <i class="fas fa-divide mx-2 text-muted mb-2"></i>
-                                    <span class="badge bg-white text-dark shadow-sm px-3 py-2 mb-2">年度全體：@Model.AnnualGlobalTotalScore.ToString("F2")</span>
-                                    <i class="fas fa-times mx-2 text-muted mb-2"></i>
-                                    <span class="badge bg-white text-dark shadow-sm px-3 py-2 mb-2">年池：$ @Model.AnnualBonusPool.ToString("N0")</span>
-                                </div>
-                                <div class="h5 mb-0 text-info fw-bold">建議年終獎金：$ @Model.AnnualSuggestedBonus.ToString("N0")</div>
-                            </div>
-
-                            <h6 class="text-secondary mb-3 small fw-bold">實際核發年終</h6>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text bg-white border-end-0 text-info fw-bold">$</span>
-                                <input type="number" id="inputAnnualBonusAmount" class="form-control border-start-0 ps-0 fw-bold text-info" 
-                                       placeholder="0" min="0" value="@Model.AnnualBonusAmount" oninput="calculateAnnualSalary()">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column: Annual Final Summary -->
-                <div class="col-md-5">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body d-flex flex-column justify-content-between p-4 text-center">
-                            <div>
-                                <h6 class="text-muted text-uppercase small fw-bold mb-4">年度結算總覽</h6>
-                                <div class="h4 mb-1 text-dark fw-bold">年終發放金額</div>
-                                <h1 class="display-4 text-info fw-bold mb-4" id="displayAnnualFinalTotal">$ @Model.AnnualBonusAmount.ToString("N0")</h1>
-                                
-                                <div class="text-start bg-light rounded p-3 mb-4">
-                                    <div class="small text-muted mb-2">年度結算說明：</div>
-                                    <div class="small text-secondary">
-                                        此金額為純業績加給年終，不含每月已領底薪。核發後將作為年度績效獎金入帳。
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button id="btnSendAnnualSalary" class="btn btn-info text-white w-100 py-3 shadow-sm">
-                                <i class="fas fa-gift me-2"></i>核發年度獎金
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -284,36 +284,120 @@
 </div>
 
 <script>
-    function switchView(mode) {
-        if (mode === 'monthly') {
-            document.getElementById('monthlyView').style.display = 'block';
-            document.getElementById('annualView').style.display = 'none';
-            document.getElementById('btnMonthlyView').className = 'btn btn-primary active';
-            document.getElementById('btnAnnualView').className = 'btn btn-outline-primary';
-        } else {
-            document.getElementById('monthlyView').style.display = 'none';
-            document.getElementById('annualView').style.display = 'block';
-            document.getElementById('btnMonthlyView').className = 'btn btn-outline-primary';
-            document.getElementById('btnAnnualView').className = 'btn btn-info active';
-        }
+    if (typeof switchSalaryView !== 'function') {
+        window.switchSalaryView = function(id, mode) {
+            const $container = $('.salary-data-container[data-instructor-id="' + id + '"]');
+            if (mode === 'monthly') {
+                $container.find('.monthly-view-content').show();
+                $container.find('.annual-view-content').hide();
+                $container.find('.btn-monthly-view').addClass('active').removeClass('btn-outline-primary').addClass('btn-primary');
+                $container.find('.btn-annual-view').removeClass('active').addClass('btn-outline-primary').removeClass('btn-info');
+            } else {
+                $container.find('.monthly-view-content').hide();
+                $container.find('.annual-view-content').show();
+                $container.find('.btn-monthly-view').removeClass('active').addClass('btn-outline-primary').removeClass('btn-primary');
+                $container.find('.btn-annual-view').addClass('active').removeClass('btn-outline-primary').addClass('btn-info');
+            }
+        };
     }
 
-    // 將 const 改為 var，允許 AJAX 重複載入時覆蓋變數
-    var currentBaseSalary = @Model.BaseSalary;
-
-    function calculateSalary() {
-        const bonusAmount = parseFloat(document.getElementById('inputBonusAmount').value) || 0;
-        const exchangeRate = parseFloat(document.getElementById('hiddenExchangeRate').value) || 32;
-        const finalTotalTwd = currentBaseSalary + bonusAmount;
-        const finalTotalUsd = finalTotalTwd / exchangeRate;
-
-        document.getElementById('bonusDisplayAmount').innerText = Math.round(bonusAmount).toLocaleString();
-        document.getElementById('displayFinalTotal').innerText = '$ ' + Math.round(finalTotalTwd).toLocaleString();
-        document.getElementById('displayFinalTotalUsd').innerText = '≈ ' + finalTotalUsd.toFixed(2) + ' USD';
+    if (typeof updateSalarySummary !== 'function') {
+        window.updateSalarySummary = function(id) {
+            const $container = $('.salary-data-container[data-instructor-id="' + id + '"]');
+            const baseSalary = parseFloat($container.find('.hidden-base-salary').val()) || 0;
+            const exchangeRate = parseFloat($container.find('.hidden-exchange-rate').val()) || 32;
+            
+            const monthlyBonus = parseFloat($container.find('.input-monthly-bonus').val()) || 0;
+            const monthlyTotalTwd = baseSalary + monthlyBonus;
+            const monthlyTotalUsd = monthlyTotalTwd / exchangeRate;
+            
+            $container.find('.display-monthly-bonus').text(Math.round(monthlyBonus).toLocaleString());
+            $container.find('.display-total-twd').text('$ ' + Math.round(monthlyTotalTwd).toLocaleString());
+            $container.find('.display-total-usd').text('≈ ' + monthlyTotalUsd.toFixed(2) + ' USD');
+            
+            const annualBonus = parseFloat($container.find('.input-annual-bonus').val()) || 0;
+            const annualTotalUsd = annualBonus / exchangeRate;
+            
+            $container.find('.display-annual-total-twd').text('$ ' + Math.round(annualBonus).toLocaleString());
+            $container.find('.display-annual-total-usd').text('≈ ' + annualTotalUsd.toFixed(2) + ' USD');
+        };
     }
 
-    function calculateAnnualSalary() {
-        const annualBonus = parseFloat(document.getElementById('inputAnnualBonusAmount').value) || 0;
-        document.getElementById('displayAnnualFinalTotal').innerText = '$ ' + Math.round(annualBonus).toLocaleString();
+    if (typeof executePayout !== 'function') {
+        window.executePayout = function(id, type, btnEl) {
+            const $container = $('.salary-data-container[data-instructor-id="' + id + '"]');
+            const payPalEmail = $container.find('.hidden-paypal-email').val();
+            const instructorName = $('.instructor-item.active .h6').text();
+            
+            let amount = 0;
+            let endpoint = '';
+            let confirmTitle = '';
+
+            if (type === 'monthly') {
+                const baseSalary = parseFloat($container.find('.hidden-base-salary').val()) || 0;
+                const monthlyBonus = parseFloat($container.find('.input-monthly-bonus').val()) || 0;
+                amount = baseSalary + monthlyBonus;
+                endpoint = '/Salary/IssueMonthlySalary';
+                confirmTitle = '核發月度薪資確認';
+            } else {
+                amount = parseFloat($container.find('.input-annual-bonus').val()) || 0;
+                endpoint = '/Salary/IssueAnnualBonus';
+                confirmTitle = '核發年度獎金確認';
+            }
+            
+            // 使用 MicroModal 進行確認
+            const $confirmModal = $('#modal-salary-confirm');
+            if ($confirmModal.length > 0) {
+                $('#modal-salary-confirm-title').text(confirmTitle);
+                $('#confirm-instructor-name').text(instructorName);
+                $('#confirm-paypal-email').text(payPalEmail || '尚未綁定');
+                $('#confirm-amount').text(Math.round(amount).toLocaleString());
+
+                MicroModal.show('modal-salary-confirm');
+
+                // 綁定確認按鈕事件
+                document.getElementById('btn-modal-confirm-issue').onclick = function() {
+                    MicroModal.close('modal-salary-confirm');
+                    performAjaxPayout();
+                };
+            } else {
+                // 回退方案
+                if (confirm(confirmTitle + '\n金額：NT$ ' + Math.round(amount).toLocaleString())) {
+                    performAjaxPayout();
+                }
+            }
+
+            function performAjaxPayout() {
+                const $btn = $(btnEl);
+                const originalHtml = $btn.html();
+                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm mr-2"></span>處理中...');
+
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        InstructorId: parseInt(id),
+                        ReceiverEmail: payPalEmail,
+                        Amount: amount
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('成功', data.message);
+                        // 延遲重新整理，讓使用者看得到成功的 Alert
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        showAlert('核發失敗', data.message);
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('系統錯誤', '系統發生錯誤，請稍後再試。');
+                    $btn.prop('disabled', false).html(originalHtml);
+                });
+            }
+        };
     }
 </script>

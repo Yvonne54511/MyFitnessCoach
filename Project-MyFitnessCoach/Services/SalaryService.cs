@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Models.ViewModels;
-using Project_MyFitnessCoach.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -129,9 +128,9 @@ namespace Project_MyFitnessCoach.Services
                 })
                 .ToListAsync();
 
-            // 2. Performance Metrics Calculation using Enum helper
-            var monthlyMetrics = await GetPeriodMetricsAsync(instructorId, year, month, SalaryPeriod.Monthly);
-            var annualMetrics = await GetPeriodMetricsAsync(instructorId, year, month, SalaryPeriod.Annual);
+            // 2. Performance Metrics Calculation using bool helper
+            var monthlyMetrics = await GetPeriodMetricsAsync(instructorId, year, month, isAnnual: false);
+            var annualMetrics = await GetPeriodMetricsAsync(instructorId, year, month, isAnnual: true);
 
             // 2.2 Monthly Trend
             var monthlyTrends = new List<int>();
@@ -142,17 +141,17 @@ namespace Project_MyFitnessCoach.Services
                 monthlyTrends.Add(count);
             }
 
-            // 3. Global Scores Calculation using Enum helper
+            // 3. Global Scores Calculation using bool helper
             var allInstructors = await _context.Instructors.Where(i => i.IsActive).Select(i => i.Id).ToListAsync();
             double globalTotalScore = 0;
             double annualGlobalTotalScore = 0;
 
             foreach (var id in allInstructors)
             {
-                var mMetrics = await GetPeriodMetricsAsync(id, year, month, SalaryPeriod.Monthly);
+                var mMetrics = await GetPeriodMetricsAsync(id, year, month, isAnnual: false);
                 globalTotalScore += mMetrics.WeightedScore;
 
-                var aMetrics = await GetPeriodMetricsAsync(id, year, month, SalaryPeriod.Annual);
+                var aMetrics = await GetPeriodMetricsAsync(id, year, month, isAnnual: true);
                 annualGlobalTotalScore += aMetrics.WeightedScore;
             }
 
@@ -187,12 +186,12 @@ namespace Project_MyFitnessCoach.Services
             return detail;
         }
 
-        private async Task<PeriodMetricsResult> GetPeriodMetricsAsync(int instructorId, int year, int month, SalaryPeriod period)
+        private async Task<PeriodMetricsResult> GetPeriodMetricsAsync(int instructorId, int year, int month, bool isAnnual)
         {
             DateTime startDateTime, endDateTime;
             DateOnly startDate, endDate;
 
-            if (period == SalaryPeriod.Monthly)
+            if (!isAnnual)
             {
                 startDate = new DateOnly(year, month, 1);
                 endDate = startDate.AddMonths(1).AddDays(-1);
@@ -217,7 +216,7 @@ namespace Project_MyFitnessCoach.Services
             int positiveCount = await reviews.CountAsync(r => r.Rating >= 4);
 
             // Apply different weights based on period
-            double weightedScore = (period == SalaryPeriod.Monthly)
+            double weightedScore = (!isAnnual)
                 ? (bookingCount * 0.5) + (avgRating * 0.3) + (positiveCount * 0.4)
                 : (bookingCount * 0.3) + (avgRating * 0.4) + (positiveCount * 0.5);
 
