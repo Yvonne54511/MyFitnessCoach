@@ -1,0 +1,105 @@
+@using Project_MyFitnessCoach.Models.ViewModels
+@model EmployeeEditViewModel
+
+@{
+    ViewData["Title"] = $"編輯員工 - {Model.UserName}";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="bx bx-edit"></i> @ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bx bx-error-circle mr-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bx bx-user"></i> 員工資訊
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- 唯讀資訊 -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label text-muted">姓名</label>
+                                <p class="form-control-plaintext font-weight-bold">@Model.UserName</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label text-muted">帳號</label>
+                                <p class="form-control-plaintext font-weight-bold">@Model.Account</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <!-- 可編輯表單 -->
+                    <form asp-action="EmployeeEdit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="UserId" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="DepartmentId" class="form-label">部門 <span class="text-danger">*</span></label>
+                                    <select asp-for="DepartmentId" asp-items="Model.DepartmentOptions" class="form-control"></select>
+                                    <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ManagerId" class="form-label">直屬主管</label>
+                                    <select asp-for="ManagerId" asp-items="Model.ManagerOptions" class="form-control"></select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="WorkDelegateId" class="form-label">職務代理人</label>
+                                    <select asp-for="WorkDelegateId" asp-items="Model.DelegateOptions" class="form-control"></select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="IsActive" class="form-label">啟用狀態</label>
+                                    <div class="form-check mt-2">
+                                        <input type="checkbox" asp-for="IsActive" class="form-check-input" />
+                                        <label asp-for="IsActive" class="form-check-label">啟用</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="EmployeeList" class="btn btn-secondary">
+                                <i class="bx bx-arrow-back"></i> 取消
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bx bx-save"></i> 儲存
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

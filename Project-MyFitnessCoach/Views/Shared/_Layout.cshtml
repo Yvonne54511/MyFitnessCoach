@@ -47,6 +47,7 @@
             @{
                 
                 var userFunctions = User.FindAll("Function").Select(f => f.Value).ToList();
+                bool hasEmployeeId = User.FindFirst("EmployeeId") != null;
 
                 //人員管理
                 bool canEditPassword = userFunctions.Contains("edit_Password");
@@ -84,6 +85,15 @@
                 bool canViewSalary = userFunctions.Contains("view_Salary");
                 bool canViewSalary2 = userFunctions.Contains("view_Salary2");
                 bool canEditViolations = userFunctions.Contains("edit_MemberViolations");
+
+                // 請假系統權限
+                bool canViewLeaveRequests = userFunctions.Contains("view_LeaveRequests");
+                bool canEditLeaveRequests = userFunctions.Contains("edit_LeaveRequests");
+                bool canEditWorkDelegate = userFunctions.Contains("edit_WorkDelegate");
+                bool canReviewLeaveRequests = userFunctions.Contains("review_LeaveRequests");
+                bool canViewDeptLeave = userFunctions.Contains("view_DeptLeave");
+                bool canAdminLeaveRequests = userFunctions.Contains("admin_LeaveRequests");
+                bool canAdminEmployees = userFunctions.Contains("admin_Employees");
                 }
 
             <hr class="sidebar-divider">
@@ -111,12 +121,99 @@
                 </li>
             }
 
+            @if (canViewLeaveRequests || canEditLeaveRequests || canEditWorkDelegate
+                        || canReviewLeaveRequests || canViewDeptLeave
+                        || canAdminLeaveRequests || canAdminEmployees)
+            {
+                <hr class="sidebar-divider">
+                <div class="sidebar-heading">請假系統</div>
+
+                @* 員工請假功能（需有 Employee 身份）*@
+                @if (hasEmployeeId && (canViewLeaveRequests || canEditLeaveRequests || canEditWorkDelegate))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse"
+                           data-target="#collapseLeave" aria-expanded="false" aria-controls="collapseLeave">
+                            <i class="bx bx-calendar-x"></i>
+                            <span>我的請假</span>
+                        </a>
+                        <div id="collapseLeave" class="collapse" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                @if (canViewLeaveRequests)
+                                {
+                                    <a class="collapse-item" asp-controller="ApplyLeave" asp-action="List">我的請假申請</a>
+                                }
+                                @if (canEditLeaveRequests)
+                                {
+                                    <a class="collapse-item" asp-controller="ApplyLeave" asp-action="Add">新增請假申請</a>
+                                }
+                                @if (canEditWorkDelegate)
+                                {
+                                    <a class="collapse-item" asp-controller="ApplyLeave" asp-action="WorkDelegate">代理人設定</a>
+                                }
+                            </div>
+                        </div>
+                    </li>
+                }
+
+                @* 主管審核功能（需有 Employee 身份）*@
+                @if (hasEmployeeId && (canReviewLeaveRequests || canViewDeptLeave))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse"
+                           data-target="#collapseReviewLeave" aria-expanded="false" aria-controls="collapseReviewLeave">
+                            <i class="bx bx-check-double"></i>
+                            <span>主管審核</span>
+                        </a>
+                        <div id="collapseReviewLeave" class="collapse" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                @if (canReviewLeaveRequests)
+                                {
+                                    <a class="collapse-item" asp-controller="ReviewLeave" asp-action="Pending">待我審核</a>
+                                }
+                                @if (canViewDeptLeave)
+                                {
+                                    <a class="collapse-item" asp-controller="ReviewLeave" asp-action="List">部門請假總覽</a>
+                                }
+                            </div>
+                        </div>
+                    </li>
+                }
+
+                @* 管理員功能 *@
+                @if (canAdminLeaveRequests || canAdminEmployees)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse"
+                           data-target="#collapseAdminLeave" aria-expanded="false" aria-controls="collapseAdminLeave">
+                            <i class="bx bx-cog"></i>
+                            <span>請假管理(Admin)</span>
+                        </a>
+                        <div id="collapseAdminLeave" class="collapse" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                @if (canAdminLeaveRequests)
+                                {
+                                    <a class="collapse-item" asp-controller="AdminLeave" asp-action="List">假單管理</a>
+                                }
+                                @if (canAdminEmployees)
+                                {
+                                    <a class="collapse-item" asp-controller="AdminLeave" asp-action="EmployeeList">員工代理人管理</a>
+                                }
+                            </div>
+                        </div>
+                    </li>
+                }
+            }
+
+            <hr class="sidebar-divider">
+
             @if (canEditUserAccounts || canEditRoleFunctions || canEditViolations)
             {
+                <div class="sidebar-heading">帳號管理</div>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStaff" aria-expanded="true" aria-controls="collapseStaff">
                         <i class="fa-solid fa-people-group"></i>
-                        <span>帳號權限管理</span>
+                        <span>帳號與權限管理</span>
                     </a>
                     <div id="collapseStaff" class="collapse" data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
@@ -137,9 +234,10 @@
                     </div>
                 </li>
             }
-
+            <hr class="sidebar-divider">
             @if (canEditInstructorShifts || canViewInstructorShifts || User.HasClaim(c => c.Type == "InstructorId") || canViewSalary || canViewSalary2)
             {
+                <div class="sidebar-heading">營養師管理</div>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTutor" aria-expanded="true" aria-controls="collapseTutor">
                         <i class="fa-regular fa-calendar-check"></i>
@@ -250,6 +348,7 @@
                 }
             }
             
+            
             @if (canEditCommentsAdmin || canEditCommentsInstructor || canViewKeyWords || canEditKeyWords)
             {
                 <hr class="sidebar-divider">
@@ -292,7 +391,8 @@
                     { "instructor", "營養師" },
                     { "purchasor", "採購人員" },
                     { "marketor", "行銷人員" },
-                    { "admin", "系統管理員" }
+                    { "admin", "系統管理員" },
+                    { "manager", "主管" }
                 };
                 var chineseRoles = string.Join(", ", roles.Select(r => roleMapping.ContainsKey(r) ? roleMapping[r] : r));
 

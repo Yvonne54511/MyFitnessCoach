@@ -1,0 +1,288 @@
+@using Project_MyFitnessCoach.Models.ViewModels
+@model AddLeaveViewModel
+
+@{
+    ViewData["Title"] = "新增請假申請";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="bx bx-calendar-plus"></i> @ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="alert alert-danger"></div>
+    }
+
+    <form asp-action="Add" method="post">
+        @Html.AntiForgeryToken()
+
+        <!-- 區塊一：申請人資訊 -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bx bx-user"></i> 申請人資訊（自動帶入）
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label text-muted">姓名</label>
+                            <input type="text" class="form-control" value="@Model.EmployeeName" disabled />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label text-muted">部門</label>
+                            <input type="text" class="form-control" value="@Model.DepartmentName" disabled />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label text-muted">直屬主管</label>
+                            <input type="text" class="form-control" value="@Model.ManagerName" disabled />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 假別餘額 -->
+        @if (Model.Balances != null && Model.Balances.Any())
+        {
+            <div class="card shadow-sm mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="bx bx-bar-chart-alt-2"></i> 今年度假別餘額
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var b in Model.Balances)
+                        {
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <div class="card border-left-info h-100 py-2">
+                                    <div class="card-body py-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">@b.LeaveTypeName</div>
+                                        <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                            剩餘 <span class="text-primary">@b.RemainingDays.ToString("0.#")</span> 天
+                                        </div>
+                                        <div class="small text-muted">已用 @b.UsedDays.ToString("0.#") / @b.TotalDays.ToString("0.#") 天</div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- 區塊二：請假內容 -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bx bx-edit"></i> 請假內容
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="LeaveTypeId" class="form-label"></label>
+                            <select asp-for="LeaveTypeId" asp-items="Model.LeaveTypeOptions" class="form-control">
+                                <option value="">-- 請選擇假別 --</option>
+                            </select>
+                            <span asp-validation-for="LeaveTypeId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="LeaveDelegateId" class="form-label"></label>
+                            <select asp-for="LeaveDelegateId" class="form-control" id="delegateSelect">
+                                <option value="">-- 不指定 --</option>
+                                @foreach (var opt in Model.DelegateOptions.Where(o => !string.IsNullOrEmpty(o.Value)))
+                                {
+                                    <option value="@opt.Value" selected="@(opt.Value == Model.LeaveDelegateId?.ToString())">@opt.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 代理人警告 -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert alert-warning" id="delegateWarning" style="display:none;">
+                            <i class="bx bx-error"></i> <span id="delegateWarningText"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="StartDate" class="form-label"></label>
+                            <input asp-for="StartDate" type="date" class="form-control" id="startDate" />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="EndDate" class="form-label"></label>
+                            <input asp-for="EndDate" type="date" class="form-control" id="endDate" />
+                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="alert alert-info w-100 py-2 mb-3" id="daysHint" style="display:none;">
+                            <i class="bx bx-info-circle"></i> 預估請假 <strong id="daysCount">0</strong> 個工作日（上限 <strong id="maxHours">0</strong> 小時）
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="HoursUsed" class="form-label"></label>
+                            <input asp-for="HoursUsed" type="number" class="form-control" id="hoursUsed" min="1" step="1" placeholder="請輸入小時數" />
+                            <span asp-validation-for="HoursUsed" class="text-danger"></span>
+                            <small class="form-text text-muted" id="hoursToDay" style="display:none;">
+                                換算約 <strong id="hoursDayCalc">0</strong> 天
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label asp-for="Reason" class="form-label"></label>
+                            <textarea asp-for="Reason" class="form-control" rows="4" placeholder="請輸入請假原因..."></textarea>
+                            <span asp-validation-for="Reason" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 按鈕 -->
+        <div class="d-flex justify-content-end mb-4">
+            <a asp-action="List" class="btn btn-secondary mr-2">
+                <i class="bx bx-arrow-back"></i> 取消
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bx bx-send"></i> 送出申請
+            </button>
+        </div>
+    </form>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            var defaultDelegateId = @(Model.DefaultDelegateId?.ToString() ?? "null");
+
+            // 計算工作日與上限小時
+            function calcDays() {
+                var start = $('#startDate').val();
+                var end = $('#endDate').val();
+                if (start && end) {
+                    var s = new Date(start);
+                    var e = new Date(end);
+                    if (e >= s) {
+                        var count = 0;
+                        var current = new Date(s);
+                        while (current <= e) {
+                            var day = current.getDay();
+                            if (day !== 0 && day !== 6) count++;
+                            current.setDate(current.getDate() + 1);
+                        }
+                        $('#daysCount').text(count);
+                        $('#maxHours').text(count * 8);
+                        $('#daysHint').show();
+                    } else {
+                        $('#daysHint').hide();
+                    }
+                } else {
+                    $('#daysHint').hide();
+                }
+            }
+
+            // 小時換算天數
+            function calcHoursToDay() {
+                var hours = parseFloat($('#hoursUsed').val());
+                if (hours > 0) {
+                    var days = (hours / 8).toFixed(1);
+                    $('#hoursDayCalc').text(days);
+                    $('#hoursToDay').show();
+                } else {
+                    $('#hoursToDay').hide();
+                }
+            }
+
+            // 日期變更時：更新工作日、更新可用代理人、檢查預設代理人
+            function onDateChange() {
+                calcDays();
+
+                var start = $('#startDate').val();
+                var end = $('#endDate').val();
+                if (!start || !end) return;
+
+                var s = new Date(start);
+                var e = new Date(end);
+                if (e < s) return;
+
+                // AJAX：取得可用代理人（排除請假中的同事）
+                $.get('@Url.Action("GetAvailableDelegates", "ApplyLeave")', {
+                    startDate: start,
+                    endDate: end
+                }, function (data) {
+                    var select = $('#delegateSelect');
+                    var currentVal = select.val();
+                    select.empty();
+                    select.append('<option value="">-- 不指定 --</option>');
+                    $.each(data, function (i, item) {
+                        select.append('<option value="' + item.value + '">' + item.text + '</option>');
+                    });
+                    // 嘗試保留原選取值
+                    if (select.find('option[value="' + currentVal + '"]').length > 0) {
+                        select.val(currentVal);
+                    }
+                });
+
+                // AJAX：檢查預設代理人是否請假
+                if (defaultDelegateId) {
+                    $.get('@Url.Action("CheckDefaultDelegate", "ApplyLeave")', {
+                        startDate: start,
+                        endDate: end
+                    }, function (data) {
+                        if (data.hasDefault && data.onLeave) {
+                            $('#delegateWarningText').text(
+                                '您的預設代理人「' + data.delegateName + '」在此期間有請假，請另選代理人。'
+                            );
+                            $('#delegateWarning').show();
+                        } else {
+                            $('#delegateWarning').hide();
+                            // 如果預設代理人沒請假，自動帶入
+                            if (data.hasDefault && !data.onLeave) {
+                                var select = $('#delegateSelect');
+                                if (select.find('option[value="' + data.delegateId + '"]').length > 0) {
+                                    select.val(data.delegateId);
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            $('#startDate, #endDate').on('change', onDateChange);
+            $('#hoursUsed').on('input', calcHoursToDay);
+
+            // 初始化：計算工作日 + 檢查預設代理人
+            onDateChange();
+            calcHoursToDay();
+        });
+    </script>
+}
