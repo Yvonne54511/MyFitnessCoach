@@ -26,7 +26,7 @@
     @* 搜尋列 *@
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <form asp-action="BodyData" method="get" class="form-inline flex-wrap">
+            <form asp-action="Index" method="get" class="form-inline flex-wrap">
                 <div class="form-group mr-2 mb-1">
                     <label class="mr-1">會員姓名</label>
                     <input type="text" name="searchName" value="@Model.SearchName"
@@ -43,7 +43,7 @@
                 <button type="submit" class="btn btn-primary btn-sm mb-1 mr-1">
                     <i class="fas fa-search fa-sm"></i> 查詢
                 </button>
-                <a asp-action="BodyData" class="btn btn-secondary btn-sm mb-1">重設</a>
+                <a asp-action="Index" class="btn btn-secondary btn-sm mb-1">重設</a>
             </form>
         </div>
     </div>
@@ -112,7 +112,7 @@
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-primary">量測紀錄列表</h6>
-            <small class="text-muted">點擊「趨勢圖」可查看該會員的數據走勢</small>
+            <small class="text-muted">點擊「會員姓名」可查看歷史紀錄，點擊「趨勢圖」可查看數據走勢</small>
         </div>
         <div class="card-body">
             @if (!Model.Records.Any())
@@ -146,7 +146,7 @@
                                 <tr>
                                     <td>@item.Id</td>
                                     <td>
-                                        <a asp-action="MemberBodyHistory" asp-route-memberId="@item.MemberId"
+                                        <a asp-action="History" asp-route-memberId="@item.MemberId"
                                            class="font-weight-bold text-primary">
                                             @item.MemberName
                                         </a>
