@@ -15,6 +15,8 @@ namespace Project_MyFitnessCoach.Repositories
         Task<Instructor?> GetInstructorByUserIdAsync(int userId);
         void AddInstructor(Instructor instructor);
         void UpdateInstructor(Instructor instructor);
+
+        Task<Employee?> GetEmployeeByUserIdAsync(int userId);
     }
 
     public class AccountRepository : IAccountRepository
@@ -77,6 +79,13 @@ namespace Project_MyFitnessCoach.Repositories
         public void UpdateInstructor(Instructor instructor)
         {
             _db.Instructors.Update(instructor);
+        }
+
+        public async Task<Employee?> GetEmployeeByUserIdAsync(int userId)
+        {
+            return await _db.Employees
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.UserId == userId);
         }
     }
 }

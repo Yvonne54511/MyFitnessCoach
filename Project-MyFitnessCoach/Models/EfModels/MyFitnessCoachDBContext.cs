@@ -73,6 +73,18 @@ public partial class MyFitnessCoachDbContext : DbContext
 
     public virtual DbSet<VwUserRoleFunction1> VwUserRoleFunctions1 { get; set; }
 
+    public virtual DbSet<Employee> Employees { get; set; }
+
+    public virtual DbSet<Department> Departments { get; set; }
+
+    public virtual DbSet<LeaveRequest> LeaveRequests { get; set; }
+
+    public virtual DbSet<LeaveType> LeaveTypes { get; set; }
+
+    public virtual DbSet<LeaveBalance> LeaveBalances { get; set; }
+
+    public virtual DbSet<LeaveAttachment> LeaveAttachments { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Food>(entity =>
@@ -643,6 +655,126 @@ public partial class MyFitnessCoachDbContext : DbContext
             entity.Property(e => e.UserName)
                 .IsRequired()
                 .HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<Department>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasOne(d => d.Manager).WithMany()
+                .HasForeignKey(d => d.ManagerId)
+                .HasConstraintName("FK_Dept_Manager");
+        });
+
+        modelBuilder.Entity<Employee>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.HiredDate)
+                .HasColumnType("date");
+
+            entity.HasOne(d => d.User).WithMany()
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Employees_Users");
+
+            entity.HasOne(d => d.Department).WithMany(p => p.Employees)
+                .HasForeignKey(d => d.DepartmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Employees_Dept");
+
+            entity.HasOne(d => d.Manager).WithMany(p => p.Subordinates)
+                .HasForeignKey(d => d.ManagerId)
+                .HasConstraintName("FK_Employees_Manager");
+
+            entity.HasOne(d => d.WorkDelegate).WithMany(p => p.DelegateOf)
+                .HasForeignKey(d => d.WorkDelegateId)
+                .HasConstraintName("FK_Employees_WorkDel");
+        });
+
+        modelBuilder.Entity<LeaveType>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<LeaveRequest>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.DaysUsed)
+                .HasColumnType("decimal(18, 1)");
+            entity.Property(e => e.Reason)
+                .HasMaxLength(500);
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.RejectReason)
+                .HasMaxLength(300);
+
+            entity.HasOne(d => d.Employee).WithMany(p => p.LeaveRequests)
+                .HasForeignKey(d => d.EmployeeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Leave_Employee");
+
+            entity.HasOne(d => d.LeaveType).WithMany(p => p.LeaveRequests)
+                .HasForeignKey(d => d.LeaveTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Leave_LeaveType");
+
+            entity.HasOne(d => d.LeaveDelegate).WithMany(p => p.DelegatedLeaveRequests)
+                .HasForeignKey(d => d.LeaveDelegateId)
+                .HasConstraintName("FK_Leave_LeaveDelegate");
+
+            entity.HasOne(d => d.Approver).WithMany(p => p.ApprovedLeaveRequests)
+                .HasForeignKey(d => d.ApprovedBy)
+                .HasConstraintName("FK_Leave_ApprovedBy");
+        });
+
+        modelBuilder.Entity<LeaveBalance>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.TotalDays)
+                .HasColumnType("decimal(18, 1)");
+            entity.Property(e => e.UsedDays)
+                .HasColumnType("decimal(18, 1)");
+            entity.Property(e => e.RemainingDays)
+                .HasColumnType("decimal(18, 1)");
+
+            entity.HasOne(d => d.Employee).WithMany(p => p.LeaveBalances)
+                .HasForeignKey(d => d.EmployeeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Balance_Employee");
+
+            entity.HasOne(d => d.LeaveType).WithMany(p => p.LeaveBalances)
+                .HasForeignKey(d => d.LeaveTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Balance_LeaveType");
+        });
+
+        modelBuilder.Entity<LeaveAttachment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.FileName)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.FileUrl)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            entity.HasOne(d => d.LeaveRequest).WithMany(p => p.Attachments)
+                .HasForeignKey(d => d.RequestId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Attach_Request");
         });
 
         OnModelCreatingPartial(modelBuilder);
