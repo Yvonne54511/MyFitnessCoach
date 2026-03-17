@@ -11,11 +11,9 @@ public partial class Function
 
     public string FunctionName { get; set; }
 
-    public string Description { get; set; }
-
-    public string api_path { get; set; }
-
     public bool IsActive { get; set; }
+
+    public string Description { get; set; }
 
     public string ApiPath { get; set; }
 

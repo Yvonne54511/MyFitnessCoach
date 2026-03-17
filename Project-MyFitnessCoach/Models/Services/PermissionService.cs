@@ -77,7 +77,7 @@ namespace Project_MyFitnessCoach.Models.Services
 
             entity.FunctionName = dto.FunctionName;
             entity.Description = dto.Description;
-            entity.api_path = dto.ApiPath;
+            entity.ApiPath = dto.ApiPath;
             entity.IsActive = dto.IsActive;
 
             await _funcRepo.UpdateAsync(entity);

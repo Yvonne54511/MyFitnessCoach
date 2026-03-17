@@ -95,10 +95,6 @@
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[SensitiveWords]",
-         "ObjectType": 0
-      },
-      {
          "Name": "[dbo].[Shifts]",
          "ObjectType": 0
       },

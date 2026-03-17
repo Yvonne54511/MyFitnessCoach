@@ -1,0 +1,221 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.ViewModels.KeyWordViewModel>
+
+@{
+    ViewData["Title"] = "關鍵字詞管理";
+}
+
+@section Styles {
+    <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        .category-select {
+            width: 120px;
+        }
+        .weight-slider-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 150px;
+        }
+        .weight-slider {
+            flex-grow: 1;
+            cursor: pointer;
+        }
+        .weight-value {
+            font-weight: bold;
+            width: 25px;
+            color: #4e73df;
+        }
+        .swal2-popup {
+            font-size: 0.9rem !important;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800"><i class='bx bx-key'></i> 關鍵字詞管理</h1>
+    <p class="mb-4">管理系統中的關鍵字詞、類別與權重，用於分析評論情緒與內容過濾。</p>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary"><i class='bx bx-list-check'></i> 關鍵字詞列表</h6>
+            <a asp-action="Create" class="btn btn-primary btn-sm shadow-sm">
+                <i class='bx bx-plus'></i> 新增關鍵字詞
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle text-center" id="keyWordTable" width="100%" cellspacing="0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>關鍵字詞</th>
+                            <th>類別 (Category)</th>
+                            <th>權重 (Weight)</th>
+                            <th style="width: 100px;" class="no-sort">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var badgeStyle = "";
+                            if (item.Category == 1)
+                            {
+                                // 調整倍率為 8，讓 1-5 的顏色層次分明 (50% -> 10%)
+                                int lightness = Math.Max(10, 50 - (item.Weight * 8));
+                                badgeStyle = $"background-color: hsl(120, 70%, {lightness}%); color: white;";
+                            }
+                            else if (item.Category == -1)
+                            {
+                                int lightness = Math.Max(10, 50 - (item.Weight * 8));
+                                badgeStyle = $"background-color: hsl(0, 80%, {lightness}%); color: white;";
+                            }
+                            else if (item.Category == 0)
+                            {
+                                badgeStyle = "background-color: #858796; color: white;";
+                            }
+
+                            <tr data-id="@item.Id">
+                                <td>
+                                    <span class="badge p-2 word-badge" style="@badgeStyle"><i class='bx bx-tag-alt'></i> @item.Word</span>
+                                </td>
+                                <td>
+                                    <select class="form-control form-control-sm category-select mx-auto" onchange="updateCategory(@item.Id, this.value, this)">
+                                        <!option value="1" @(item.Category == 1 ? "selected" : "")>正向 (1)</!option>
+                                        <!option value="-1" @(item.Category == -1 ? "selected" : "")>負向 (-1)</!option>
+                                        <!option value="0" @(item.Category == 0 ? "selected" : "")>忽略 (0)</!option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="weight-slider-container" id="sliderContainer-@item.Id">
+                                        <input type="range" class="weight-slider custom-range" 
+                                               min="1" max="5" step="1" 
+                                               value="@item.Weight" 
+                                               oninput="previewWeight(@item.Id, this.value)"
+                                               onchange="updateWeight(@item.Id, this.value)" />
+                                        <span class="weight-value" id="weightVal-@item.Id">@item.Weight</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center">
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" id="deleteForm-@item.Id" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="button" class="btn btn-danger btn-circle btn-sm" title="刪除" onclick="confirmDelete(@item.Id, '@item.Word')">
+                                                <i class='bx bx-trash'></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true
+        });
+
+        $(document).ready(function() {
+            $('#keyWordTable').DataTable({
+                "columnDefs": [
+                    { "orderable": false, "targets": 3 }
+                ],
+                "language": {
+                    "processing": "處理中...",
+                    "loadingRecords": "載入中...",
+                    "lengthMenu": "顯示 _MENU_ 項結果",
+                    "zeroRecords": "沒有符合的結果",
+                    "info": "顯示第 _START_ 至 _END_ 項結果，共 _TOTAL_ 項",
+                    "infoEmpty": "顯示第 0 至 0 項結果，共 0 項",
+                    "infoFiltered": "(從 _MAX_ 項結果中過濾)",
+                    "search": "搜尋:",
+                    "paginate": {
+                        "first": "第一頁",
+                        "previous": "上一頁",
+                        "next": "下一頁",
+                        "last": "最後一頁"
+                    }
+                }
+            });
+        });
+
+        function confirmDelete(id, word) {
+            Swal.fire({
+                title: '確定要刪除嗎？',
+                text: "您即將刪除關鍵字：'" + word + "'，此動作無法復原！",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: '確定刪除',
+                cancelButtonText: '取消',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('#deleteForm-' + id).submit();
+                }
+            });
+        }
+
+        function previewWeight(id, weight) {
+            $('#weightVal-' + id).text(weight);
+            updateBadgeColor(id, null, weight);
+        }
+
+        function updateBadgeColor(rowId, forceCategory = null, forceWeight = null) {
+            var $row = $('tr[data-id="' + rowId + '"]');
+            var category = forceCategory !== null ? parseInt(forceCategory) : parseInt($row.find('.category-select').val());
+            var weight = forceWeight !== null ? parseInt(forceWeight) : parseInt($row.find('.weight-slider').val());
+            var $badge = $row.find('.word-badge');
+
+            var style = "";
+            if (category === 1) {
+                var lightness = Math.Max(10, 50 - (weight * 8));
+                style = "background-color: hsl(120, 70%, " + lightness + "%); color: white;";
+            } else if (category === -1) {
+                var lightness = Math.Max(10, 50 - (weight * 8));
+                style = "background-color: hsl(0, 80%, " + lightness + "%); color: white;";
+            } else if (category === 0) {
+                style = "background-color: #858796; color: white;";
+            }
+            $badge.attr('style', style);
+        }
+
+        function updateCategory(id, category, element) {
+            $.post('@Url.Action("UpdateCategory", "KeyWords")', { id: id, category: category }, function() {
+                updateBadgeColor(id, category);
+                Toast.fire({
+                    icon: 'success',
+                    title: '類別已更新'
+                });
+            }).fail(function() {
+                Swal.fire('錯誤', '更新類別失敗', 'error');
+            });
+        }
+
+        function updateWeight(id, weight) {
+            $.post('@Url.Action("UpdateWeight", "KeyWords")', { id: id, weight: weight }, function() {
+                updateBadgeColor(id, null, weight);
+                Toast.fire({
+                    icon: 'success',
+                    title: '權重已更新'
+                });
+            }).fail(function() {
+                Swal.fire('錯誤', '更新權重失敗', 'error');
+            });
+        }
+    </script>
+}

@@ -1,0 +1,82 @@
+@model Project_MyFitnessCoach.Models.ViewModels.MemberViolationCreateEditViewModel
+
+@{
+    ViewData["Title"] = "編輯違規紀錄";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-2 text-gray-800">編輯違規紀錄</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">違規資訊 - @Model.MemberName</h6>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="MemberId" />
+
+                <div class="form-group">
+                    <label class="control-label">會員姓名</label>
+                    <input class="form-control" value="@Model.MemberName" disabled />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="WarningCount" class="control-label"></label>
+                    <input asp-for="WarningCount" class="form-control" type="number" min="0" />
+                    <span asp-validation-for="WarningCount" class="text-danger"></span>
+                </div>
+
+                <div class="form-group form-check">
+                    <label class="form-check-label">
+                        <input class="form-check-input" asp-for="IsSuspended" id="IsSuspended" /> @Html.DisplayNameFor(model => model.IsSuspended)
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="LastWarningAt" class="control-label"></label>
+                    <input asp-for="LastWarningAt" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="LastWarningAt" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="SuspendedAt" class="control-label"></label>
+                    <input asp-for="SuspendedAt" class="form-control" type="datetime-local" id="SuspendedAt" />
+                    <span asp-validation-for="SuspendedAt" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Reason" class="control-label"></label>
+                    <textarea asp-for="Reason" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Reason" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i> 儲存
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left mr-1"></i> 返回列表
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            // Auto-set current time when IsSuspended is checked
+            $('#IsSuspended').change(function() {
+                if ($(this).is(':checked') && $('#SuspendedAt').val() === "") {
+                    var now = new Date();
+                    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                    $('#SuspendedAt').val(now.toISOString().slice(0, 16));
+                }
+            });
+        });
+    </script>
+}

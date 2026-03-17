@@ -35,9 +35,34 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CreateInstructor()
+        public async Task<IActionResult> GetInstructorList()
         {
-            ViewBag.Users = await _instructorService.GetAvailableUsersAsync();
+            var instructors = await _instructorService.GetAllInstructorsAsync();
+            return PartialView("_InstructorListPartial", instructors);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CreateInstructor(int? userId = null)
+        {
+            var availableUsers = await _instructorService.GetAvailableUsersAsync();
+
+            if (userId.HasValue)
+            {
+                // 指定使用者：僅傳入該使用者，前端顯示為唯讀
+                var allStaff = await _userService.GetStaffListAsync();
+                var targetUser = allStaff.FirstOrDefault(u => u.Id == userId.Value);
+                if (targetUser != null)
+                {
+                    ViewBag.Users = new List<UserDto>
+                    {
+                        new UserDto { Id = targetUser.Id, UserName = targetUser.UserName, Account = targetUser.Account, Email = targetUser.Email }
+                    };
+                    ViewBag.FixedUserId = userId.Value;
+                    return PartialView("_CreateInstructorPartial", new InstructorDto { UserId = userId.Value });
+                }
+            }
+
+            ViewBag.Users = availableUsers;
             return PartialView("_CreateInstructorPartial", new InstructorDto());
         }
 
@@ -141,7 +166,7 @@ namespace Project_MyFitnessCoach.Controllers
         public async Task<IActionResult> Index(string? name = null, string? role = null, int? id = null)
         {
             var staffDtos = await _userService.GetStaffListAsync(name, role, id);
-            var staffList = staffDtos.Select(s => new StaffListItemViewModel
+            var allStaff = staffDtos.Select(s => new StaffListItemViewModel
             {
                 Id = s.Id,
                 UserName = s.UserName,
@@ -151,6 +176,22 @@ namespace Project_MyFitnessCoach.Controllers
                 IsActive = s.IsActive,
                 Roles = s.Roles
             }).ToList();
+
+            // 員工列表：排除只有 member 或 instructor 角色的使用者
+            var staffList = allStaff
+                .Where(s => s.Roles.Any(r => r != "member" && r != "instructor"))
+                .ToList();
+            // 營養師列表：有 instructor 角色的使用者
+            ViewBag.InstructorList = allStaff
+                .Where(s => s.Roles.Any(r => r == "instructor"))
+                .ToList();
+            // 營養師詳細資料
+            var instructors = await _instructorService.GetAllInstructorsAsync();
+            ViewBag.InstructorDetails = instructors.ToList();
+            // 會員列表：有 member 角色的使用者
+            ViewBag.MemberList = allStaff
+                .Where(s => s.Roles.Any(r => r == "member"))
+                .ToList();
 
             ViewBag.Roles = await _userService.GetActiveRolesAsync();
             ViewBag.CurrentName = name;
@@ -173,7 +214,8 @@ namespace Project_MyFitnessCoach.Controllers
                 IsConfirmed = s.IsConfirmed,
                 IsActive = s.IsActive,
                 Roles = s.Roles
-            }).ToList();
+            }).Where(s => s.Roles.Any(r => r != "member" && r != "instructor"))
+            .ToList();
 
             return PartialView("_StaffListPartial", staffList);
         }

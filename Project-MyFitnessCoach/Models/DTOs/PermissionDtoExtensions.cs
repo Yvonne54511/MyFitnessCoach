@@ -39,7 +39,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
                 Id = function.Id,
                 FunctionName = function.FunctionName,
                 Description = function.Description,
-                api_path = function.api_path,
+                ApiPath = function.ApiPath,
                 IsActive = function.IsActive
             };
         }
@@ -52,7 +52,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
                 Id = dto.Id,
                 FunctionName = dto.FunctionName,
                 Description = dto.Description,
-                api_path = dto.api_path, // 此欄位與資料庫 api_path 對應
+                ApiPath = dto.ApiPath, // 此欄位與資料庫 ApiPath 對應
                 IsActive = dto.IsActive
             };
         }

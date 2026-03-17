@@ -1,0 +1,66 @@
+@model IEnumerable<Project_MyFitnessCoach.Models.DTOs.InstructorDto>
+
+<div class="d-flex justify-content-end mb-3">
+    <button type="button" class="btn btn-primary btn-sm" onclick="showCreateModal()">
+        <i class="fas fa-plus"></i> 新增營養師
+    </button>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover" id="instructorTable" width="100%" cellspacing="0">
+        <thead class="thead-light">
+            <tr>
+                <th>ID</th>
+                <th>形象照</th>
+                <th>姓名</th>
+                <th>時薪</th>
+                <th>取消次數</th>
+                <th>狀態 (有效)</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td class="text-center">
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" alt="形象照"
+                                 style="width: 80px; height: auto; max-height: 80px; object-fit: contain; border: 1px solid #ddd;"
+                                 onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'" />
+                        }
+                        else
+                        {
+                            <img src="https://via.placeholder.com/80x80?text=No+Image" alt="無照片"
+                                 style="width: 80px; height: auto; max-height: 80px; object-fit: contain; border: 1px solid #ddd;" />
+                        }
+                    </td>
+                    <td>@item.UserName</td>
+                    <td>@item.HourWage.ToString("C0")</td>
+                    <td>@item.CancelCount</td>
+                    <td class="text-center">
+                        <div class="form-check form-switch d-inline-block">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   id="isActive_@item.Id" @(item.IsActive ? "checked" : "")
+                                   onchange="toggleActive(@item.Id)">
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="showEditModal(@item.Id)">
+                            <i class="fas fa-edit"></i> 編輯
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteInstructor(@item.Id)">
+                            <i class="fas fa-trash"></i> 刪除
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Container -->
+<div id="modalContainer"></div>
+@Html.AntiForgeryToken()
