@@ -1,0 +1,109 @@
+@using Project_MyFitnessCoach.Models.ViewModels
+@model WorkDelegateViewModel
+
+@{
+    ViewData["Title"] = "代理人設定";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="bx bx-user-check"></i> @ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bx bx-check-circle mr-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bx bx-error mr-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="alert alert-danger"></div>
+    }
+
+    <!-- 目前代理人 -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-success">
+                <i class="bx bx-user-pin"></i> 目前職務代理人
+            </h6>
+        </div>
+        <div class="card-body">
+            @if (Model.CurrentDelegateId != null && !string.IsNullOrEmpty(Model.CurrentDelegateName))
+            {
+                <div class="d-flex align-items-center justify-content-between p-3 rounded" style="background-color: #d4edda;">
+                    <div>
+                        <i class="bx bx-user-circle bx-sm text-success mr-2"></i>
+                        <span class="font-weight-bold">@Model.CurrentDelegateName</span>
+                    </div>
+                    <form asp-action="RemoveDelegate" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('確定要解除代理人設定嗎？')">
+                            <i class="bx bx-user-x"></i> 解除代理
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="p-3 rounded text-center" style="background-color: #fff3cd;">
+                    <i class="bx bx-info-circle text-warning mr-1"></i>
+                    <span class="text-muted">目前尚未設定職務代理人</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- 設定新代理人 -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bx bx-user-plus"></i> 設定新代理人
+            </h6>
+        </div>
+        <div class="card-body">
+            <form asp-action="WorkDelegate" method="post">
+                @Html.AntiForgeryToken()
+                <div class="row align-items-end">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label class="form-label">選擇代理人（同部門員工）</label>
+                            <select asp-for="NewDelegateId" asp-items="Model.DelegateOptions" class="form-control">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bx bx-save"></i> 儲存設定
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="List" class="btn btn-secondary">
+            <i class="bx bx-arrow-back"></i> 返回我的請假申請
+        </a>
+    </div>
+</div>

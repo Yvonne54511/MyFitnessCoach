@@ -1,0 +1,14 @@
+@model string
+
+@{
+    var (badgeClass, label) = Model switch
+    {
+        "Pending" => ("badge-warning", "待審核"),
+        "Approved" => ("badge-success", "已核准"),
+        "Rejected" => ("badge-danger", "已駁回"),
+        "Cancelled" => ("badge-secondary", "已取消"),
+        _ => ("badge-info", Model ?? "未知")
+    };
+}
+
+<span class="badge @badgeClass">@label</span>
