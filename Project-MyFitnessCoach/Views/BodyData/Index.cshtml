@@ -128,7 +128,7 @@
                     <table class="table table-bordered table-striped table-hover" id="bodyDataTable" width="100%" cellspacing="0">
                         <thead class="thead-dark">
                             <tr>
-                                <th>#</th>
+                                @* <th>#</th> *@
                                 <th>會員姓名</th>
                                 <th>目標</th>
                                 <th>體重 (kg)</th>
@@ -144,7 +144,7 @@
                             @foreach (var item in Model.Records)
                             {
                                 <tr>
-                                    <td>@item.Id</td>
+                                    @* <td>@item.Id</td> *@
                                     <td>
                                         <a asp-action="History" asp-route-memberId="@item.MemberId"
                                            class="font-weight-bold text-primary">
@@ -237,7 +237,12 @@
 @section scripts {
 <script src="~/vendor/chart.js/Chart.bundle.min.js"></script>
 <script>
-    const memberTrends = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MemberTrends));
+    const memberTrends = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        Model.MemberTrends,
+        new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+        }));
 
     let weightChartInst = null;
     let bodyFatChartInst = null;
