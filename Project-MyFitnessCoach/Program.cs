@@ -93,6 +93,14 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<LeaveService>();
             builder.Services.AddScoped<ReviewLeaveService>();
 
+            // 註冊 AdminLeave 管理員請假模組
+            builder.Services.AddScoped<IAdminLeaveRepository, AdminLeaveRepository>();
+            builder.Services.AddScoped<AdminLeaveService>();
+
+            // 註冊 Employee 員工管理模組
+            builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            builder.Services.AddScoped<EmployeeService>();
+
 			// 註冊使用Cookie驗證服務
 			builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 				.AddCookie(options =>
