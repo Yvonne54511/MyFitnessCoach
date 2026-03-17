@@ -1,36 +1,12 @@
-using Project_MyFitnessCoach.Models.DTOs;
 using System.Collections.Generic;
 
-namespace Project_MyFitnessCoach.Models.ViewModels
+namespace Project_MyFitnessCoach.Models.DTOs
 {
     /// <summary>
-    /// 客戶身體數據列表 ViewModel
-    /// Controller 從 BodyDataResultDto 轉換後傳入 View
+    /// 單一會員身體數據歷史 DTO
+    /// Service → Controller 回傳單一會員完整歷史資料
     /// </summary>
-    public class BodyDataViewModel
-    {
-        public IEnumerable<BodyRecordDto> Records { get; set; } = new List<BodyRecordDto>();
-
-        // 搜尋條件（保留供 View 顯示）
-        public string SearchName { get; set; }
-        public string DateFrom { get; set; }
-        public string DateTo { get; set; }
-
-        // 統計摘要
-        public int TotalRecords { get; set; }
-        public int TotalMembers { get; set; }
-        public double? AvgWeight { get; set; }
-        public double? AvgBodyFat { get; set; }
-
-        // 各會員趨勢圖表資料 (key = MemberId)
-        public Dictionary<int, MemberBodyTrendDto> MemberTrends { get; set; } = new();
-    }
-
-    /// <summary>
-    /// 單一會員身體數據歷史 ViewModel
-    /// Controller 從 MemberHistoryDto 轉換後傳入 View
-    /// </summary>
-    public class MemberHistoryViewModel
+    public class MemberHistoryDto
     {
         // 會員基本資料
         public int MemberId { get; set; }
