@@ -16,4 +16,6 @@ public partial class InstructorWallet
     public DateTime LastUpdated { get; set; }
 
     public virtual Instructor Instructor { get; set; }
+
+    public virtual ICollection<InstructorWalletDetail> InstructorWalletDetails { get; set; } = new List<InstructorWalletDetail>();
 }

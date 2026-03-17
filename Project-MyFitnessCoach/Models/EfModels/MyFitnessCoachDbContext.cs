@@ -23,6 +23,10 @@ public partial class MyFitnessCoachDbContext : DbContext
 
     public virtual DbSet<Instructor> Instructors { get; set; }
 
+    public virtual DbSet<InstructorWallet> InstructorWallets { get; set; }
+
+    public virtual DbSet<InstructorWalletDetail> InstructorWalletDetails { get; set; }
+
     public virtual DbSet<KeyWord> KeyWords { get; set; }
 
     public virtual DbSet<Member> Members { get; set; }
@@ -154,6 +158,41 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Instructors_Users");
+        });
+
+        modelBuilder.Entity<InstructorWallet>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC073405EDBB");
+
+            entity.HasIndex(e => e.InstructorId, "UQ_InstructorWallets_Instructor").IsUnique();
+
+            entity.Property(e => e.CurrentBalance).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.LastUpdated)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.Instructor).WithOne(p => p.InstructorWallet)
+                .HasForeignKey<InstructorWallet>(d => d.InstructorId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_InstructorWallets_Instructors");
+        });
+
+        modelBuilder.Entity<InstructorWalletDetail>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC073680F17A");
+
+            entity.Property(e => e.CreatedAt)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.SalaryDate)
+                .IsRequired()
+                .HasMaxLength(10);
+            entity.Property(e => e.TotalAmount).HasColumnType("decimal(10, 2)");
+
+            entity.HasOne(d => d.InstructorWallet).WithMany(p => p.InstructorWalletDetails)
+                .HasForeignKey(d => d.InstructorWalletId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_InstructorWalletDetails_InstructorWallets");
         });
 
         modelBuilder.Entity<KeyWord>(entity =>
