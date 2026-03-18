@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.EntityFrameworkCore
+@using Project_MyFitnessCoach.Models.EfModels
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="utf-8">
@@ -96,6 +98,20 @@
                 bool canAdminEmployees = userFunctions.Contains("admin_Employees");
                 bool canAdminHolidays = userFunctions.Contains("admin_Holidays");
                 bool canAdminLeaveBalances = userFunctions.Contains("admin_LeaveBalances");
+
+                // 步驟 5.2: 查詢是否有代審授權
+                bool hasDelegation = false;
+                if (hasEmployeeId)
+                {
+                    var dbContext = Context.RequestServices.GetRequiredService<MyFitnessCoachDbContext>();
+                    var empIdValue = int.Parse(User.FindFirst("EmployeeId").Value);
+                    var now = DateTime.Now;
+                    hasDelegation = await dbContext.LeaveApprovalDelegations
+                        .AnyAsync(d => d.DelegateEmployeeId == empIdValue
+                            && d.IsActive
+                            && d.StartDate <= now
+                            && d.EndDate >= now);
+                }
                 }
 
             <hr class="sidebar-divider">
@@ -159,8 +175,8 @@
                     </li>
                 }
 
-                @* 主管審核功能（需有 Employee 身份）*@
-                @if (hasEmployeeId && (canReviewLeaveRequests || canViewDeptLeave))
+                @* 主管審核功能（需有 Employee 身份）— 步驟 5.2: 含代審授權 *@
+                @if (hasEmployeeId && (canReviewLeaveRequests || canViewDeptLeave || hasDelegation))
                 {
                     <li class="nav-item">
                         <a class="nav-link collapsed" href="#" data-toggle="collapse"
@@ -170,7 +186,7 @@
                         </a>
                         <div id="collapseReviewLeave" class="collapse" data-parent="#accordionSidebar">
                             <div class="bg-white py-2 collapse-inner rounded">
-                                @if (canReviewLeaveRequests)
+                                @if (canReviewLeaveRequests || hasDelegation)
                                 {
                                     <a class="collapse-item" asp-controller="ReviewLeave" asp-action="Pending">待我審核</a>
                                 }

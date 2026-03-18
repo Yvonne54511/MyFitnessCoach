@@ -108,26 +108,46 @@ namespace Project_MyFitnessCoach.Repositories
                 .ToListAsync();
         }
 
-        // 步驟五：取得主管待審核的假單（Pending + CancelPending）
-        public async Task<List<LeaveRequest>> GetPendingByManagerIdAsync(int managerEmployeeId)
+        // 步驟五 + 5.2：取得待審核的假單（含代審範圍）
+        public async Task<List<LeaveRequest>> GetPendingByManagerIdAsync(int reviewerEmployeeId)
         {
+            var now = DateTime.Now;
             return await _context.LeaveRequests
                 .Include(r => r.Employee).ThenInclude(e => e.User)
                 .Include(r => r.Employee).ThenInclude(e => e.Department)
                 .Include(r => r.LeaveType)
                 .Include(r => r.LeaveDelegate).ThenInclude(d => d.User)
-                .Where(r => r.Employee.ManagerId == managerEmployeeId
-                    && (r.Status == "Pending" || r.Status == "CancelPending"))
+                .Where(r => (r.Status == "Pending" || r.Status == "CancelPending")
+                    && (
+                        // 條件(1)：申請者的直屬主管就是 reviewer
+                        r.Employee.ManagerId == reviewerEmployeeId
+                        // 條件(2)：存在有效的代審授權
+                        || _context.LeaveApprovalDelegations.Any(d =>
+                            d.ManagerEmployeeId == r.Employee.ManagerId
+                            && d.DelegateEmployeeId == reviewerEmployeeId
+                            && d.IsActive
+                            && d.StartDate <= now
+                            && d.EndDate >= now)
+                    ))
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
 
-        public async Task<int> GetPendingCountAsync(int managerEmployeeId)
+        public async Task<int> GetPendingCountAsync(int reviewerEmployeeId)
         {
+            var now = DateTime.Now;
             return await _context.LeaveRequests
                 .Include(r => r.Employee)
-                .CountAsync(r => r.Employee.ManagerId == managerEmployeeId
-                    && (r.Status == "Pending" || r.Status == "CancelPending"));
+                .CountAsync(r => (r.Status == "Pending" || r.Status == "CancelPending")
+                    && (
+                        r.Employee.ManagerId == reviewerEmployeeId
+                        || _context.LeaveApprovalDelegations.Any(d =>
+                            d.ManagerEmployeeId == r.Employee.ManagerId
+                            && d.DelegateEmployeeId == reviewerEmployeeId
+                            && d.IsActive
+                            && d.StartDate <= now
+                            && d.EndDate >= now)
+                    ));
         }
 
         // 步驟五：取得部門所有假單

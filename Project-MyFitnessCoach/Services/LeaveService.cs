@@ -122,6 +122,22 @@ namespace Project_MyFitnessCoach.Services
                 .Select(h => h.HolidayDate.ToString("yyyy-MM-dd"))
                 .ToListAsync();
 
+            // 步驟 5.2: 判斷是否為主管，載入直屬下屬清單
+            var isManager = employee.ManagerId == null;
+            var subordinateOptions = new List<SelectListItem>();
+            if (isManager)
+            {
+                var subordinates = await _db.Employees
+                    .Include(e => e.User)
+                    .Where(e => e.ManagerId == employeeId && e.IsActive)
+                    .ToListAsync();
+                subordinateOptions = subordinates.Select(s => new SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = s.User?.UserName
+                }).ToList();
+            }
+
             return new AddLeaveViewModel
             {
                 EmployeeName = employee.User?.UserName,
@@ -133,6 +149,8 @@ namespace Project_MyFitnessCoach.Services
                 EndHour = 18,
                 DefaultDelegateId = employee.WorkDelegateId,
                 LeaveDelegateId = employee.WorkDelegateId,
+                IsManager = isManager,
+                SubordinateOptions = subordinateOptions,
                 LeaveTypeOptions = leaveTypes.Select(lt => new SelectListItem
                 {
                     Value = lt.Id.ToString(),
@@ -243,6 +261,22 @@ namespace Project_MyFitnessCoach.Services
                     return Result.Failure("未知的假別額度類型");
             }
 
+            // 步驟 5.2: 判斷主管身份
+            var applicant = await _db.Employees.FindAsync(dto.EmployeeId);
+            bool isManager = applicant?.ManagerId == null;
+
+            // 主管必須指定代審人
+            if (isManager)
+            {
+                if (dto.ApprovingDelegateId == null || dto.ApprovingDelegateId == 0)
+                    return Result.Failure("主管請假必須指定代審人");
+
+                var isSubordinate = await _db.Employees
+                    .AnyAsync(e => e.Id == dto.ApprovingDelegateId && e.ManagerId == dto.EmployeeId && e.IsActive);
+                if (!isSubordinate)
+                    return Result.Failure("代審人必須為您的直屬下屬");
+            }
+
             // 新增請假申請
             var leaveRequest = new LeaveRequest
             {
@@ -254,11 +288,29 @@ namespace Project_MyFitnessCoach.Services
                 DaysUsed = daysUsed,
                 Reason = dto.Reason,
                 LeaveDelegateId = dto.LeaveDelegateId,
-                Status = "Pending",
+                Status = isManager ? "Approved" : "Pending",
+                ApprovedBy = isManager ? dto.EmployeeId : null,
+                ApprovedAt = isManager ? DateTime.Now : null,
                 CreatedAt = DateTime.Now
             };
 
             await _repo.AddAsync(leaveRequest);
+
+            // 主管假單：建立代審授權記錄
+            if (isManager)
+            {
+                _db.LeaveApprovalDelegations.Add(new LeaveApprovalDelegation
+                {
+                    ManagerEmployeeId = dto.EmployeeId,
+                    DelegateEmployeeId = dto.ApprovingDelegateId.Value,
+                    LeaveRequestId = leaveRequest.Id,
+                    StartDate = leaveRequest.StartDate,
+                    EndDate = leaveRequest.EndDate,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now
+                });
+                await _db.SaveChangesAsync();
+            }
 
             // 更新餘額 + 寫入變動紀錄
             if (balance != null)
@@ -328,7 +380,51 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "Pending" && request.Status != "Approved")
                 return Result.Failure("此假單狀態無法取消");
 
-            // 保存原狀態，供駁回時恢復
+            // 步驟 5.2: 主管假單（自動核准）取消時直接生效，不進 CancelPending
+            bool isManager = request.Employee?.ManagerId == null;
+            if (isManager && request.Status == "Approved")
+            {
+                request.Status = "Cancelled";
+                request.CancelRequestedAt = DateTime.Now;
+                request.CancelReason = cancelReason;
+                await _repo.UpdateAsync(request);
+
+                // 退還餘額
+                var year = request.StartDate.Year;
+                var balance = await _db.LeaveBalances
+                    .FirstOrDefaultAsync(b => b.EmployeeId == request.EmployeeId
+                        && b.LeaveTypeId == request.LeaveTypeId
+                        && b.Year == year);
+                if (balance != null)
+                {
+                    var oldUsed = balance.UsedDays;
+                    balance.UsedDays -= request.DaysUsed;
+                    _db.LeaveBalanceHistories.Add(new LeaveBalanceHistory
+                    {
+                        LeaveBalanceId = balance.Id,
+                        ChangeType = "CancelApproved",
+                        ChangeDays = request.DaysUsed,
+                        OldTotalDays = balance.TotalDays,
+                        NewTotalDays = balance.TotalDays,
+                        OldUsedDays = oldUsed,
+                        NewUsedDays = balance.UsedDays,
+                        Reason = $"主管自行取消假單退還：{request.LeaveType?.Name ?? ""}",
+                        OperatorId = employeeId,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+
+                // 停用代審授權
+                var delegation = await _db.LeaveApprovalDelegations
+                    .FirstOrDefaultAsync(d => d.LeaveRequestId == requestId && d.IsActive);
+                if (delegation != null)
+                    delegation.IsActive = false;
+
+                await _db.SaveChangesAsync();
+                return Result.Success(null);
+            }
+
+            // 一般員工：保存原狀態，進入 CancelPending 流程
             request.OriginalStatus = request.Status;
             request.Status = "CancelPending";
             request.CancelRequestedAt = DateTime.Now;

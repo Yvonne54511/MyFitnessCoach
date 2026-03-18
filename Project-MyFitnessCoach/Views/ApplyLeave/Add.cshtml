@@ -157,6 +157,30 @@
                     </div>
                 </div>
 
+                @* 步驟 5.2: 主管代審人選單 *@
+                @if (Model.IsManager)
+                {
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <span class="text-danger">*</span> 代審人（主管請假必填）
+                                </label>
+                                <select asp-for="ApprovingDelegateId" class="form-control" id="approvingDelegateSelect">
+                                    <option value="">-- 請選擇代審人 --</option>
+                                    @foreach (var sub in Model.SubordinateOptions)
+                                    {
+                                        <option value="@sub.Value">@sub.Text</option>
+                                    }
+                                </select>
+                                <small class="form-text text-muted">
+                                    您的假單將自動核准。代審人將在您的假期期間代為審核下屬假單。
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                }
+
                 <!-- 代理人警告 -->
                 <div class="row">
                     <div class="col-12">
@@ -370,6 +394,16 @@
             }
 
             $('#startDate, #endDate, #startHour, #endHour').on('change', onDateChange);
+
+            // 步驟 5.2: 主管代審人必填驗證
+            var isManager = @(Model.IsManager ? "true" : "false");
+            $('#leaveForm').on('submit', function (e) {
+                if (isManager && !$('#approvingDelegateSelect').val()) {
+                    e.preventDefault();
+                    alert('主管請假必須指定代審人');
+                    return false;
+                }
+            });
 
             // 初始化
             onDateChange();

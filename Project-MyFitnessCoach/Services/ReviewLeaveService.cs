@@ -18,6 +18,24 @@ namespace Project_MyFitnessCoach.Services
             _db = db;
         }
 
+        // ========== 步驟 5.2: 共用審核權限驗證 ==========
+
+        private async Task<bool> CanReviewAsync(LeaveRequest request, int reviewerEmployeeId)
+        {
+            // 條件一：申請者的直屬主管就是 reviewer
+            if (request.Employee?.ManagerId == reviewerEmployeeId)
+                return true;
+
+            // 條件二：存在有效的代審授權
+            var now = DateTime.Now;
+            return await _db.LeaveApprovalDelegations
+                .AnyAsync(d => d.ManagerEmployeeId == request.Employee.ManagerId
+                    && d.DelegateEmployeeId == reviewerEmployeeId
+                    && d.IsActive
+                    && d.StartDate <= now
+                    && d.EndDate >= now);
+        }
+
         // ========== 待我審核列表 ==========
 
         public async Task<PendingReviewListViewModel> GetPendingListAsync(int managerEmployeeId)
@@ -62,8 +80,8 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "Pending")
                 return Result.Failure("此假單狀態無法核准");
 
-            if (request.Employee?.ManagerId != approverEmployeeId)
-                return Result.Failure("您不是此員工的主管，無權審核");
+            if (!await CanReviewAsync(request, approverEmployeeId))
+                return Result.Failure("您無權審核此假單");
 
             request.Status = "Approved";
             request.ApprovedBy = approverEmployeeId;
@@ -86,8 +104,8 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "Pending")
                 return Result.Failure("此假單狀態無法駁回");
 
-            if (request.Employee?.ManagerId != approverEmployeeId)
-                return Result.Failure("您不是此員工的主管，無權審核");
+            if (!await CanReviewAsync(request, approverEmployeeId))
+                return Result.Failure("您無權審核此假單");
 
             request.Status = "Rejected";
             request.ApprovedBy = approverEmployeeId;
@@ -139,8 +157,8 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "CancelPending")
                 return Result.Failure("此假單不是取消審核中狀態");
 
-            if (request.Employee?.ManagerId != approverEmployeeId)
-                return Result.Failure("您不是此員工的主管，無權審核");
+            if (!await CanReviewAsync(request, approverEmployeeId))
+                return Result.Failure("您無權審核此假單");
 
             request.Status = "Cancelled";
             request.ApprovedBy = approverEmployeeId;
@@ -192,8 +210,8 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "CancelPending")
                 return Result.Failure("此假單不是取消審核中狀態");
 
-            if (request.Employee?.ManagerId != approverEmployeeId)
-                return Result.Failure("您不是此員工的主管，無權審核");
+            if (!await CanReviewAsync(request, approverEmployeeId))
+                return Result.Failure("您無權審核此假單");
 
             // 恢復原狀態
             request.Status = request.OriginalStatus;
@@ -212,7 +230,11 @@ namespace Project_MyFitnessCoach.Services
         public async Task<LeaveRequestDto> GetDetailAsync(int requestId, int managerEmployeeId)
         {
             var r = await _repo.GetByIdAsync(requestId);
-            if (r == null || r.Employee?.ManagerId != managerEmployeeId)
+            if (r == null)
+                return null;
+
+            // 步驟 5.2: 使用 CanReviewAsync 判斷權限
+            if (!await CanReviewAsync(r, managerEmployeeId))
                 return null;
 
             return new LeaveRequestDto

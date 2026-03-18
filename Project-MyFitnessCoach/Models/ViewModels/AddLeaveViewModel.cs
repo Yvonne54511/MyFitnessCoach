@@ -47,6 +47,11 @@ namespace Project_MyFitnessCoach.Models.ViewModels
         public List<SelectListItem> LeaveTypeOptions { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> DelegateOptions { get; set; } = new List<SelectListItem>();
 
+        // 主管代審（步驟 5.2）
+        public bool IsManager { get; set; }
+        public int? ApprovingDelegateId { get; set; }
+        public List<SelectListItem> SubordinateOptions { get; set; } = new List<SelectListItem>();
+
         // 假別餘額
         public List<LeaveBalanceDto> Balances { get; set; } = new List<LeaveBalanceDto>();
 

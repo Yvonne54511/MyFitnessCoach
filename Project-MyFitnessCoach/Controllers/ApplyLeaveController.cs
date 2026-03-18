@@ -55,6 +55,7 @@ namespace Project_MyFitnessCoach.Controllers
             ModelState.Remove(nameof(vm.DepartmentName));
             ModelState.Remove(nameof(vm.ManagerName));
             ModelState.Remove(nameof(vm.HoursUsed));
+            ModelState.Remove(nameof(vm.ApprovingDelegateId));
 
             // 步驟 4.3-2: 組合日期 + 小時
             var startDate = vm.StartDate.Date.AddHours(vm.StartHour);
@@ -78,6 +79,7 @@ namespace Project_MyFitnessCoach.Controllers
                 reloadVm.HoursUsed = vm.HoursUsed;
                 reloadVm.Reason = vm.Reason;
                 reloadVm.LeaveDelegateId = vm.LeaveDelegateId;
+                reloadVm.ApprovingDelegateId = vm.ApprovingDelegateId;
                 return View(reloadVm);
             }
 
@@ -89,14 +91,18 @@ namespace Project_MyFitnessCoach.Controllers
                 EndDate = endDate,
                 HoursUsed = vm.HoursUsed,
                 Reason = vm.Reason,
-                LeaveDelegateId = vm.LeaveDelegateId
+                LeaveDelegateId = vm.LeaveDelegateId,
+                ApprovingDelegateId = vm.ApprovingDelegateId
             };
 
             var result = await _leaveService.ApplyAsync(dto);
 
             if (result.IsSuccess)
             {
-                TempData["SuccessMessage"] = "請假申請已送出，等待主管審核";
+                // 步驟 5.2: 主管假單已自動核准
+                TempData["SuccessMessage"] = dto.ApprovingDelegateId.HasValue && dto.ApprovingDelegateId > 0
+                    ? "假單已自動核准，代審權限已授予指定下屬"
+                    : "請假申請已送出，等待主管審核";
                 return RedirectToAction("List");
             }
 
@@ -111,6 +117,7 @@ namespace Project_MyFitnessCoach.Controllers
             reloadVm2.HoursUsed = vm.HoursUsed;
             reloadVm2.Reason = vm.Reason;
             reloadVm2.LeaveDelegateId = vm.LeaveDelegateId;
+            reloadVm2.ApprovingDelegateId = vm.ApprovingDelegateId;
             return View(reloadVm2);
         }
 
