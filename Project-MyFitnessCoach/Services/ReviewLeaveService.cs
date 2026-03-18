@@ -253,7 +253,7 @@ namespace Project_MyFitnessCoach.Services
                 return null;
 
             // 步驟 5.2: 使用 CanReviewAsync 判斷權限
-            if (!await CanReviewAsync(r, managerEmployeeId))
+            if (!await CanReviewAsync(r, reviewerEmployeeId))
                 return null;
 
             return new LeaveRequestDto
