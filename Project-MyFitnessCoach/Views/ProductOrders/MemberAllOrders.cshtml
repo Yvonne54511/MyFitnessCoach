@@ -59,15 +59,19 @@
                                             var badgeClass = order.Status switch
                                             {
                                                 0 => "badge-warning text-dark",
-                                                1 => "badge-info text-white",
+                                                1 => "badge-primary text-white",
                                                 2 => "badge-success text-white",
-                                                3 => "badge-secondary text-white",
-                                                4 => "badge-danger text-white",
+                                                3 => "badge-danger text-white",
+                                                4 => "badge-info text-white",
                                                 5 => "badge-dark text-white",
+                                                6 => "badge-warning text-white",
                                                 _ => "badge-light text-dark"
                                             };
+                                            var style = "";
+                                            if (order.Status == 5) style = "style=\"background-color: #6f42c1 !important;\"";
+                                            else if (order.Status == 6) style = "style=\"background-color: #f6c23e !important;\"";
                                         }
-                                        <span class="badge @badgeClass">@order.StatusName</span>
+                                        <span class="badge @badgeClass" @Html.Raw(style)>@order.StatusName</span>
                                     </td>
                                     <td>
                                         <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-outline-secondary btn-sm shadow-sm">

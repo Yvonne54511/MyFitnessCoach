@@ -31,19 +31,19 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         // GET: ProductOrders/Dashboard
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard() 
         {
             var dto = await _service.GetDashboardDataAsync();
             
             var viewModel = new ProductOrderDashboardViewModel
             {
-                TotalOrdersThisMonth = dto.TotalOrdersThisMonth,
-                TotalOrdersChangePercentage = dto.TotalOrdersChangePercentage,
-                PendingShipmentCount = dto.PendingShipmentCount,
-                PendingShipmentChangePercentage = dto.PendingShipmentChangePercentage,
-                DisputedCount = dto.DisputedCount,
-                DisputedChangePercentage = dto.DisputedChangePercentage,
-                OrderTrends = dto.OrderTrends.Select(t => new OrderTrendViewModel
+                TotalOrdersThisMonth = dto.TotalOrdersThisMonth, //本月總訂單數
+                TotalOrdersChangePercentage = dto.TotalOrdersChangePercentage, //訂單成長率
+                PendingShipmentCount = dto.PendingShipmentCount, //待處理訂單總數
+                PendingShipmentChangePercentage = dto.PendingShipmentChangePercentage,//待處理訂單占比
+                DisputedCount = dto.DisputedCount, //爭議與退貨訂單總數
+                DisputedChangePercentage = dto.DisputedChangePercentage, //爭議與退貨訂單占比
+				OrderTrends = dto.OrderTrends.Select(t => new OrderTrendViewModel //給圖表用的linq日期與數量
                 {
                     Date = t.Date,
                     Count = t.Count
@@ -80,7 +80,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         // GET: ProductOrders/MemberAllOrders/5
-        public async Task<IActionResult> MemberAllOrders(int? id)
+        public async Task<IActionResult> MemberAllOrders(int? id) //用來看會員目前的全部訂單
         {
             // 如果沒傳 ID，暫時預設為 1 (測試用)
             int memberId = id ?? 1;

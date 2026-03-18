@@ -41,9 +41,12 @@
                                     3 => "bg-danger text-white",
                                     4 => "bg-info text-white",
                                     5 => "bg-dark text-white",
+                                    6 => "bg-warning text-white",
                                     _ => "bg-secondary text-white"
                                 };
-                                var style = Model.Status == 5 ? "style=\"background-color: #6f42c1 !important;\"" : "";
+                                var style = "";
+                                if (Model.Status == 5) style = "style=\"background-color: #6f42c1 !important;\"";
+                                else if (Model.Status == 6) style = "style=\"background-color: #f6c23e !important;\"";
                             }
                             <span class="badge @badgeClass" @Html.Raw(style)>@Model.StatusName</span>
                         </td></tr>
@@ -68,8 +71,9 @@
                                 <option value="1" selected="@(Model.Status == 1)">已出貨</option>
                                 <option value="2" selected="@(Model.Status == 2)">已送達</option>
                                 <option value="3" selected="@(Model.Status == 3)">已取消</option>
-                                <option value="4" selected="@(Model.Status == 4)">申請退貨</option>
+                                <option value="4" selected="@(Model.Status == 4)">退貨申請</option>
                                 <option value="5" selected="@(Model.Status == 5)">退貨申請中</option>
+                                <option value="6" selected="@(Model.Status == 6)">爭議</option>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-primary">
@@ -119,29 +123,32 @@
                 </div>
             </div>
 
-            @if (Model.Status == 4 || Model.Status == 5)
+            @if (Model.Status == 4 || Model.Status == 5 || Model.Status == 6)
             {
                 <div class="card mb-4 border-info shadow-sm">
                     <div class="card-header bg-info text-white">
-                        <i class="fas fa-undo me-1"></i> 退貨申請審核
+                        <i class="fas fa-undo me-1"></i> 退貨/爭議處理
                     </div>
                     <div class="card-body">
                         <p><strong>目前進度：</strong> @Model.StatusName</p>
-                        <p><strong>退貨原因：</strong> @(string.IsNullOrEmpty(Model.Memo) ? "未提供原因" : Model.Memo)</p>
+                        <p><strong>說明/原因：</strong> @(string.IsNullOrEmpty(Model.Memo) ? "未提供資訊" : Model.Memo)</p>
                         <hr />
                         <div class="d-flex justify-content-end" style="gap: 5px;">
-                            <form asp-action="UpdateStatus" method="post" class="mb-4">
-                                <input type="hidden" name="id" value="@Model.Id" />
-                                <input type="hidden" name="newStatus" value="5" />
-                                <button type="submit" class="btn btn-primary" onclick="return confirm('確定要開始處理退貨申請嗎？')">
-                                    <i class="fas fa-arrow-right me-1"></i> 開始處理退貨 (進入退貨申請)
-                                </button>
-                            </form>
+                            @if (Model.Status == 4)
+                            {
+                                <form asp-action="UpdateStatus" method="post" class="mb-4">
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="hidden" name="newStatus" value="5" />
+                                    <button type="submit" class="btn btn-primary" onclick="return confirm('確定要開始處理退貨申請嗎？')">
+                                        <i class="fas fa-arrow-right me-1"></i> 開始處理退貨 (進入退貨申請)
+                                    </button>
+                                </form>
+                            }
                             <form asp-action="UpdateStatus" method="post">
                                 <input type="hidden" name="id" value="@Model.Id" />
                                 <input type="hidden" name="newStatus" value="2" />
                                 <button type="submit" class="btn btn-secondary">
-                                    <i class="fas fa-times-circle me-1"></i> 駁回退貨 (維持送達)
+                                    <i class="fas fa-times-circle me-1"></i> 結案/駁回 (維持已送達)
                                 </button>
                             </form>
                         </div>
