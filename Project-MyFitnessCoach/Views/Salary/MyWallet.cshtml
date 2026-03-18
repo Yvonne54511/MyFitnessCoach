@@ -51,6 +51,42 @@
         background-color: #e8eeff;
         color: #4e73df;
     }
+
+    /* 新增美化樣式 */
+    .action-tile {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+        border: 1px solid #eef2f7;
+        background: white;
+        cursor: pointer;
+    }
+    .action-tile:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        border-color: #4e73df;
+    }
+    .action-tile .icon-sm {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+    }
+    .tile-refresh { border-left: 4px solid #4e73df; }
+    .tile-export { border-left: 4px solid #1cc88a; }
+    .tile-back { border-left: 4px solid #858796; }
+    
+    .security-banner {
+        background: linear-gradient(to right, #fff9f0, #ffffff);
+        border-left: 4px solid #f6c23e;
+        border-radius: 0.75rem;
+    }
 </style>
 
 <div class="container py-5">
@@ -91,21 +127,50 @@
                 <!-- Quick Actions & Info -->
                 <div class="col-md-5">
                     <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <h6 class="fw-bold text-dark mb-4">帳戶概況與操作</h6>
+                        <div class="card-body p-4 d-flex flex-column">
+                            <h6 class="fw-bold text-dark mb-4">快速操作</h6>
                             
-                            <div class="d-grid gap-3 mb-4">
-                                <button class="btn btn-primary py-3 rounded-3 shadow-sm" onclick="location.reload()">
-                                    <i class="fas fa-sync-alt me-2"></i> 重新整理帳戶
-                                </button>
-                                <a asp-action="Rating" asp-controller="Dashboard" class="btn btn-outline-secondary py-3 rounded-3 border-dashed">
-                                    <i class="fas fa-arrow-left me-2"></i> 返回儀表板
+                            <div class="flex-grow-1">
+                                <!-- Refresh Tile -->
+                                <div class="action-tile tile-refresh mb-3" onclick="location.reload()">
+                                    <div class="icon-sm bg-soft-primary">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark small">重新整理</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">更新即時餘額</div>
+                                    </div>
+                                </div>
+
+                                <!-- Export Tile -->
+                                <a asp-action="ExportMyWalletToExcel" class="action-tile tile-export mb-3 text-decoration-none">
+                                    <div class="icon-sm bg-soft-success">
+                                        <i class="fas fa-file-excel"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark small">匯出報表</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">下載 Excel 明細</div>
+                                    </div>
+                                </a>
+
+                                <!-- Back Tile -->
+                                <a asp-action="Rating" asp-controller="Dashboard" class="action-tile tile-back mb-4 text-decoration-none">
+                                    <div class="icon-sm bg-light text-secondary">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark small">返回儀表板</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">回到數據首頁</div>
+                                    </div>
                                 </a>
                             </div>
 
-                            <div class="bg-light p-3 rounded-3 border">
-                                <h6 class="small fw-bold text-muted mb-2"><i class="fas fa-shield-alt me-2"></i>薪資安全提示</h6>
-                                <p class="small text-muted mb-0">
+                            <div class="security-banner p-3 border shadow-sm mt-auto">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-shield-alt text-warning me-2"></i>
+                                    <h6 class="small fw-bold text-dark mb-0">薪資安全提示</h6>
+                                </div>
+                                <p class="text-muted mb-0" style="font-size: 0.75rem; line-height: 1.5;">
                                     所有薪資發放均透過加密傳輸。如有帳務疑問，請聯絡財務部門或系統管理員。
                                 </p>
                             </div>

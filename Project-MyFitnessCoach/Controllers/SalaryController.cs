@@ -142,6 +142,52 @@ namespace Project_MyFitnessCoach.Controllers
             }
         }
 
+        [Function("view_MyWallet")]
+        public async Task<IActionResult> ExportMyWalletToExcel()
+        {
+            var instructorIdClaim = User.FindFirst("InstructorId");
+            if (instructorIdClaim == null || !int.TryParse(instructorIdClaim.Value, out int instructorId))
+            {
+                return RedirectToAction("Error", "Home", new { id = 403 });
+            }
+
+            var wallet = await _walletService.GetWalletByInstructorIdAsync(instructorId);
+            if (wallet == null) return NotFound();
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("我的薪資錢包明細");
+                var currentRow = 1;
+                worksheet.Cell(currentRow, 1).Value = "交易時間";
+                worksheet.Cell(currentRow, 2).Value = "結算月份";
+                worksheet.Cell(currentRow, 3).Value = "交易類別";
+                worksheet.Cell(currentRow, 4).Value = "金額 (TWD)";
+
+                var headerRange = worksheet.Range(1, 1, 1, 4);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+                foreach (var detail in wallet.Details.OrderByDescending(d => d.CreatedAt))
+                {
+                    currentRow++;
+                    worksheet.Cell(currentRow, 1).Value = detail.CreatedAt.ToString("yyyy/MM/dd HH:mm");
+                    worksheet.Cell(currentRow, 2).Value = detail.SalaryDate;
+                    worksheet.Cell(currentRow, 3).Value = detail.Category;
+                    worksheet.Cell(currentRow, 4).Value = detail.TotalAmount;
+                    worksheet.Cell(currentRow, 4).Style.NumberFormat.Format = "$#,##0";
+                }
+
+                worksheet.Columns().AdjustToContents();
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"我的薪資明細_{DateTime.Now:yyyyMMdd}.xlsx");
+                }
+            }
+        }
+
 		[HttpPost]
 		[Function("view_Salary")] 
 		public async Task<IActionResult> IssueMonthlySalary([FromBody] IssueSalaryRequest request)
