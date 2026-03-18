@@ -31,6 +31,8 @@ public partial class Member
 
     public int CancelCount { get; set; }
 
+    public virtual ICollection<BodyRecord> BodyRecords { get; set; } = new List<BodyRecord>();
+
     public virtual ICollection<FoodRecord> FoodRecords { get; set; } = new List<FoodRecord>();
 
     public virtual MemberViolation MemberViolation { get; set; }

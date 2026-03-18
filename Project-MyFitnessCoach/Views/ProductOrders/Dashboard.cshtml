@@ -16,58 +16,135 @@
 
         <!-- 本月總訂單量 Card -->
         <div class="col-xl-4 col-md-6 mb-4">
-            <a asp-controller="ProductOrders" asp-action="Index" class="text-decoration-none">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                    本月總訂單量</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalOrdersThisMonth.ToString("N0")</div>
-                                <div class="mt-2 mb-0 text-muted text-xs">
-                                    @if (Model.TotalOrdersChangePercentage >= 0)
-                                    {
-                                        <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> @Model.TotalOrdersChangePercentage%</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(Model.TotalOrdersChangePercentage)%</span>
-                                    }
-                                    <span>與上月相比</span>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center mb-2">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                本月總訂單量</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalOrdersThisMonth.ToString("N0")</div>
+                            <div class="mt-1 text-muted text-xs">
+                                @if (Model.TotalOrdersChangePercentage >= 0)
+                                {
+                                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> @Model.TotalOrdersChangePercentage%</span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger mr-2"><i class="fa fa-arrow-down"></i> @Math.Abs(Model.TotalOrdersChangePercentage)%</span>
+                                }
+                                <span>與上月相比</span>
                             </div>
                         </div>
+                        <div class="col-auto">
+                            <a asp-controller="ProductOrders" asp-action="Index" class="btn btn-sm btn-outline-primary font-weight-bold">
+                                ALL
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 今日訂單滾輪區域 (僅在 col-xl 時顯示較佳效果) -->
+                    <hr class="my-2" />
+                    <div class="text-xs font-weight-bold text-gray-600 text-uppercase mb-2">今日訂單明細</div>
+                    <div style="max-height: 150px; overflow-y: auto; overflow-x: hidden;">
+                        @if (Model.TodayOrders != null && Model.TodayOrders.Any())
+                        {
+                            <table class="table table-sm table-borderless mb-0" style="font-size: 0.75rem;">
+                                <thead>
+                                    <tr class="text-gray-500 border-bottom">
+                                        <th>ID</th>
+                                        <th>姓名</th>
+                                        <th>時間</th>
+                                        <th class="text-right">金額</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.TodayOrders)
+                                    {
+                                        <tr>
+                                            <td><a asp-action="Details" asp-route-id="@order.Id">#@order.Id</a></td>
+                                            <td class="text-truncate" style="max-width: 60px;">@order.MemberName</td>
+                                            <td>@order.CreateAt.ToString("HH:mm")</td>
+                                            <td class="text-right font-weight-bold">$@order.FinalAmount.ToString("N0")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="text-center py-3 text-gray-500" style="font-size: 0.75rem;">今日暫無訂單</div>
+                        }
                     </div>
                 </div>
-            </a>
+            </div>
         </div>
 
         <!-- 待處理訂單 Card -->
         <div class="col-xl-4 col-md-6 mb-4">
-            <a asp-controller="ProductOrders" asp-action="Index" asp-route-status="1" class="text-decoration-none">
-                <div class="card border-left-danger shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                    待處理訂單</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.PendingActionCount.ToString("N0")</div>
-                                <div class="mt-2 mb-0 text-muted text-xs">
-                                    <span class="text-primary mr-1">待出貨: @Model.PendingShipmentCount</span>
-                                    <span class="mx-1">|</span>
-                                    <span class="text-warning ml-1">退貨: @Model.DisputedCount</span>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-tasks fa-2x text-gray-300"></i>
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center mb-2">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                待處理訂單</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.PendingActionCount.ToString("N0")</div>
+                            <div class="mt-1 text-muted text-xs">
+                                <span class="text-primary mr-1">待出貨: @Model.PendingShipmentCount</span>
+                                <span class="mx-1">|</span>
+                                <span class="text-warning ml-1">退貨: @Model.DisputedCount</span>
                             </div>
                         </div>
+                        <div class="col-auto">
+                            <a asp-controller="ProductOrders" asp-action="Index" asp-route-status="1" class="btn btn-sm btn-outline-danger font-weight-bold">
+                                ALL
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 待處理訂單滾輪區域 -->
+                    <hr class="my-2" />
+                    <div class="text-xs font-weight-bold text-gray-600 text-uppercase mb-2">待處理清單</div>
+                    <div style="max-height: 150px; overflow-y: auto; overflow-x: hidden;">
+                        @if (Model.PendingOrders != null && Model.PendingOrders.Any())
+                        {
+                            <table class="table table-sm table-borderless mb-0" style="font-size: 0.75rem;">
+                                <thead>
+                                    <tr class="text-gray-500 border-bottom">
+                                        <th>ID</th>
+                                        <th>姓名</th>
+                                        <th>時間</th>
+                                        <th class="text-right">狀態</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.PendingOrders)
+                                    {
+                                        <tr>
+                                            <td><a asp-action="Details" asp-route-id="@order.Id">#@order.Id</a></td>
+                                            <td class="text-truncate" style="max-width: 60px;">@order.MemberName</td>
+                                            <td>@order.CreateAt.ToString("MM/dd HH:mm")</td>
+                                            <td class="text-right">
+                                                @if (order.Status == 4)
+                                                {
+                                                    <span class="badge badge-warning">爭議</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-primary">待出貨</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="text-center py-3 text-gray-500" style="font-size: 0.75rem;">暫無待處理訂單</div>
+                        }
                     </div>
                 </div>
-            </a>
+            </div>
         </div>
 
         <!-- City Distribution Card -->

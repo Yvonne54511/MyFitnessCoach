@@ -29,6 +29,21 @@ namespace Project_MyFitnessCoach.Models.ViewModels
 
         // 商品類別排行數據
         public List<CategoryRankingViewModel> CategoryRankings { get; set; } = new List<CategoryRankingViewModel>();
+
+        // 今日訂單數據
+        public List<TodayOrderViewModel> TodayOrders { get; set; } = new List<TodayOrderViewModel>();
+
+        // 待處理訂單數據
+        public List<TodayOrderViewModel> PendingOrders { get; set; } = new List<TodayOrderViewModel>();
+    }
+
+    public class TodayOrderViewModel
+    {
+        public int Id { get; set; }
+        public string MemberName { get; set; }
+        public DateTime CreateAt { get; set; }
+        public decimal FinalAmount { get; set; }
+        public int Status { get; set; }
     }
 
     public class OrderTrendViewModel

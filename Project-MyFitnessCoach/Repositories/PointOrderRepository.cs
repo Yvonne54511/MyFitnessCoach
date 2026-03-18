@@ -14,6 +14,7 @@ namespace Project_MyFitnessCoach.Models.Repositories
         Task<PointOrder> GetEntityByIdAsync(int id);
         Task UpdateStatusAsync(int id, int newStatus);
         Task SaveChangesAsync();
+        Task<AverageTicketSizeDto> GetAverageTicketSizeAsync(DateTime? startDate, DateTime? endDate);
     }
 
     public class PointOrderRepository : IPointOrderRepository
@@ -23,6 +24,28 @@ namespace Project_MyFitnessCoach.Models.Repositories
         public PointOrderRepository(MyFitnessCoachDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<AverageTicketSizeDto> GetAverageTicketSizeAsync(DateTime? startDate, DateTime? endDate)
+        {
+            var query = _context.PointOrders.Where(p => p.Status == 1).AsQueryable();
+
+            if (startDate.HasValue) query = query.Where(p => p.CreateAt >= startDate.Value);
+            if (endDate.HasValue) query = query.Where(p => p.CreateAt <= endDate.Value);
+
+            var result = await query.Select(p => new { p.DiscountedPrice })
+                .ToListAsync();
+
+            var totalRevenue = result.Sum(r => r.DiscountedPrice);
+            var totalCount = result.Count;
+
+            return new AverageTicketSizeDto
+            {
+                TotalRevenue = totalRevenue,
+                TotalOrderCount = totalCount,
+                AverageTicketSize = totalCount > 0 ? totalRevenue / totalCount : 0,
+                CalculationDate = DateTime.Now
+            };
         }
 
         public async Task<List<PointOrderDto>> GetAllAsync(int? status, string searchString)

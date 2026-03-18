@@ -1,0 +1,139 @@
+@using Project_MyFitnessCoach.Models.ViewModels
+@model AdminLeaveListViewModel
+
+@{
+    ViewData["Title"] = "全部請假申請";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="bx bx-list-ul"></i> @ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    <!-- 統計卡片 -->
+    <div class="row">
+        @await Html.PartialAsync("_StatCard", ("本月已核准天數", Model.Stats.TotalThisMonth.ToString("N1"), "bx bx-calendar-check", "success"))
+        @await Html.PartialAsync("_StatCard", ("待審核", Model.Stats.PendingCount.ToString(), "bx bx-time-five", "warning"))
+        @await Html.PartialAsync("_StatCard", ("已核准", Model.Stats.ApprovedCount.ToString(), "bx bx-check-circle", "success"))
+        @await Html.PartialAsync("_StatCard", ("已駁回", Model.Stats.RejectedCount.ToString(), "bx bx-x-circle", "danger"))
+    </div>
+    @if (Model.Stats.CancelPendingCount > 0)
+    {
+        <div class="row">
+            @await Html.PartialAsync("_StatCard", ("取消審核中", Model.Stats.CancelPendingCount.ToString(), "bx bx-revision", "info"))
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bx bx-check-circle mr-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bx bx-error-circle mr-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+    }
+
+    <!-- 篩選列 -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="List" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label">部門</label>
+                    <select name="departmentFilter" class="form-control">
+                        @foreach (var opt in Model.DepartmentOptions)
+                        {
+                            <option value="@opt.Value" selected="@(opt.Value == Model.DepartmentFilter)">@opt.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">狀態</label>
+                    <select name="statusFilter" class="form-control">
+                        <option value="">全部</option>
+                        <option value="Pending" selected="@(Model.StatusFilter == "Pending")">待審核</option>
+                        <option value="Approved" selected="@(Model.StatusFilter == "Approved")">已核准</option>
+                        <option value="Rejected" selected="@(Model.StatusFilter == "Rejected")">已駁回</option>
+                        <option value="CancelPending" selected="@(Model.StatusFilter == "CancelPending")">取消審核中</option>
+                        <option value="Cancelled" selected="@(Model.StatusFilter == "Cancelled")">已取消</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">月份</label>
+                    <input type="month" name="monthFilter" class="form-control" value="@Model.MonthFilter" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">搜尋</label>
+                    <input type="text" name="searchKeyword" class="form-control" value="@Model.SearchKeyword" placeholder="姓名或帳號..." />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bx bx-search-alt"></i> 篩選
+                    </button>
+                    <a asp-action="List" class="btn btn-outline-secondary">
+                        <i class="bx bx-reset"></i> 重置
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr class="text-center">
+                            <th>單號</th>
+                            <th>申請人</th>
+                            <th>部門</th>
+                            <th>假別</th>
+                            <th>請假日期</th>
+                            <th>時數 / 天數</th>
+                            <th>狀態</th>
+                            <th>審核者</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Requests != null && Model.Requests.Any())
+                        {
+                            foreach (var req in Model.Requests)
+                            {
+                                <tr class="text-center">
+                                    <td>@req.Id</td>
+                                    <td>@req.ApplicantName</td>
+                                    <td>@req.DepartmentName</td>
+                                    <td>@req.LeaveTypeName</td>
+                                    <td>@req.StartDate.ToString("yyyy-MM-dd") ~ @req.EndDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@req.HoursUsed.ToString("0.#")h / @req.DaysUsed.ToString("0.#")天</td>
+                                    <td>@await Html.PartialAsync("_LeaveStatusBadge", req.Status)</td>
+                                    <td>@(req.ApproverName ?? "-")</td>
+                                    <td>
+                                        <a asp-action="Detail" asp-route-id="@req.Id" class="btn btn-sm btn-outline-info">
+                                            <i class="bx bx-info-circle"></i> 詳情
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">無符合條件的記錄</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

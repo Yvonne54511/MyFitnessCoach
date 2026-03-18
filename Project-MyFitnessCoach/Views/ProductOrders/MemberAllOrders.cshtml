@@ -1,0 +1,155 @@
+@using Project_MyFitnessCoach.Models.ViewModels
+@model IEnumerable<ProductOrderViewModel>
+
+@{
+    ViewData["Title"] = "會員訂單總覽";
+    var memberName = Model.FirstOrDefault()?.MemberName ?? "會員";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-shopping-bag mr-2"></i> @memberName 的所有訂單</h1>
+        <span class="badge badge-primary shadow-sm px-3 py-2">共 @Model.Count() 筆訂單</span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <div class="alert alert-info mb-0">目前沒有任何產品訂單紀錄。</div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">訂單紀錄列表</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th style="width: 15%">訂單 ID</th>
+                                <th style="width: 25%">訂購日期</th>
+                                <th style="width: 20%">總金額</th>
+                                <th style="width: 20%">狀態</th>
+                                <th style="width: 20%">操作</th>
+                            </tr>
+                        </thead>
+                        @foreach (var order in Model)
+                        {
+                            <tbody>
+                                <tr class="bg-white">
+                                    <td>
+                                        <button class="btn btn-link text-decoration-none font-weight-bold p-0 dropdown-toggle" 
+                                                type="button" 
+                                                data-toggle="collapse" 
+                                                data-target="#orderDetail-@order.Id" 
+                                                aria-expanded="false" 
+                                                aria-controls="orderDetail-@order.Id">
+                                            #@order.Id
+                                        </button>
+                                    </td>
+                                    <td>@order.CreateAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td><span class="text-primary font-weight-bold">@((order.OriginalAmount - order.DiscountAmount).ToString("C0"))</span></td>
+                                    <td>
+                                        @{
+                                            var badgeClass = order.Status switch
+                                            {
+                                                0 => "badge-warning text-dark",
+                                                1 => "badge-info text-white",
+                                                2 => "badge-success text-white",
+                                                3 => "badge-secondary text-white",
+                                                4 => "badge-danger text-white",
+                                                5 => "badge-dark text-white",
+                                                _ => "badge-light text-dark"
+                                            };
+                                        }
+                                        <span class="badge @badgeClass">@order.StatusName</span>
+                                    </td>
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-outline-secondary btn-sm shadow-sm">
+                                            <i class="fas fa-edit mr-1"></i>管理
+                                        </a>
+                                    </td>
+                                </tr>
+                                <!-- 摺疊明細區塊 (Bootstrap 4 Style) -->
+                                <tr>
+                                    <td colspan="5" class="p-0 border-0">
+                                        <div class="collapse" id="orderDetail-@order.Id">
+                                            <div class="p-4 bg-light border-bottom">
+                                                <div class="card shadow-sm border-0">
+                                                    <div class="card-header bg-white py-3">
+                                                        <h6 class="m-0 font-weight-bold text-secondary">
+                                                            <i class="fas fa-list mr-2"></i>訂單商品明細
+                                                        </h6>
+                                                    </div>
+                                                    <div class="card-body p-0">
+                                                        <table class="table table-sm table-borderless mb-0">
+                                                            <thead class="bg-gray-100 text-secondary small">
+                                                                <tr>
+                                                                    <th class="pl-4 py-2">商品名稱</th>
+                                                                    <th class="text-center py-2">單價</th>
+                                                                    <th class="text-center py-2">數量</th>
+                                                                    <th class="text-right pr-4 py-2">小計</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach (var item in order.OrderDetails)
+                                                                {
+                                                                    <tr class="border-bottom">
+                                                                        <td class="pl-4 py-3">
+                                                                            <div class="d-flex align-items-center">
+                                                                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                                                                {
+                                                                                    <img src="@item.ImageUrl" style="width: 45px; height: 45px; object-fit: cover;" class="rounded mr-3 border shadow-sm" />
+                                                                                }
+                                                                                <span class="font-weight-bold text-dark">@item.ProductName</span>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td class="text-center py-3">@item.UnitPrice.ToString("C0")</td>
+                                                                        <td class="text-center py-3">x @item.Qty</td>
+                                                                        <td class="text-right pr-4 py-3 font-weight-bold text-dark">@item.SubTotal.ToString("C0")</td>
+                                                                    </tr>
+                                                                }
+                                                            </tbody>
+                                                            <tfoot class="bg-gray-100">
+                                                                <tr>
+                                                                    <td colspan="3" class="text-right text-muted py-2">商品小計：</td>
+                                                                    <td class="text-right pr-4 py-2">@order.OriginalAmount.ToString("C0")</td>
+                                                                </tr>
+                                                                @if (order.DiscountAmount > 0)
+                                                                {
+                                                                    <tr class="text-danger">
+                                                                        <td colspan="3" class="text-right py-1">折扣金額：</td>
+                                                                        <td class="text-right pr-4 py-1">-@order.DiscountAmount.ToString("C0")</td>
+                                                                    </tr>
+                                                                }
+                                                                <tr class="font-weight-bold border-top">
+                                                                    <td colspan="3" class="text-right py-3 h6 mb-0">訂單總金額：</td>
+                                                                    <td class="text-right pr-4 py-3 h6 mb-0 text-primary">@((order.OriginalAmount - order.DiscountAmount).ToString("C0"))</td>
+                                                                </tr>
+                                                            </tfoot>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="mt-4 mb-5">
+        <a asp-action="Index" class="btn btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left mr-1"></i> 返回訂單列表
+        </a>
+    </div>
+</div>

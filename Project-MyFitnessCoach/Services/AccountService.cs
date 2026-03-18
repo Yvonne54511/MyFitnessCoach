@@ -127,6 +127,7 @@ namespace Project_MyFitnessCoach.Services
             }
 
             var instructor = await _accountRepository.GetInstructorByUserIdAsync(user.Id);
+            var employee = await _accountRepository.GetEmployeeByUserIdAsync(user.Id);
 
             return new LoginResultDto
             {
@@ -140,6 +141,8 @@ namespace Project_MyFitnessCoach.Services
                     Email = user.Email,
                     HashedPassword = user.HashedPassword,
                     InstructorId = instructor?.Id,
+                    EmployeeId = employee?.Id,
+                    DepartmentId = employee?.DepartmentId,
                     Roles = user.UserRoles.Select(ur => ur.Role.RoleName).ToList(),
                     Functions = user.UserRoles
                         .SelectMany(ur => ur.Role.RoleFunctions)

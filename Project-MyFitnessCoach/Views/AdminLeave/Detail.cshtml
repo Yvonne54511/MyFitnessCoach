@@ -1,0 +1,128 @@
+@using Project_MyFitnessCoach.Models.DTOs
+@model LeaveRequestDto
+
+@{
+    ViewData["Title"] = $"假單詳情 #{Model.Id}";
+    var isCancelPending = Model.Status == "CancelPending";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="bx bx-detail"></i> @ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bx bx-file"></i> 申請單資訊
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th class="text-muted" style="width:120px;">申請人</th>
+                                    <td>@Model.EmployeeName</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">部門</th>
+                                    <td>@Model.DepartmentName</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">假別</th>
+                                    <td>@Model.LeaveTypeName</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">請假日期</th>
+                                    <td>@Model.StartDate.ToString("yyyy-MM-dd") ~ @Model.EndDate.ToString("yyyy-MM-dd")</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">時數</th>
+                                    <td>@Model.HoursUsed.ToString("0.#") 小時（@Model.DaysUsed.ToString("0.#") 天）</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th class="text-muted" style="width:120px;">請假原因</th>
+                                    <td>@(Model.Reason ?? "-")</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">代理人</th>
+                                    <td>@(Model.DelegateName ?? "未指定")</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">狀態</th>
+                                    <td>@await Html.PartialAsync("_LeaveStatusBadge", Model.Status)</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">申請時間</th>
+                                    <td>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">審核者</th>
+                                    <td>@(Model.ApproverName ?? "-")</td>
+                                </tr>
+                                @if (Model.ApprovedAt.HasValue)
+                                {
+                                    <tr>
+                                        <th class="text-muted">審核時間</th>
+                                        <td>@Model.ApprovedAt.Value.ToString("yyyy-MM-dd HH:mm")</td>
+                                    </tr>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.RejectReason))
+                                {
+                                    <tr>
+                                        <th class="text-muted">駁回原因</th>
+                                        <td class="text-danger">@Model.RejectReason</td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    </div>
+
+                    @if (isCancelPending)
+                    {
+                        <hr />
+                        <div class="alert alert-warning mb-0">
+                            <h6 class="font-weight-bold"><i class="bx bx-revision"></i> 取消請假請求</h6>
+                            <table class="table table-borderless table-sm mb-0">
+                                <tr>
+                                    <th class="text-muted" style="width:120px;">原狀態</th>
+                                    <td>@Model.OriginalStatus</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">取消原因</th>
+                                    <td>@Model.CancelReason</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted">申請取消時間</th>
+                                    <td>@Model.CancelRequestedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                                </tr>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <i class="bx bx-info-circle fa-2x text-info mb-2"></i>
+                    <p class="text-muted">此為管理員唯讀檢視，審核操作請至主管審核頁面。</p>
+                </div>
+            </div>
+
+            <a asp-action="List" class="btn btn-secondary btn-block">
+                <i class="bx bx-arrow-back"></i> 返回列表
+            </a>
+        </div>
+    </div>
+</div>

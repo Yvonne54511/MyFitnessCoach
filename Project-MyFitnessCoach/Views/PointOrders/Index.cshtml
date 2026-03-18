@@ -31,8 +31,9 @@
                         <tr>
                             <th>訂單編號</th>
                             <th>會員ID</th>
+                            <th>會員姓名</th>
+                            <th>方案名稱</th>
                             <th>儲值點數</th>
-                            <th>原始金額</th>
                             <th>實付金額</th>
                             <th>儲值時間</th>
                         </tr>
@@ -41,10 +42,15 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@item.Id</td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="font-weight-bold">
+                                        #@item.Id
+                                    </a>
+                                </td>
                                 <td>@item.MemberId</td>
+                                <td>@(item.Member?.User?.UserName ?? "未知")</td>
+                                <td>@(item.TopUpPlan?.PlanName ?? "手動儲值")</td>
                                 <td>@item.PointQty</td>
-                                <td>@item.OriginalPrice.ToString("C0")</td>
                                 <td>@item.DiscountedPrice.ToString("C0")</td>
                                 <td>@item.CreateAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
                             </tr>

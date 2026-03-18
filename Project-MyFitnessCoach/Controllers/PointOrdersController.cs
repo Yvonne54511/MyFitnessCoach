@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Models.Infra;
 using Project_MyFitnessCoach.Models.ViewModels;
+using Project_MyFitnessCoach.Models.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +15,12 @@ namespace Project_MyFitnessCoach.Controllers
     public class PointOrdersController : Controller
     {
         private readonly MyFitnessCoachDbContext _context;
+        private readonly IPointOrderService _pointOrderService;
 
-        public PointOrdersController(MyFitnessCoachDbContext context)
+        public PointOrdersController(MyFitnessCoachDbContext context, IPointOrderService pointOrderService)
         {
             _context = context;
+            _pointOrderService = pointOrderService;
         }
 
         // 點數儲值首頁 (列出所有儲值紀錄)
@@ -25,7 +28,9 @@ namespace Project_MyFitnessCoach.Controllers
         public async Task<IActionResult> Index()
         {
             var pointOrders = await _context.PointOrders
+                .Include(p => p.Member).ThenInclude(m => m.User)
                 .Include(p => p.PointsRecordDetails)
+                .Include(p => p.TopUpPlan)
                 .OrderByDescending(p => p.CreateAt)
                 .ToListAsync();
             return View(pointOrders);
@@ -95,6 +100,16 @@ namespace Project_MyFitnessCoach.Controllers
                 .Take(5)
                 .ToListAsync();
 
+            // 4. 每月平均客單價走勢 (1-12月)
+            var monthlyAverageTicketSizes = new List<decimal>();
+            for (int month = 1; month <= 12; month++)
+            {
+                var start = new DateTime(now.Year, month, 1);
+                var end = start.AddMonths(1).AddDays(-1);
+                var avgDto = await _pointOrderService.CalculateAverageTicketSizeAsync(start, end);
+                monthlyAverageTicketSizes.Add(avgDto.AverageTicketSize);
+            }
+
             var viewModel = new PointOrderDashboardViewModel
             {
                 TodayRevenue = todayRevenue,
@@ -106,8 +121,30 @@ namespace Project_MyFitnessCoach.Controllers
                 ActualPaymentData = actualPaymentData,
                 BonusPointsData = bonusPointsData,
                 PlanNames = popularPlans.Select(p => $"{p.Points} 點方案").ToList(),
-                PlanSales = popularPlans.Select(p => p.Count).ToList()
+                PlanSales = popularPlans.Select(p => p.Count).ToList(),
+                MonthlyAverageTicketSizes = monthlyAverageTicketSizes
             };
+
+            return View(viewModel);
+        }
+
+        // 會員點數總覽列表
+        public async Task<IActionResult> PointRecords()
+        {
+            var wallets = await _context.UserWallets
+                .Include(w => w.Member)
+                .ThenInclude(m => m.User)
+                .OrderBy(w => w.MemberId)
+                .ToListAsync();
+
+            var viewModel = wallets.Select(w => new PointOrderViewModel
+            {
+                Id = w.Id, // 使用錢包 ID 作為記錄 ID
+                MemberId = w.MemberId,
+                MemberName = w.Member.User.UserName,
+                PointQty = (int)w.CurrentBalance, // 將目前餘額對應至 PointQty
+                CreateAt = w.LastUpdated // 將最後更新時間對應至 CreateAt
+            }).ToList();
 
             return View(viewModel);
         }
@@ -116,6 +153,127 @@ namespace Project_MyFitnessCoach.Controllers
         public IActionResult Recharge()
         {
             return View();
+        }
+
+        // 點數儲值詳情
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var order = await _context.PointOrders
+                .Include(p => p.Member).ThenInclude(m => m.User)
+                .Include(p => p.TopUpPlan)
+                .Include(p => p.PointsRecordDetails)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (order == null) return NotFound();
+
+            var viewModel = new PointOrderViewModel
+            {
+                Id = order.Id,
+                MemberId = order.MemberId,
+                MemberName = order.Member.User.UserName,
+                TopUpPlanId = order.TopUpPlanId,
+                PlanName = order.TopUpPlan?.PlanName ?? "手動儲值",
+                CreateAt = order.CreateAt,
+                PointQty = order.PointQty,
+                OriginalPrice = order.OriginalPrice,
+                DiscountedPrice = order.DiscountedPrice,
+                Status = order.Status,
+                RecordDetails = order.PointsRecordDetails.Select(d => new PointsRecordDetailViewModel
+                {
+                    Id = d.Id,
+                    PointOrderId = d.PointOrderId,
+                    UserWalletId = d.UserWalletId,
+                    CreateAt = d.CreateAt,
+                    PointAmount = d.PointAmount,
+                    MerchandiseCategory = d.MerchandiseCategory,
+                    ReserveOrderId = d.ReserveOrderId
+                }).ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        // 同意取消儲值訂單 (軟刪除)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(int id)
+        {
+            var order = await _context.PointOrders
+                .Include(p => p.Member).ThenInclude(m => m.UserWallet)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (order == null) return NotFound();
+            if (order.Status == 3)
+            {
+                TempData["ErrorMessage"] = "該訂單已被取消，不須重複操作。";
+                return RedirectToAction(nameof(Details), new { id = id });
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                int oldStatus = order.Status;
+                
+                // 1. 更新訂單狀態為「已取消」(3)
+                order.Status = 3;
+                _context.Entry(order).State = EntityState.Modified;
+
+                // 2. 處理錢包退點 (僅當原狀態為已完成時)
+                if (oldStatus == 1)
+                {
+                    var wallet = order.Member.UserWallet;
+                    if (wallet != null)
+                    {
+                        wallet.CurrentBalance -= order.PointQty;
+                        wallet.LastUpdated = DateTime.Now;
+                        _context.Entry(wallet).State = EntityState.Modified;
+
+                        // 3. 記錄取消異動 (類別：已取消)
+                        var cancelRecord = new PointsRecordDetail
+                        {
+                            PointOrderId = order.Id,
+                            UserWalletId = wallet.Id,
+                            CreateAt = DateTime.Now,
+                            PointAmount = -order.PointQty, // 負值代表扣除
+                            MerchandiseCategory = "已取消",
+                            ReserveOrderId = null
+                        };
+                        _context.PointsRecordDetails.Add(cancelRecord);
+                    }
+                }
+                else
+                {
+                    // 若是待付款取消，僅記錄流水帳但不扣點 (或依需求決定是否記錄)
+                    var wallet = order.Member.UserWallet;
+                    if (wallet != null)
+                    {
+                        var cancelRecord = new PointsRecordDetail
+                        {
+                            PointOrderId = order.Id,
+                            UserWalletId = wallet.Id,
+                            CreateAt = DateTime.Now,
+                            PointAmount = 0,
+                            MerchandiseCategory = "已取消",
+                            ReserveOrderId = null
+                        };
+                        _context.PointsRecordDetails.Add(cancelRecord);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                TempData["SuccessMessage"] = "訂單已成功取消，並同步校正錢包點數。";
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["ErrorMessage"] = $"取消過程發生錯誤：{ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Details), new { id = id });
         }
 
         // 處理儲值請求

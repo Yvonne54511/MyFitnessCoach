@@ -1,0 +1,112 @@
+@using Project_MyFitnessCoach.Models.ViewModels
+@model DeptLeaveListViewModel
+
+@{
+    ViewData["Title"] = $"{Model.DepartmentName} — 請假總覽";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="bx bx-group"></i> @ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    <!-- 統計卡片 -->
+    <div class="row">
+        @await Html.PartialAsync("_StatCard", ("申請總筆數", Model.TotalApplications.ToString(), "bx bx-file", "primary"))
+        @await Html.PartialAsync("_StatCard", ("總天數", Model.TotalDays.ToString("0.#") + " 天", "bx bx-calendar", "info"))
+    </div>
+
+    <!-- 篩選列 -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="List" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">月份</label>
+                    <input type="month" name="monthFilter" class="form-control" value="@Model.MonthFilter" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">員工</label>
+                    <select name="employeeFilter" class="form-control">
+                        @foreach (var opt in Model.EmployeeOptions)
+                        {
+                            <option value="@opt.Value" selected="@(opt.Value == Model.EmployeeFilter)">@opt.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">狀態</label>
+                    <select name="statusFilter" class="form-control">
+                        <option value="">全部</option>
+                        <option value="Pending" selected="@(Model.StatusFilter == "Pending")">待審核</option>
+                        <option value="Approved" selected="@(Model.StatusFilter == "Approved")">已核准</option>
+                        <option value="Rejected" selected="@(Model.StatusFilter == "Rejected")">已駁回</option>
+                        <option value="CancelPending" selected="@(Model.StatusFilter == "CancelPending")">取消審核中</option>
+                        <option value="Cancelled" selected="@(Model.StatusFilter == "Cancelled")">已取消</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bx bx-search-alt"></i> 篩選
+                    </button>
+                    <a asp-action="List" class="btn btn-outline-secondary">
+                        <i class="bx bx-reset"></i> 重置
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 列表 -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr class="text-center">
+                            <th>員工</th>
+                            <th>假別</th>
+                            <th>開始日期</th>
+                            <th>結束日期</th>
+                            <th>時數 / 天數</th>
+                            <th>狀態</th>
+                            <th>代理人</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Requests != null && Model.Requests.Any())
+                        {
+                            foreach (var req in Model.Requests)
+                            {
+                                <tr class="text-center">
+                                    <td>@req.EmployeeName</td>
+                                    <td>@req.LeaveTypeName</td>
+                                    <td>@req.StartDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@req.EndDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@req.HoursUsed.ToString("0.#")h / @req.DaysUsed.ToString("0.#")天</td>
+                                    <td>@await Html.PartialAsync("_LeaveStatusBadge", req.Status)</td>
+                                    <td>@(req.DelegateName ?? "-")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">無符合條件的記錄</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Model.Requests != null && Model.Requests.Any())
+            {
+                <hr />
+                <div class="text-right text-muted">
+                    共 <strong>@Model.TotalApplications</strong> 筆，合計 <strong>@Model.TotalDays.ToString("0.#")</strong> 天
+                </div>
+            }
+        </div>
+    </div>
+</div>

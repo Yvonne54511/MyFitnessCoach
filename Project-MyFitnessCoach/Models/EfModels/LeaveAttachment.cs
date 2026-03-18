@@ -1,0 +1,20 @@
+#nullable disable
+using System;
+using System.Collections.Generic;
+
+namespace Project_MyFitnessCoach.Models.EfModels;
+
+public partial class LeaveAttachment
+{
+    public int Id { get; set; }
+
+    public int RequestId { get; set; }
+
+    public string FileName { get; set; }
+
+    public string FileUrl { get; set; }
+
+    public DateTime UploadedAt { get; set; }
+
+    public virtual LeaveRequest LeaveRequest { get; set; }
+}

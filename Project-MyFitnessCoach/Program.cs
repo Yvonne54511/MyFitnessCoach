@@ -54,6 +54,10 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
             builder.Services.AddScoped<IInstructorService, InstructorService>();
 
+            // 註冊 PointOrder 模組 (含平均客單計算)
+            builder.Services.AddScoped<Project_MyFitnessCoach.Models.Repositories.IPointOrderRepository, Project_MyFitnessCoach.Models.Repositories.PointOrderRepository>();
+            builder.Services.AddScoped<Project_MyFitnessCoach.Models.Services.IPointOrderService, Project_MyFitnessCoach.Models.Services.PointOrderService>();
+
 			// 註冊 ShiftRepository
 			builder.Services.AddScoped<IShiftRepository, ShiftRepository>();
 
@@ -77,6 +81,10 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<NotificationService>();
 
+            // 註冊 BodyData 模組
+            builder.Services.AddScoped<IBodyDataRepository, BodyDataRepository>();
+            builder.Services.AddScoped<IBodyDataService, BodyDataService>();
+
             // 註冊 KeyWord 模組
             builder.Services.AddScoped<IKeyWordRepository, KeyWordRepository>();
             builder.Services.AddScoped<IKeyWordService, KeyWordService>();
@@ -93,6 +101,19 @@ namespace Project_MyFitnessCoach
 
             // 註冊 HttpClient
             builder.Services.AddHttpClient();
+
+            // 註冊 Leave 請假模組
+            builder.Services.AddScoped<ILeaveRepository, LeaveRepository>();
+            builder.Services.AddScoped<LeaveService>();
+            builder.Services.AddScoped<ReviewLeaveService>();
+
+            // 註冊 AdminLeave 管理員請假模組
+            builder.Services.AddScoped<IAdminLeaveRepository, AdminLeaveRepository>();
+            builder.Services.AddScoped<AdminLeaveService>();
+
+            // 註冊 Employee 員工管理模組
+            builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            builder.Services.AddScoped<EmployeeService>();
 
 			// 註冊使用Cookie驗證服務
 			builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

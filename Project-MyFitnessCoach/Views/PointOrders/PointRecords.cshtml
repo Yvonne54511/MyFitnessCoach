@@ -1,0 +1,74 @@
+@using Project_MyFitnessCoach.Models.ViewModels
+@model IEnumerable<PointOrderViewModel>
+
+@{
+    ViewData["Title"] = "會員點數資產總覽";
+}
+
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <h1 class="h3 mb-2 text-gray-800">會員點數資產總覽</h1>
+    <p class="mb-4">檢視系統內所有會員目前的點數餘額與最後異動時間。</p>
+
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">點數持有清單</h6>
+            <a asp-action="DashBoard" class="btn btn-secondary btn-sm">
+                <i class="fas fa-chart-line"></i> 返回數據看板
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="pointsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>會員 ID</th>
+                            <th>會員姓名</th>
+                            <th>目前點數 (P)</th>
+                            <th>最後更新時間</th>
+                            <th>明細</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.MemberId</td>
+                                <td>@item.MemberName</td>
+                                <td class="font-weight-bold text-primary">@item.PointQty.ToString("N0")</td>
+                                <td>@item.CreateAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>
+                                    <a asp-controller="PointsRecords" asp-action="Index" asp-route-memberId="@item.MemberId" class="btn btn-info btn-circle btn-sm" title="查看明細">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Page level plugins -->
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#pointsTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Chinese-traditional.json"
+                },
+                "order": [[ 0, "asc" ]], // 預設依照會員 ID 排序
+                "columnDefs": [
+                    { "orderable": true, "targets": [0, 2, 3] }, // 依照會員Id、目前點數、最後更新時間排序
+                    { "orderable": false, "targets": [4] } // 操作列不排序
+                ]
+            });
+        });
+    </script>
+}

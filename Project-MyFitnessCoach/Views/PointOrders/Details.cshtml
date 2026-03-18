@@ -1,0 +1,154 @@
+@using Project_MyFitnessCoach.Models.ViewModels
+@model PointOrderViewModel
+
+@{
+    ViewData["Title"] = "儲值訂單詳情";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">儲值訂單詳情</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-action="Index">儲值管理</a></li>
+        <li class="breadcrumb-item active">訂單 #@Model.Id</li>
+    </ol>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- 儲值基本資訊 -->
+        <div class="col-lg-4">
+            <div class="card mb-4 shadow-sm border-left-primary">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-info-circle me-1"></i> 基本資訊
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr><th>訂單編號</th><td>#@Model.Id</td></tr>
+                        <tr><th>儲值日期</th><td>@Model.CreateAt.ToString("yyyy-MM-dd HH:mm:ss")</td></tr>
+                        <tr><th>目前狀態</th><td>
+                            @{
+                                var badgeClass = Model.Status switch
+                                {
+                                    0 => "bg-warning text-white",
+                                    1 => "bg-success text-white",
+                                    2 => "bg-info text-white",
+                                    3 => "bg-danger text-white",
+                                    _ => "bg-secondary text-white"
+                                };
+                            }
+                            <span class="badge @badgeClass">@Model.StatusName</span>
+                        </td></tr>
+                        <tr><th>會員姓名</th><td>@Model.MemberName (ID: @Model.MemberId)</td></tr>
+                        <tr><th>獲得點數</th><td class="text-primary fw-bold">@Model.PointQty.ToString("N0") P</td></tr>
+                        <tr><th>實付金額</th><td class="text-success fw-bold">@Model.DiscountedPrice.ToString("C0")</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 方案資訊 -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-tag me-1"></i> 所選方案
+                </div>
+                <div class="card-body text-center">
+                    <h5 class="card-title font-weight-bold">@Model.PlanName</h5>
+                    <p class="card-text text-muted">方案編號: @Model.TopUpPlanId</p>
+                    <hr />
+                    <div class="h4 font-weight-bold text-gray-800">
+                        @Model.OriginalPrice.ToString("C0")
+                    </div>
+                    <small>原始定價</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 錢包異動明細 -->
+        <div class="col-lg-8">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-dark text-white d-flex justify-content-between">
+                    <span><i class="fas fa-list me-1"></i> 點數異動明細 (錢包流水帳)</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>紀錄編號</th>
+                                    <th>異動時間</th>
+                                    <th>類別</th>
+                                    <th class="text-center">異動點數</th>
+                                    <th>錢包 ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.RecordDetails != null && Model.RecordDetails.Any())
+                                {
+                                    foreach (var detail in Model.RecordDetails)
+                                    {
+                                        <tr>
+                                            <td>#@detail.Id</td>
+                                            <td>@detail.CreateAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                            <td>
+                                                <span class="badge badge-pill badge-light border">@detail.MerchandiseCategory</span>
+                                            </td>
+                                            <td class="text-center font-weight-bold @(detail.PointAmount >= 0 ? "text-success" : "text-danger")">
+                                                @(detail.PointAmount >= 0 ? "+" : "")@detail.PointAmount.ToString("N0") P
+                                            </td>
+                                            <td>@detail.UserWalletId</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">無相關異動紀錄</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3 d-flex align-items-center">
+                <a asp-action="Index" class="btn btn-secondary shadow-sm mr-2">
+                    <i class="fas fa-arrow-left me-1"></i> 返回列表
+                </a>
+                
+                @if (Model.Status != 3)
+                {
+                    <form asp-action="CancelOrder" method="post" onsubmit="return confirm('確定要取消此訂單嗎？\n如果是已完成訂單，系統將會從會員錢包扣除對應點數！')">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-danger shadow-sm mr-2">
+                            <i class="fas fa-trash-alt me-1"></i> 同意取消
+                        </button>
+                    </form>
+                }
+
+                @if (Model.Status == 0)
+                {
+                    <button class="btn btn-primary shadow-sm">
+                        <i class="fas fa-check-circle me-1"></i> 確認收款
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>

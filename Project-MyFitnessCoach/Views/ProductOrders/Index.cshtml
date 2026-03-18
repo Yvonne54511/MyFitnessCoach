@@ -68,7 +68,11 @@
                         <tr>
                             <td>@item.Id</td>
                             <td>@item.CreateAt.ToString("yyyy-MM-dd HH:mm")</td>
-                            <td>@item.MemberName</td>
+                            <td>
+                                <a asp-action="MemberAllOrders" asp-route-id="@item.MemberId" class="text-decoration-none fw-bold">
+                                    @item.MemberName
+                                </a>
+                            </td>
                             <td>@item.Receiver</td>
                             <td class="text-end">@item.OriginalAmount.ToString("C0")</td>
                             <td>

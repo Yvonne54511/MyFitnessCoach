@@ -1,0 +1,279 @@
+@model Project_MyFitnessCoach.Models.ViewModels.MemberHistoryViewModel
+@{
+    ViewData["Title"] = "會員身體數據歷史";
+
+    string ChangeClass(double? val) =>
+        val == null ? "text-muted" : val > 0 ? "text-danger" : val < 0 ? "text-success" : "text-muted";
+
+    string ChangeSign(double? val) =>
+        val == null ? "—" : val > 0 ? $"+{val}" : val.ToString();
+}
+
+@section styles {
+<style>
+    .stat-card-icon { font-size: 2rem; opacity: .3; }
+    .change-badge { font-size: .8rem; font-weight: 600; }
+    .table th { white-space: nowrap; }
+    .member-avatar {
+        width: 52px; height: 52px; border-radius: 50%;
+        background: #4e73df; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; font-weight: 700; flex-shrink: 0;
+    }
+</style>
+}
+
+<div class="container-fluid">
+
+    @* 頁首 *@
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <a asp-action="Index" class="btn btn-sm btn-outline-secondary mr-3">
+                <i class="fas fa-arrow-left"></i> 返回列表
+            </a>
+            <div class="member-avatar mr-3">@Model.MemberName.Substring(0, 1)</div>
+            <div>
+                <h1 class="h3 mb-0 text-gray-800">@Model.MemberName</h1>
+                <p class="mb-0 text-muted small">
+                    @Model.Gender &nbsp;|&nbsp;
+                    身高：@(Model.Height.HasValue ? $"{Model.Height:F1} cm" : "未設定") &nbsp;|&nbsp;
+                    活動量：@(Model.ActivityLevel ?? "未設定") &nbsp;|&nbsp;
+                    目標：
+                    @if (!string.IsNullOrEmpty(Model.Target))
+                    {
+                        string bc = Model.Target switch { "減重" => "badge-danger", "增肌" => "badge-success", "維持體重" => "badge-primary", _ => "badge-secondary" };
+                        <span class="badge @bc">@Model.Target</span>
+                    }
+                    else
+                    {
+                        <span>未設定</span>
+                    }
+                </p>
+            </div>
+        </div>
+        <span class="badge badge-warning px-3 py-2">共 @Model.Records.Count 筆記錄</span>
+    </div>
+
+    @* 最新數值 + 變化量卡片 *@
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">最新體重 (kg)</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">
+                                @(Model.LatestWeight.HasValue ? Model.LatestWeight.Value.ToString("F1") : "—")
+                            </div>
+                            @if (Model.WeightChange.HasValue)
+                            {
+                                <div class="change-badge @ChangeClass(Model.WeightChange)">
+                                    <i class="fas @(Model.WeightChange > 0 ? "fa-arrow-up" : Model.WeightChange < 0 ? "fa-arrow-down" : "fa-minus")"></i>
+                                    @ChangeSign(Model.WeightChange) kg（較初始）
+                                </div>
+                            }
+                        </div>
+                        <div class="col-auto stat-card-icon"><i class="fas fa-weight text-primary"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">最新體脂率 (%)</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">
+                                @(Model.LatestBodyFat.HasValue ? Model.LatestBodyFat.Value.ToString("F1") : "—")
+                            </div>
+                            @if (Model.BodyFatChange.HasValue)
+                            {
+                                <div class="change-badge @ChangeClass(Model.BodyFatChange)">
+                                    <i class="fas @(Model.BodyFatChange > 0 ? "fa-arrow-up" : Model.BodyFatChange < 0 ? "fa-arrow-down" : "fa-minus")"></i>
+                                    @ChangeSign(Model.BodyFatChange) %（較初始）
+                                </div>
+                            }
+                        </div>
+                        <div class="col-auto stat-card-icon"><i class="fas fa-chart-pie text-warning"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">最新骨骼肌 (kg)</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">
+                                @(Model.LatestSkeletalMuscle.HasValue ? Model.LatestSkeletalMuscle.Value.ToString("F1") : "—")
+                            </div>
+                            @if (Model.SkeletalMuscleChange.HasValue)
+                            {
+                                @* 骨骼肌增加是好事，所以正值用 success *@
+                                string mc = Model.SkeletalMuscleChange > 0 ? "text-success" : Model.SkeletalMuscleChange < 0 ? "text-danger" : "text-muted";
+                                <div class="change-badge @mc">
+                                    <i class="fas @(Model.SkeletalMuscleChange > 0 ? "fa-arrow-up" : Model.SkeletalMuscleChange < 0 ? "fa-arrow-down" : "fa-minus")"></i>
+                                    @ChangeSign(Model.SkeletalMuscleChange) kg（較初始）
+                                </div>
+                            }
+                        </div>
+                        <div class="col-auto stat-card-icon"><i class="fas fa-dumbbell text-success"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">最新腰圍 (cm)</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">
+                                @(Model.LatestWaist.HasValue ? Model.LatestWaist.Value.ToString("F1") : "—")
+                            </div>
+                            @if (Model.WaistChange.HasValue)
+                            {
+                                <div class="change-badge @ChangeClass(Model.WaistChange)">
+                                    <i class="fas @(Model.WaistChange > 0 ? "fa-arrow-up" : Model.WaistChange < 0 ? "fa-arrow-down" : "fa-minus")"></i>
+                                    @ChangeSign(Model.WaistChange) cm（較初始）
+                                </div>
+                            }
+                        </div>
+                        <div class="col-auto stat-card-icon"><i class="fas fa-ruler-horizontal text-info"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* 趨勢圖 *@
+    @if (Model.Records.Count > 1)
+    {
+        <div class="row mb-4">
+            <div class="col-xl-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">體重趨勢</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="weightChart" height="160"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-warning">體脂率 &amp; 骨骼肌趨勢</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="compositionChart" height="160"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* 歷史紀錄表格 *@
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">歷史量測紀錄</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover" width="100%" cellspacing="0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>量測日期</th>
+                            <th>體重 (kg)</th>
+                            <th>體脂 (%)</th>
+                            <th>骨骼肌 (kg)</th>
+                            <th>腰圍 (cm)</th>
+                            <th>備註</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Records)
+                        {
+                            <tr>
+                                <td>@item.CreateAt.ToString("yyyy-MM-dd")</td>
+                                <td class="font-weight-bold">@item.Weight.ToString("F1")</td>
+                                <td>@(item.BodyFat.HasValue ? item.BodyFat.Value.ToString("F1") : "—")</td>
+                                <td>@(item.SkeletalMuscle.HasValue ? item.SkeletalMuscle.Value.ToString("F1") : "—")</td>
+                                <td>@(item.WaistCircumference.HasValue ? item.WaistCircumference.Value.ToString("F1") : "—")</td>
+                                <td class="text-muted small">@(item.Note ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+@if (Model.Records.Count > 1)
+{
+    <script src="~/vendor/chart.js/Chart.bundle.min.js"></script>
+    <script>
+        const labels  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Dates));
+        const weights = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Weights));
+        const fats    = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BodyFats));
+        const muscles = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SkeletalMuscles));
+
+        // 體重折線圖
+        new Chart(document.getElementById('weightChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '體重 (kg)',
+                    data: weights,
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    backgroundColor: 'rgba(78, 115, 223, 0.08)',
+                    pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: false } }
+            }
+        });
+
+        // 體脂 & 骨骼肌
+        new Chart(document.getElementById('compositionChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '體脂率 (%)',
+                        data: fats,
+                        borderColor: 'rgba(246, 194, 62, 1)',
+                        backgroundColor: 'rgba(246, 194, 62, 0.08)',
+                        fill: false,
+                        tension: 0.3,
+                        spanGaps: true
+                    },
+                    {
+                        label: '骨骼肌 (kg)',
+                        data: muscles,
+                        borderColor: 'rgba(28, 200, 138, 1)',
+                        backgroundColor: 'rgba(28, 200, 138, 0.08)',
+                        fill: false,
+                        tension: 0.3,
+                        spanGaps: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: false } }
+            }
+        });
+    </script>
+}
+}

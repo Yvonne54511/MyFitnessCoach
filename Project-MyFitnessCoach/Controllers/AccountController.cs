@@ -168,6 +168,16 @@ namespace Project_MyFitnessCoach.Controllers
                 claims.Add(new Claim("InstructorId", result.User.InstructorId.Value.ToString()));
             }
 
+            if (result.User.EmployeeId.HasValue)
+            {
+                claims.Add(new Claim("EmployeeId", result.User.EmployeeId.Value.ToString()));
+            }
+
+            if (result.User.DepartmentId.HasValue)
+            {
+                claims.Add(new Claim("DepartmentId", result.User.DepartmentId.Value.ToString()));
+            }
+
             foreach (var role in result.User.Roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));

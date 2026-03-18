@@ -57,9 +57,55 @@ namespace Project_MyFitnessCoach.Controllers
                 {
                     CategoryName = c.CategoryName,
                     TotalSold = c.TotalSold
+                }).ToList(),
+                TodayOrders = dto.TodayOrders.Select(o => new TodayOrderViewModel
+                {
+                    Id = o.Id,
+                    MemberName = o.MemberName,
+                    CreateAt = o.CreateAt,
+                    FinalAmount = o.OriginalAmount - o.DiscountAmount,
+                    Status = o.Status
+                }).ToList(),
+                PendingOrders = dto.PendingOrders.Select(o => new TodayOrderViewModel
+                {
+                    Id = o.Id,
+                    MemberName = o.MemberName,
+                    CreateAt = o.CreateAt,
+                    FinalAmount = o.OriginalAmount - o.DiscountAmount,
+                    Status = o.Status
                 }).ToList()
             };
 
+            return View(viewModel);
+        }
+
+        // GET: ProductOrders/MemberAllOrders/5
+        public async Task<IActionResult> MemberAllOrders(int? id)
+        {
+            // 如果沒傳 ID，暫時預設為 1 (測試用)
+            int memberId = id ?? 1;
+
+            var ordersDto = await _service.GetByMemberIdAsync(memberId);
+            
+            var viewModel = ordersDto.Select(dto => new ProductOrderViewModel
+            {
+                Id = dto.Id,
+                MemberName = dto.MemberName,
+                CreateAt = dto.CreateAt,
+                OriginalAmount = dto.OriginalAmount,
+                DiscountAmount = dto.DiscountAmount,
+                Status = dto.Status,
+                OrderDetails = dto.OrderDetails.Select(d => new ProductOrderDetailViewModel
+                {
+                    ProductName = d.ProductName,
+                    UnitPrice = d.UnitPrice,
+                    Qty = d.Qty,
+                    SubTotal = d.SubTotal,
+                    ImageUrl = d.ImageUrl
+                }).ToList()
+            }).ToList();
+
+            ViewBag.MemberId = memberId;
             return View(viewModel);
         }
 

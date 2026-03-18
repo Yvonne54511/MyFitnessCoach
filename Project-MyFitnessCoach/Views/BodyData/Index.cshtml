@@ -1,0 +1,329 @@
+@model Project_MyFitnessCoach.Models.ViewModels.BodyDataViewModel
+@{
+    ViewData["Title"] = "客戶身體數據";
+}
+
+@section styles {
+<style>
+    .stat-card-icon { font-size: 2rem; opacity: .3; }
+    .table th { white-space: nowrap; }
+    .trend-btn { cursor: pointer; }
+    .badge-target { font-size: .75rem; }
+    #trendModal .modal-body canvas { max-height: 320px; }
+</style>
+}
+
+<div class="container-fluid">
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800">客戶身體數據</h1>
+            <p class="mb-0 text-muted">查看並追蹤會員的體重、體脂、骨骼肌及腰圍量測記錄</p>
+        </div>
+        <span class="badge badge-warning px-3 py-2">@DateTime.Now.ToString("yyyy/MM/dd HH:mm")</span>
+    </div>
+
+    @* 搜尋列 *@
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <form asp-action="Index" method="get" class="form-inline flex-wrap">
+                <div class="form-group mr-2 mb-1">
+                    <label class="mr-1">會員姓名</label>
+                    <input type="text" name="searchName" value="@Model.SearchName"
+                           class="form-control form-control-sm" placeholder="輸入姓名關鍵字..." />
+                </div>
+                <div class="form-group mr-2 mb-1">
+                    <label class="mr-1">起始日期</label>
+                    <input type="date" name="dateFrom" value="@Model.DateFrom" class="form-control form-control-sm" />
+                </div>
+                <div class="form-group mr-2 mb-1">
+                    <label class="mr-1">結束日期</label>
+                    <input type="date" name="dateTo" value="@Model.DateTo" class="form-control form-control-sm" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm mb-1 mr-1">
+                    <i class="fas fa-search fa-sm"></i> 查詢
+                </button>
+                <a asp-action="Index" class="btn btn-secondary btn-sm mb-1">重設</a>
+            </form>
+        </div>
+    </div>
+
+    @* 統計摘要卡片 *@
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">量測筆數</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">@Model.TotalRecords</div>
+                        </div>
+                        <div class="col-auto stat-card-icon"><i class="fas fa-clipboard-list text-primary"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">涵蓋會員數</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">@Model.TotalMembers</div>
+                        </div>
+                        <div class="col-auto stat-card-icon"><i class="fas fa-users text-success"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">平均體重 (kg)</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">
+                                @(Model.AvgWeight.HasValue ? Model.AvgWeight.Value.ToString("F1") : "—")
+                            </div>
+                        </div>
+                        <div class="col-auto stat-card-icon"><i class="fas fa-weight text-warning"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">平均體脂率 (%)</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">
+                                @(Model.AvgBodyFat.HasValue ? Model.AvgBodyFat.Value.ToString("F1") : "—")
+                            </div>
+                        </div>
+                        <div class="col-auto stat-card-icon"><i class="fas fa-chart-pie text-info"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* 資料表格 *@
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">量測紀錄列表</h6>
+            <small class="text-muted">點擊「會員姓名」可查看歷史紀錄，點擊「趨勢圖」可查看數據走勢</small>
+        </div>
+        <div class="card-body">
+            @if (!Model.Records.Any())
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                    目前沒有符合條件的量測紀錄
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover" id="bodyDataTable" width="100%" cellspacing="0">
+                        <thead class="thead-dark">
+                            <tr>
+                                @* <th>#</th> *@
+                                <th>會員姓名</th>
+                                <th>目標</th>
+                                <th>體重 (kg)</th>
+                                <th>體脂 (%)</th>
+                                <th>骨骼肌 (kg)</th>
+                                <th>腰圍 (cm)</th>
+                                <th>量測日期</th>
+                                <th>備註</th>
+                                <th>趨勢圖</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Records)
+                            {
+                                <tr>
+                                    @* <td>@item.Id</td> *@
+                                    <td>
+                                        <a asp-action="History" asp-route-memberId="@item.MemberId"
+                                           class="font-weight-bold text-primary">
+                                            @item.MemberName
+                                        </a>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.MemberTarget))
+                                        {
+                                            string badgeClass = item.MemberTarget switch
+                                            {
+                                                "減重" => "badge-danger",
+                                                "增肌" => "badge-success",
+                                                "維持體重" => "badge-primary",
+                                                _ => "badge-secondary"
+                                            };
+                                            <span class="badge @badgeClass badge-target">@item.MemberTarget</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>@item.Weight.ToString("F1")</td>
+                                    <td>@(item.BodyFat.HasValue ? item.BodyFat.Value.ToString("F1") : "—")</td>
+                                    <td>@(item.SkeletalMuscle.HasValue ? item.SkeletalMuscle.Value.ToString("F1") : "—")</td>
+                                    <td>@(item.WaistCircumference.HasValue ? item.WaistCircumference.Value.ToString("F1") : "—")</td>
+                                    <td>@item.CreateAt.ToString("yyyy-MM-dd")</td>
+                                    <td class="text-muted small">@(item.Note ?? "—")</td>
+                                    <td class="text-center">
+                                        @if (Model.MemberTrends.ContainsKey(item.MemberId) && Model.MemberTrends[item.MemberId].Dates.Count > 1)
+                                        {
+                                            <button class="btn btn-sm btn-outline-info trend-btn"
+                                                    data-member-id="@item.MemberId"
+                                                    data-member-name="@item.MemberName"
+                                                    data-toggle="modal" data-target="#trendModal">
+                                                <i class="fas fa-chart-line"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">資料不足</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@* 趨勢圖 Modal *@
+<div class="modal fade" id="trendModal" tabindex="-1" role="dialog" aria-labelledby="trendModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="trendModalLabel">
+                    <i class="fas fa-chart-line mr-2 text-info"></i>
+                    <span id="trendMemberName"></span> — 身體數據趨勢
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" id="trendTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#tabWeight">體重</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#tabBodyFat">體脂 &amp; 骨骼肌</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="tabWeight">
+                        <canvas id="weightChart"></canvas>
+                    </div>
+                    <div class="tab-pane fade" id="tabBodyFat">
+                        <canvas id="bodyFatChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script src="~/vendor/chart.js/Chart.bundle.min.js"></script>
+<script>
+    const memberTrends = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        Model.MemberTrends,
+        new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+        }));
+
+    let weightChartInst = null;
+    let bodyFatChartInst = null;
+
+    function destroyCharts() {
+        if (weightChartInst) { weightChartInst.destroy(); weightChartInst = null; }
+        if (bodyFatChartInst) { bodyFatChartInst.destroy(); bodyFatChartInst = null; }
+    }
+
+    $('.trend-btn').on('click', function () {
+        const memberId = $(this).data('member-id');
+        const memberName = $(this).data('member-name');
+        const trend = memberTrends[memberId];
+        if (!trend) return;
+
+        $('#trendMemberName').text(memberName);
+        destroyCharts();
+
+        // 體重折線圖
+        const wCtx = document.getElementById('weightChart').getContext('2d');
+        weightChartInst = new Chart(wCtx, {
+            type: 'line',
+            data: {
+                labels: trend.dates,
+                datasets: [{
+                    label: '體重 (kg)',
+                    data: trend.weights,
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: false } }
+            }
+        });
+
+        // 體脂 & 骨骼肌折線圖
+        const bCtx = document.getElementById('bodyFatChart').getContext('2d');
+        bodyFatChartInst = new Chart(bCtx, {
+            type: 'line',
+            data: {
+                labels: trend.dates,
+                datasets: [
+                    {
+                        label: '體脂率 (%)',
+                        data: trend.bodyFats,
+                        borderColor: 'rgba(231, 74, 59, 1)',
+                        backgroundColor: 'rgba(231, 74, 59, 0.1)',
+                        fill: false,
+                        tension: 0.3,
+                        spanGaps: true
+                    },
+                    {
+                        label: '骨骼肌 (kg)',
+                        data: trend.skeletalMuscles,
+                        borderColor: 'rgba(28, 200, 138, 1)',
+                        backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                        fill: false,
+                        tension: 0.3,
+                        spanGaps: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: false } }
+            }
+        });
+    });
+
+    $('#trendModal').on('hidden.bs.modal', function () {
+        destroyCharts();
+    });
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+        if (weightChartInst) weightChartInst.resize();
+        if (bodyFatChartInst) bodyFatChartInst.resize();
+    });
+</script>
+}
