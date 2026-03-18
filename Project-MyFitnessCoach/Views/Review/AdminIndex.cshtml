@@ -71,7 +71,8 @@
                                 <td data-order="@item.CreatedAt.Ticks">@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                                 <td>
                                     @item.MemberName 
-                                    @if (!item.IsUserActive) { <span class="badge badge-danger"><i class='bx bx-user-x'></i> 已停權</span> }
+                                    @if (!item.IsAccountActive) { <span class="badge badge-dark"><i class='bx bx-user-x'></i> 帳號已停用</span> }
+                                    @if (item.IsSuspended) { <span class="badge badge-danger"><i class='bx bx-block'></i> 預約停權</span> }
                                 </td>
                                 <td>@item.InstructorName</td>
                                 <td class="text-warning" data-order="@item.Rating">
@@ -91,7 +92,8 @@
                                             data-comment="@item.Comment"
                                             data-report="@item.ReportMessage"
                                             data-member-id="@item.MemberId"
-                                            data-active="@item.IsUserActive.ToString().ToLower()"
+                                            data-account-active="@item.IsAccountActive.ToString().ToLower()"
+                                            data-suspended="@item.IsSuspended.ToString().ToLower()"
                                             data-banned="@item.IsBanned.ToString().ToLower()"
                                             data-warning-count="@item.WarningCount"
                                             data-toggle="modal" 
@@ -199,7 +201,7 @@
     <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
-    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
+    <script src="~/lib/micromodal/micromodal.min.js"></script>
 
     <script>
         $(document).ready(function() {
@@ -263,7 +265,8 @@
 
                 // Store warning count and status for modal logic
                 $('#detailModal').data('warning-count', btn.data('warning-count'));
-                $('#detailModal').data('is-active', btn.attr('data-active'));
+                $('#detailModal').data('account-active', btn.attr('data-account-active'));
+                $('#detailModal').data('is-suspended', btn.attr('data-suspended'));
                 $('#detailModal').data('member-name', btn.data('member'));
 
                 var stars = '';
@@ -291,22 +294,24 @@
 
                 $('#divSuspendReason').addClass('d-none');
                 $('#txtSuspendReason').val('');
-                $('#btnSuspendConfirm').html("<i class='bx bx-user-x'></i> 停權學員").removeClass('btn-danger').addClass('btn-dark');
                 
-                if(btn.attr('data-active') === "true") {
+                // 停權按鈕邏輯
+                if (btn.attr('data-suspended') === "true") {
+                    $('#btnSuspendConfirm').html("<i class='bx bx-check-shield'></i> 已在停權中").attr('disabled', true).removeClass('btn-danger').addClass('btn-secondary');
                     $('#formSuspend').show();
                 } else {
-                    $('#formSuspend').hide();
+                    $('#btnSuspendConfirm').html("<i class='bx bx-user-x'></i> 停權學員").attr('disabled', false).removeClass('btn-danger', 'btn-secondary').addClass('btn-dark');
+                    $('#formSuspend').show();
                 }
             });
 
             // Modal Close Event - Warning for 5+ violations (Passive close)
             $('#detailModal').on('hidden.bs.modal', function () {
                 var warningCount = $(this).data('warning-count');
-                var isActive = $(this).data('is-active');
+                var isSuspended = $(this).data('is-suspended');
                 var memberName = $(this).data('member-name');
 
-                if (isActive === "true" && warningCount >= 5) {
+                if (isSuspended === "false" && warningCount >= 5) {
                     notyf.open({
                         type: 'error',
                         duration: 8000,

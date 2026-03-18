@@ -72,6 +72,8 @@ namespace Project_MyFitnessCoach.Services
                     Comment = maskedComment,
                     ReportMessage = displayReason,
                     CreatedAt = e.CreatedAt,
+                    IsAccountActive = e.Member?.User?.IsActive ?? true,
+                    IsSuspended = e.Member?.MemberViolation?.IsSuspended ?? false,
                     IsUserActive = (e.Member?.User?.IsActive ?? true) && !(e.Member?.MemberViolation?.IsSuspended ?? false),
                     IsBanned = e.IsBanned,
                     WarningCount = e.Member?.MemberViolation?.WarningCount ?? 0

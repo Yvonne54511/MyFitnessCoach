@@ -1,0 +1,73 @@
+@model Project_MyFitnessCoach.Models.DTOs.InstructorWalletDto
+
+<div class="p-4 bg-light border-bottom">
+    <div class="row align-items-center">
+        <div class="col-6">
+            <h6 class="text-muted small text-uppercase fw-bold mb-1">教練姓名</h6>
+            <h5 class="fw-bold mb-0">@Model.InstructorName</h5>
+        </div>
+        <div class="col-6 text-end">
+            <h6 class="text-muted small text-uppercase fw-bold mb-1">當前餘額 (TWD)</h6>
+            <h4 class="text-primary fw-bold mb-0">$ @Model.CurrentBalance.ToString("N0")</h4>
+        </div>
+    </div>
+</div>
+
+<div class="p-0">
+    <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-white sticky-top shadow-sm">
+                <tr class="small text-muted text-uppercase">
+                    <th class="ps-4 border-0 py-3">交易類別 / 時間</th>
+                    <th class="border-0 py-3">結算月份</th>
+                    <th class="text-end pe-4 border-0 py-3">金額</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Details != null && Model.Details.Any())
+                {
+                    foreach (var detail in Model.Details)
+                    {
+                        <tr class="history-item-row">
+                            <td class="ps-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    @{
+                                        var isAnnual = detail.Category == "年終獎金";
+                                        var categoryName = detail.Category ?? (isAnnual ? "年終獎金" : "月薪與加給");
+                                        var iconClass = isAnnual ? "fa-gift" : "fa-money-bill-wave";
+                                        var bgClass = isAnnual ? "bg-soft-primary" : "bg-soft-success";
+                                    }
+                                    <div class="icon-box-sm @bgClass me-3">
+                                        <i class="fas @iconClass"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark small">@categoryName</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">@detail.CreatedAt.ToString("yyyy/MM/dd HH:mm")</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill bg-soft-primary px-3 py-2">@detail.SalaryDate.Substring(0, Math.Min(detail.SalaryDate.Length, 7))</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="fw-bold text-success">+ @detail.TotalAmount.ToString("N0")</div>
+                                <div class="text-muted" style="font-size: 0.75rem;"><i class="fas fa-check-circle me-1"></i>交易成功</div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="3" class="text-center py-5">
+                            <div class="py-4">
+                                <i class="fas fa-history fa-3x text-light mb-3"></i>
+                                <h6 class="text-muted">目前尚無任何交易明細紀錄</h6>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

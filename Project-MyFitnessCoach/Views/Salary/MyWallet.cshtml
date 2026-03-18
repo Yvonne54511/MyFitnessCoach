@@ -1,0 +1,262 @@
+@model Project_MyFitnessCoach.Models.DTOs.InstructorWalletDto
+
+@{
+    ViewData["Title"] = "我的個人薪資錢包";
+}
+
+<style>
+    .wallet-card {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        border-radius: 1.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    .wallet-card::before {
+        content: "";
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 150px;
+        height: 150px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+    .balance-amount {
+        font-size: 3.5rem;
+        letter-spacing: -1px;
+    }
+    .history-item {
+        transition: all 0.2s ease;
+        border-left: 4px solid transparent;
+    }
+    .history-item:hover {
+        background-color: #f8f9fc;
+        border-left-4px solid #4e73df;
+        transform: translateX(5px);
+    }
+    .icon-box {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+    .bg-soft-success {
+        background-color: #e1f5ea;
+        color: #1cc88a;
+    }
+    .bg-soft-primary {
+        background-color: #e8eeff;
+        color: #4e73df;
+    }
+
+    /* 新增美化樣式 */
+    .action-tile {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+        border: 1px solid #eef2f7;
+        background: white;
+        cursor: pointer;
+    }
+    .action-tile:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        border-color: #4e73df;
+    }
+    .action-tile .icon-sm {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+    }
+    .tile-refresh { border-left: 4px solid #4e73df; }
+    .tile-export { border-left: 4px solid #1cc88a; }
+    .tile-back { border-left: 4px solid #858796; }
+    
+    .security-banner {
+        background: linear-gradient(to right, #fff9f0, #ffffff);
+        border-left: 4px solid #f6c23e;
+        border-radius: 0.75rem;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Top Section: Stats & Balance -->
+            <div class="row g-4 mb-5">
+                <!-- Main Balance Card -->
+                <div class="col-md-7">
+                    <div class="card wallet-card shadow-lg border-0 h-100">
+                        <div class="card-body p-5 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-4">
+                                    <div>
+                                        <h6 class="text-white-50 text-uppercase fw-bold mb-1">我的個人資產</h6>
+                                        <h4 class="fw-bold mb-0">@Model.InstructorName</h4>
+                                    </div>
+                                    <i class="fas fa-microchip fa-2x text-white-50"></i>
+                                </div>
+                                <div class="mb-4">
+                                    <h6 class="text-white-50 small mb-2">錢包總餘額 (TWD)</h6>
+                                    <div class="d-flex align-items-baseline">
+                                        <span class="fs-2 me-2">$</span>
+                                        <h1 class="balance-amount fw-bold mb-0">@Model.CurrentBalance.ToString("N0")</h1>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-end mt-4">
+                                <div class="small opacity-75">
+                                    <i class="fas fa-clock me-1"></i> 最後更新：@Model.LastUpdated.ToString("yyyy/MM/dd HH:mm")
+                                </div>
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="height: 25px; filter: brightness(0) invert(1); opacity: 0.8;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Info -->
+                <div class="col-md-5">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <h6 class="fw-bold text-dark mb-4">快速操作</h6>
+                            
+                            <div class="flex-grow-1">
+                                <!-- Refresh Tile -->
+                                <div class="action-tile tile-refresh mb-3" onclick="location.reload()">
+                                    <div class="icon-sm bg-soft-primary">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark small">重新整理</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">更新即時餘額</div>
+                                    </div>
+                                </div>
+
+                                <!-- Export Tile -->
+                                <a asp-action="ExportMyWalletToExcel" class="action-tile tile-export mb-3 text-decoration-none">
+                                    <div class="icon-sm bg-soft-success">
+                                        <i class="fas fa-file-excel"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark small">匯出報表</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">下載 Excel 明細</div>
+                                    </div>
+                                </a>
+
+                                <!-- Back Tile -->
+                                <a asp-action="Rating" asp-controller="Dashboard" class="action-tile tile-back mb-4 text-decoration-none">
+                                    <div class="icon-sm bg-light text-secondary">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark small">返回儀表板</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">回到數據首頁</div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="security-banner p-3 border shadow-sm mt-auto">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-shield-alt text-warning me-2"></i>
+                                    <h6 class="small fw-bold text-dark mb-0">薪資安全提示</h6>
+                                </div>
+                                <p class="text-muted mb-0" style="font-size: 0.75rem; line-height: 1.5;">
+                                    所有薪資發放均透過加密傳輸。如有帳務疑問，請聯絡財務部門或系統管理員。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section: Transaction History -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-4 px-4 border-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">收支明細</h5>
+                        <p class="text-muted small mb-0">近期所有入帳與撥款紀錄</p>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm rounded-pill px-3 border" type="button">
+                            <i class="fas fa-filter me-2"></i>全部紀錄
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto; overflow-x: hidden;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small text-uppercase sticky-top shadow-sm">
+                                <tr>
+                                    <th class="ps-4 border-0 py-3">類別 / 日期</th>
+                                    <th class="border-0 py-3">摘要說明</th>
+                                    <th class="border-0 text-end pe-4 py-3">金額 (TWD)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Details != null && Model.Details.Any())
+                                {
+                                    foreach (var detail in Model.Details.OrderByDescending(d => d.CreatedAt))
+                                    {
+                                        <tr class="history-item">
+                                            <td class="ps-4 py-4">
+                                                <div class="d-flex align-items-center">
+                                                    @{
+                                                        var isAnnual = detail.Category == "年終獎金";
+                                                        var categoryName = detail.Category ?? (isAnnual ? "年終獎金" : "月薪與加給");
+                                                        var iconClass = isAnnual ? "fa-gift" : "fa-money-bill-wave";
+                                                        var bgClass = isAnnual ? "bg-soft-primary" : "bg-soft-success";
+                                                    }
+                                                    <div class="icon-box @bgClass me-3">
+                                                        <i class="fas @iconClass"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold text-dark">@categoryName</div>
+                                                        <div class="text-muted small">@detail.CreatedAt.ToString("yyyy/MM/dd HH:mm")</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge rounded-pill bg-soft-primary px-3 py-2 me-2">@detail.SalaryDate.Substring(0, Math.Min(detail.SalaryDate.Length, 7))</span>
+                                                    <span class="text-dark small">@(isAnnual ? "年終獎金" : "月薪與加給")</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <div class="h5 fw-bold text-success mb-0">+ @detail.TotalAmount.ToString("N0")</div>
+                                                <div class="small text-muted"><i class="fas fa-check-circle me-1"></i>交易成功</div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center py-5">
+                                            <div class="py-5">
+                                                <img src="https://img.icons8.com/bubbles/100/000000/empty-box.png" alt="Empty" class="mb-3">
+                                                <h6 class="text-muted">目前尚無任何交易明細紀錄</h6>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white py-3 border-0 text-center">
+                    <button class="btn btn-link text-muted btn-sm text-decoration-none">查看更多歷史紀錄</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

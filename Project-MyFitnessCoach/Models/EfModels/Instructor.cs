@@ -21,6 +21,8 @@ public partial class Instructor
 
     public bool IsActive { get; set; }
 
+    public virtual InstructorWallet InstructorWallet { get; set; }
+
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     public virtual ICollection<Shift> Shifts { get; set; } = new List<Shift>();

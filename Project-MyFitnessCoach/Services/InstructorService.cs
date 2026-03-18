@@ -11,6 +11,7 @@ namespace Project_MyFitnessCoach.Services
     {
         Task<IEnumerable<InstructorDto>> GetAllInstructorsAsync();
         Task<InstructorDto?> GetInstructorByIdAsync(int id);
+        Task<InstructorDto?> GetInstructorByUserIdAsync(int userId);
         Task CreateInstructorAsync(InstructorDto dto);
         Task UpdateInstructorAsync(InstructorDto dto);
         Task DeleteInstructorAsync(int id);
@@ -46,6 +47,24 @@ namespace Project_MyFitnessCoach.Services
         public async Task<InstructorDto?> GetInstructorByIdAsync(int id)
         {
             var i = await _repository.GetByIdAsync(id);
+            if (i == null) return null;
+
+            return new InstructorDto
+            {
+                Id = i.Id,
+                UserId = i.UserId,
+                UserName = i.User?.UserName ?? i.User?.Account ?? "Unknown",
+                ImageUrl = NormalizeImageUrl(i.ImageUrl),
+                Description = i.Description,
+                HourWage = i.HourWage,
+                CancelCount = i.CancelCount,
+                IsActive = i.IsActive
+            };
+        }
+
+        public async Task<InstructorDto?> GetInstructorByUserIdAsync(int userId)
+        {
+            var i = await _repository.GetByUserIdAsync(userId);
             if (i == null) return null;
 
             return new InstructorDto

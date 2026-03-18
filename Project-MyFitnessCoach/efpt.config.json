@@ -39,6 +39,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[InstructorWalletDetails]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[InstructorWallets]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[KeyWords]",
          "ObjectType": 0
       },

@@ -13,7 +13,9 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public string Comment { get; set; }
         public string ReportMessage { get; set; }
         public DateTime CreatedAt { get; set; }
-        public bool IsUserActive { get; set; }
+        public bool IsUserActive { get; set; } // Keep for backward compatibility if needed, but we'll use more specific ones
+        public bool IsAccountActive { get; set; } // User.IsActive
+        public bool IsSuspended { get; set; }     // MemberViolation.IsSuspended
         public bool IsBanned { get; set; }
         public int WarningCount { get; set; }
     }
