@@ -604,13 +604,13 @@
                             <tr class="text-center">
                                 <td class="td-id">#@req.Id</td>
                                 <td class="td-type">@req.LeaveTypeName</td>
-                                <td class="td-date">@req.StartDate.ToString("yyyy-MM-dd")</td>
-                                <td class="td-date">@req.EndDate.ToString("yyyy-MM-dd")</td>
+                                <td class="td-date">@req.StartDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                <td class="td-date">@req.EndDate.ToString("yyyy/MM/dd HH:mm")</td>
                                 <td class="td-duration">@req.HoursUsed.ToString("0.#")h / @req.DaysUsed.ToString("0.#")d</td>
                                 <td>
                                     @await Html.PartialAsync("_LeaveStatusBadge", req.Status)
                                 </td>
-                                <td class="td-time">@req.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="td-time">@req.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                                 <td>
                                     <button type="button" class="btn-action btn-action--view"
                                             data-toggle="modal" data-target="#detailModal-@req.Id">
@@ -668,7 +668,7 @@
                                     <tr><th>申請人</th><td>@req.EmployeeName</td></tr>
                                     <tr><th>部門</th><td>@req.DepartmentName</td></tr>
                                     <tr><th>假別</th><td>@req.LeaveTypeName</td></tr>
-                                    <tr><th>請假日期</th><td>@req.StartDate.ToString("yyyy-MM-dd") ~ @req.EndDate.ToString("yyyy-MM-dd")</td></tr>
+                                    <tr><th>請假日期</th><td>@req.StartDate.ToString("yyyy/MM/dd HH:mm") ~ @req.EndDate.ToString("yyyy/MM/dd HH:mm")</td></tr>
                                     <tr><th>時數</th><td>@req.HoursUsed.ToString("0.#") 小時（@req.DaysUsed.ToString("0.#") 天）</td></tr>
                                 </table>
                             </div>
@@ -683,7 +683,7 @@
                                     @if (req.ApproverName != null)
                                     {
                                         <tr><th>審核人</th><td>@req.ApproverName</td></tr>
-                                        <tr><th>審核時間</th><td>@req.ApprovedAt?.ToString("yyyy-MM-dd HH:mm")</td></tr>
+                                        <tr><th>審核時間</th><td>@req.ApprovedAt?.ToString("yyyy/MM/dd HH:mm")</td></tr>
                                     }
                                     @if (!string.IsNullOrEmpty(req.RejectReason))
                                     {
@@ -698,7 +698,7 @@
                                             <th style="color:#e67700">取消原因</th>
                                             <td>@req.CancelReason</td>
                                         </tr>
-                                        <tr><th>取消申請時間</th><td>@req.CancelRequestedAt?.ToString("yyyy-MM-dd HH:mm")</td></tr>
+                                        <tr><th>取消申請時間</th><td>@req.CancelRequestedAt?.ToString("yyyy/MM/dd HH:mm")</td></tr>
                                     }
                                 </table>
                             </div>

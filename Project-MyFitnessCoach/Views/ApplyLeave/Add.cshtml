@@ -17,7 +17,7 @@
         <div asp-validation-summary="All" class="alert alert-danger"></div>
     }
 
-    <form asp-action="Add" method="post">
+    <form asp-action="Add" method="post" id="leaveForm">
         @Html.AntiForgeryToken()
 
         <!-- 區塊一：申請人資訊 -->
@@ -51,7 +51,7 @@
             </div>
         </div>
 
-        <!-- 假別餘額 -->
+        <!-- 假別餘額（步驟 4.3-1：依 QuotaType 分別顯示）-->
         @if (Model.Balances != null && Model.Balances.Any())
         {
             <div class="card shadow-sm mb-4">
@@ -64,14 +64,58 @@
                     <div class="row">
                         @foreach (var b in Model.Balances)
                         {
+                            var isOverThreshold = b.WarnThresholdDays.HasValue && b.UsedDays >= b.WarnThresholdDays.Value;
+                            var borderClass = isOverThreshold ? "border-left-danger" : "border-left-info";
                             <div class="col-md-3 col-sm-6 mb-3">
-                                <div class="card border-left-info h-100 py-2">
+                                <div class="card @borderClass h-100 py-2">
                                     <div class="card-body py-2">
                                         <div class="text-xs font-weight-bold text-info text-uppercase mb-1">@b.LeaveTypeName</div>
-                                        <div class="h6 mb-0 font-weight-bold text-gray-800">
-                                            剩餘 <span class="text-primary">@b.RemainingDays.ToString("0.#")</span> 天
-                                        </div>
-                                        <div class="small text-muted">已用 @b.UsedDays.ToString("0.#") / @b.TotalDays.ToString("0.#") 天</div>
+                                        @if (b.QuotaType == "PreAllocated")
+                                        {
+                                            <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                                剩餘 <span class="text-primary">@b.RemainingDays.ToString("0.##")</span> 天
+                                            </div>
+                                            <div class="small text-muted">已用 @b.UsedDays.ToString("0.##") / @b.TotalDays.ToString("0.##") 天</div>
+                                        }
+                                        else if (b.QuotaType == "Unlimited")
+                                        {
+                                            @if (b.WarnThresholdDays.HasValue)
+                                            {
+                                                <div class="h6 mb-0 font-weight-bold @(isOverThreshold ? "text-danger" : "text-gray-800")">
+                                                    已用 <span class="@(isOverThreshold ? "text-danger" : "text-warning")">@b.UsedDays.ToString("0.##")</span>
+                                                    / @b.WarnThresholdDays 天
+                                                </div>
+                                                <div class="small text-muted">不限額度（超過 @b.WarnThresholdDays 天影響薪資）</div>
+                                                @if (isOverThreshold)
+                                                {
+                                                    <div class="small text-danger mt-1">
+                                                        <i class="bx bx-error-circle"></i> 已超過法定半薪門檻
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                                    已用 <span class="text-warning">@b.UsedDays.ToString("0.##")</span> 天
+                                                </div>
+                                                <div class="small text-muted">不限額度</div>
+                                            }
+                                        }
+                                        else if (b.QuotaType == "ApprovalRequired")
+                                        {
+                                            @if (b.TotalDays > 0)
+                                            {
+                                                <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                                    剩餘 <span class="text-primary">@b.RemainingDays.ToString("0.##")</span> 天
+                                                </div>
+                                                <div class="small text-muted">已用 @b.UsedDays.ToString("0.##") / @b.TotalDays.ToString("0.##") 天</div>
+                                            }
+                                            else
+                                            {
+                                                <div class="h6 mb-0 font-weight-bold text-danger">尚未取得額度</div>
+                                                <div class="small text-muted">需提交證明文件</div>
+                                            }
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -122,39 +166,63 @@
                     </div>
                 </div>
 
+                <!-- 步驟 4.3-2: 開始時間（日期 + 小時） -->
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="StartDate" class="form-label"></label>
-                            <input asp-for="StartDate" type="date" class="form-control" id="startDate" />
+                            <label class="form-label">開始時間</label>
+                            <div class="input-group">
+                                <input asp-for="StartDate" type="date" class="form-control" id="startDate" />
+                                <select asp-for="StartHour" class="form-control" id="startHour" style="max-width:120px;">
+                                    <option value="9">09:00</option>
+                                    <option value="10">10:00</option>
+                                    <option value="11">11:00</option>
+                                    <option value="13">13:00</option>
+                                    <option value="14">14:00</option>
+                                    <option value="15">15:00</option>
+                                    <option value="16">16:00</option>
+                                    <option value="17">17:00</option>
+                                </select>
+                            </div>
                             <span asp-validation-for="StartDate" class="text-danger"></span>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <div class="form-group">
-                            <label asp-for="EndDate" class="form-label"></label>
-                            <input asp-for="EndDate" type="date" class="form-control" id="endDate" />
+                            <label class="form-label">結束時間</label>
+                            <div class="input-group">
+                                <input asp-for="EndDate" type="date" class="form-control" id="endDate" />
+                                <select asp-for="EndHour" class="form-control" id="endHour" style="max-width:120px;">
+                                    <option value="10">10:00</option>
+                                    <option value="11">11:00</option>
+                                    <option value="12">12:00</option>
+                                    <option value="13">13:00</option>
+                                    <option value="14">14:00</option>
+                                    <option value="15">15:00</option>
+                                    <option value="16">16:00</option>
+                                    <option value="17">17:00</option>
+                                    <option value="18">18:00</option>
+                                </select>
+                            </div>
                             <span asp-validation-for="EndDate" class="text-danger"></span>
                         </div>
                     </div>
-                    <div class="col-md-4 d-flex align-items-end">
-                        <div class="alert alert-info w-100 py-2 mb-3" id="daysHint" style="display:none;">
-                            <i class="bx bx-info-circle"></i> 預估請假 <strong id="daysCount">0</strong> 個工作日（上限 <strong id="maxHours">0</strong> 小時）
+                </div>
+
+                <!-- 自動計算結果（唯讀顯示） -->
+                <div class="row mt-2">
+                    <div class="col-md-12">
+                        <div class="alert alert-info py-2" id="calcResult" style="display:none;">
+                            <i class="bx bx-calculator"></i>
+                            請假時數：<strong id="calcHours">0</strong> 小時
+                            （折合 <strong id="calcDays">0.00</strong> 天）
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label asp-for="HoursUsed" class="form-label"></label>
-                            <input asp-for="HoursUsed" type="number" class="form-control" id="hoursUsed" min="1" step="1" placeholder="請輸入小時數" />
-                            <span asp-validation-for="HoursUsed" class="text-danger"></span>
-                            <small class="form-text text-muted" id="hoursToDay" style="display:none;">
-                                換算約 <strong id="hoursDayCalc">0</strong> 天
-                            </small>
-                        </div>
-                    </div>
-                </div>
+
+                <!-- Hidden：將自動計算的 HoursUsed 傳給後端 -->
+                <input type="hidden" asp-for="HoursUsed" id="hoursUsedHidden" />
+
                 <div class="row">
                     <div class="col-12">
                         <div class="form-group">
@@ -184,47 +252,73 @@
         $(document).ready(function () {
             var defaultDelegateId = @(Model.DefaultDelegateId?.ToString() ?? "null");
 
-            // 計算工作日與上限小時
-            function calcDays() {
-                var start = $('#startDate').val();
-                var end = $('#endDate').val();
-                if (start && end) {
-                    var s = new Date(start);
-                    var e = new Date(end);
-                    if (e >= s) {
-                        var count = 0;
-                        var current = new Date(s);
-                        while (current <= e) {
-                            var day = current.getDay();
-                            if (day !== 0 && day !== 6) count++;
-                            current.setDate(current.getDate() + 1);
-                        }
-                        $('#daysCount').text(count);
-                        $('#maxHours').text(count * 8);
-                        $('#daysHint').show();
-                    } else {
-                        $('#daysHint').hide();
+            // 國定假日清單（由後端傳入）
+            var holidays = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Holidays));
+
+            function isHoliday(dateStr) {
+                return holidays.indexOf(dateStr) >= 0;
+            }
+
+            // 步驟 4.3-2: 計算請假時數（前端預覽用，後端為最終依據）
+            function calculateBusinessHours() {
+                var startDateStr = $('#startDate').val();
+                var endDateStr = $('#endDate').val();
+                var startHour = parseInt($('#startHour').val());
+                var endHour = parseInt($('#endHour').val());
+
+                if (!startDateStr || !endDateStr) {
+                    $('#calcResult').hide();
+                    return;
+                }
+
+                var start = new Date(startDateStr);
+                var end = new Date(endDateStr);
+
+                if (end < start || (end.getTime() === start.getTime() && endHour <= startHour)) {
+                    $('#calcResult').hide();
+                    return;
+                }
+
+                var totalHours = 0;
+                var current = new Date(start);
+
+                while (current <= end) {
+                    var day = current.getDay();
+                    var dateKey = current.toISOString().slice(0, 10);
+
+                    if (day !== 0 && day !== 6 && !isHoliday(dateKey)) {
+                        var isStartDay = current.getTime() === start.getTime();
+                        var isEndDay = current.getTime() === end.getTime();
+                        var dayStartH = isStartDay ? startHour : 9;
+                        var dayEndH = isEndDay ? endHour : 18;
+
+                        // 上午：09~12
+                        var amStart = Math.max(dayStartH, 9);
+                        var amEnd = Math.min(dayEndH, 12);
+                        if (amEnd > amStart) totalHours += (amEnd - amStart);
+
+                        // 下午：13~18
+                        var pmStart = Math.max(dayStartH, 13);
+                        var pmEnd = Math.min(dayEndH, 18);
+                        if (pmEnd > pmStart) totalHours += (pmEnd - pmStart);
                     }
+                    current.setDate(current.getDate() + 1);
+                }
+
+                if (totalHours > 0) {
+                    $('#calcHours').text(totalHours);
+                    $('#calcDays').text((totalHours / 8).toFixed(2));
+                    $('#hoursUsedHidden').val(totalHours);
+                    $('#calcResult').show();
                 } else {
-                    $('#daysHint').hide();
+                    $('#calcResult').hide();
+                    $('#hoursUsedHidden').val(0);
                 }
             }
 
-            // 小時換算天數
-            function calcHoursToDay() {
-                var hours = parseFloat($('#hoursUsed').val());
-                if (hours > 0) {
-                    var days = (hours / 8).toFixed(1);
-                    $('#hoursDayCalc').text(days);
-                    $('#hoursToDay').show();
-                } else {
-                    $('#hoursToDay').hide();
-                }
-            }
-
-            // 日期變更時：更新工作日、更新可用代理人、檢查預設代理人
+            // 日期/小時變更時：更新計算 + 代理人判斷
             function onDateChange() {
-                calcDays();
+                calculateBusinessHours();
 
                 var start = $('#startDate').val();
                 var end = $('#endDate').val();
@@ -246,7 +340,6 @@
                     $.each(data, function (i, item) {
                         select.append('<option value="' + item.value + '">' + item.text + '</option>');
                     });
-                    // 嘗試保留原選取值
                     if (select.find('option[value="' + currentVal + '"]').length > 0) {
                         select.val(currentVal);
                     }
@@ -265,7 +358,6 @@
                             $('#delegateWarning').show();
                         } else {
                             $('#delegateWarning').hide();
-                            // 如果預設代理人沒請假，自動帶入
                             if (data.hasDefault && !data.onLeave) {
                                 var select = $('#delegateSelect');
                                 if (select.find('option[value="' + data.delegateId + '"]').length > 0) {
@@ -277,12 +369,10 @@
                 }
             }
 
-            $('#startDate, #endDate').on('change', onDateChange);
-            $('#hoursUsed').on('input', calcHoursToDay);
+            $('#startDate, #endDate, #startHour, #endHour').on('change', onDateChange);
 
-            // 初始化：計算工作日 + 檢查預設代理人
+            // 初始化
             onDateChange();
-            calcHoursToDay();
         });
     </script>
 }

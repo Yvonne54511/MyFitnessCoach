@@ -1,0 +1,130 @@
+@model Project_MyFitnessCoach.Models.ViewModels.BalanceGrantViewModel
+
+@{
+    ViewData["Title"] = "管理員給假";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="bx bx-plus-medical"></i> @ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bx bx-error-circle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-6">
+            <!-- 員工與假別資訊 -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bx bx-user"></i> 員工假別資訊
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless mb-0">
+                        <tr>
+                            <th class="text-muted" style="width:120px">員工</th>
+                            <td>@Model.EmployeeName</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">部門</th>
+                            <td>@Model.DepartmentName</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">假別</th>
+                            <td><span class="badge badge-warning">@Model.LeaveTypeName</span></td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">年度</th>
+                            <td>@Model.Year</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">目前總額</th>
+                            <td><strong>@Model.CurrentTotalDays.ToString("N2")</strong> 天</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">已使用</th>
+                            <td>@Model.CurrentUsedDays.ToString("N2") 天</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">剩餘</th>
+                            <td>@Model.CurrentRemainingDays.ToString("N2") 天</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 給假表單 -->
+            <div class="card shadow mb-4 border-left-success">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="bx bx-plus-circle"></i> 給予額度
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form asp-action="BalanceGrant" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="EmployeeId" />
+                        <input type="hidden" asp-for="LeaveTypeId" />
+                        <input type="hidden" asp-for="Year" />
+
+                        <div class="form-group">
+                            <label asp-for="GrantDays" class="form-label"></label>
+                            <div class="input-group">
+                                <input asp-for="GrantDays" class="form-control" step="0.5" min="0.5" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text">天</span>
+                                </div>
+                            </div>
+                            <span asp-validation-for="GrantDays" class="text-danger"></span>
+                            <small class="text-muted">給假後總額將變為 <strong id="newTotal">-</strong> 天</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Reason" class="form-label"></label>
+                            <textarea asp-for="Reason" class="form-control" rows="3"
+                                      placeholder="例：提交結婚證書，核准婚假 8 天"></textarea>
+                            <span asp-validation-for="Reason" class="text-danger"></span>
+                        </div>
+
+                        <hr />
+                        <button type="submit" class="btn btn-success"
+                                onclick="return confirm('確定要給予 ' + document.getElementById('GrantDays').value + ' 天額度嗎？')">
+                            <i class="bx bx-check"></i> 確認給假
+                        </button>
+                        <a asp-action="BalanceList" asp-route-year="@Model.Year" class="btn btn-secondary ml-2">
+                            <i class="bx bx-arrow-back"></i> 返回列表
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        $(function () {
+            var currentTotal = @Model.CurrentTotalDays;
+            var $grant = $('#GrantDays');
+            var $newTotal = $('#newTotal');
+
+            function updatePreview() {
+                var val = parseFloat($grant.val()) || 0;
+                $newTotal.text((currentTotal + val).toFixed(2));
+            }
+
+            $grant.on('input', updatePreview);
+            updatePreview();
+        });
+    </script>
+}

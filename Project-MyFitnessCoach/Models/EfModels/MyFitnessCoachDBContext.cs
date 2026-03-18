@@ -85,6 +85,10 @@ public partial class MyFitnessCoachDbContext : DbContext
 
     public virtual DbSet<LeaveAttachment> LeaveAttachments { get; set; }
 
+    public virtual DbSet<Holiday> Holidays { get; set; }
+
+    public virtual DbSet<LeaveBalanceHistory> LeaveBalanceHistories { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Food>(entity =>
@@ -703,6 +707,14 @@ public partial class MyFitnessCoachDbContext : DbContext
             entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(30);
+
+            entity.Property(e => e.QuotaType)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasDefaultValue("PreAllocated");
+
+            entity.Property(e => e.WarnThresholdDays)
+                .IsRequired(false);
         });
 
         modelBuilder.Entity<LeaveRequest>(entity =>
@@ -712,7 +724,7 @@ public partial class MyFitnessCoachDbContext : DbContext
             entity.Property(e => e.HoursUsed)
                 .HasColumnType("decimal(18, 1)");
             entity.Property(e => e.DaysUsed)
-                .HasColumnType("decimal(18, 1)");
+                .HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Reason)
                 .HasMaxLength(500);
             entity.Property(e => e.Status)
@@ -749,11 +761,12 @@ public partial class MyFitnessCoachDbContext : DbContext
             entity.HasKey(e => e.Id);
 
             entity.Property(e => e.TotalDays)
-                .HasColumnType("decimal(18, 1)");
+                .HasColumnType("decimal(18, 2)");
             entity.Property(e => e.UsedDays)
-                .HasColumnType("decimal(18, 1)");
+                .HasColumnType("decimal(18, 2)");
             entity.Property(e => e.RemainingDays)
-                .HasColumnType("decimal(18, 1)");
+                .HasColumnType("decimal(18, 2)")
+                .HasComputedColumnSql("[TotalDays]-[UsedDays]");
 
             entity.HasOne(d => d.Employee).WithMany(p => p.LeaveBalances)
                 .HasForeignKey(d => d.EmployeeId)
@@ -781,6 +794,51 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasForeignKey(d => d.RequestId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Attach_Request");
+        });
+
+        modelBuilder.Entity<Holiday>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasIndex(e => e.HolidayDate).IsUnique();
+
+            entity.Property(e => e.HolidayDate)
+                .HasColumnType("date")
+                .IsRequired();
+
+            entity.Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<LeaveBalanceHistory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.ChangeType)
+                .IsRequired()
+                .HasMaxLength(20);
+
+            entity.Property(e => e.ChangeDays).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.OldTotalDays).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.NewTotalDays).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.OldUsedDays).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.NewUsedDays).HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.Reason).HasMaxLength(300);
+
+            entity.HasOne(e => e.LeaveBalance).WithMany()
+                .HasForeignKey(e => e.LeaveBalanceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BalHist_Balance");
+
+            entity.HasOne(e => e.Operator).WithMany()
+                .HasForeignKey(e => e.OperatorId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_BalHist_Operator");
         });
 
         OnModelCreatingPartial(modelBuilder);

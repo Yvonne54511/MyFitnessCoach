@@ -42,7 +42,7 @@
                     </div>
                 </div>
             </li>
-            <br />
+            
 
             @{
                 
@@ -94,6 +94,8 @@
                 bool canViewDeptLeave = userFunctions.Contains("view_DeptLeave");
                 bool canAdminLeaveRequests = userFunctions.Contains("admin_LeaveRequests");
                 bool canAdminEmployees = userFunctions.Contains("admin_Employees");
+                bool canAdminHolidays = userFunctions.Contains("admin_Holidays");
+                bool canAdminLeaveBalances = userFunctions.Contains("admin_LeaveBalances");
                 }
 
             <hr class="sidebar-divider">
@@ -123,7 +125,8 @@
 
             @if (canViewLeaveRequests || canEditLeaveRequests || canEditWorkDelegate
                         || canReviewLeaveRequests || canViewDeptLeave
-                        || canAdminLeaveRequests || canAdminEmployees)
+                        || canAdminLeaveRequests || canAdminEmployees
+                        || canAdminHolidays || canAdminLeaveBalances)
             {
                 <hr class="sidebar-divider">
                 <div class="sidebar-heading">請假系統</div>
@@ -181,7 +184,7 @@
                 }
 
                 @* 管理員功能 *@
-                @if (canAdminLeaveRequests || canAdminEmployees)
+                @if (canAdminLeaveRequests || canAdminEmployees || canAdminHolidays || canAdminLeaveBalances)
                 {
                     <li class="nav-item">
                         <a class="nav-link collapsed" href="#" data-toggle="collapse"
@@ -199,16 +202,25 @@
                                 {
                                     <a class="collapse-item" asp-controller="AdminLeave" asp-action="EmployeeList">員工代理人管理</a>
                                 }
+                                @if (canAdminHolidays)
+                                {
+                                    <a class="collapse-item" asp-controller="AdminLeave" asp-action="HolidayList">國定假日管理</a>
+                                }
+                                @if (canAdminLeaveBalances)
+                                {
+                                    <a class="collapse-item" asp-controller="AdminLeave" asp-action="BalanceList">假別額度管理</a>
+                                }
                             </div>
                         </div>
                     </li>
                 }
             }
 
-            <hr class="sidebar-divider">
+           
 
             @if (canEditUserAccounts || canEditRoleFunctions || canEditViolations)
             {
+                <hr class="sidebar-divider">
                 <div class="sidebar-heading">帳號管理</div>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStaff" aria-expanded="true" aria-controls="collapseStaff">
@@ -234,9 +246,10 @@
                     </div>
                 </li>
             }
-            <hr class="sidebar-divider">
+            
             @if (canEditInstructorShifts || canViewInstructorShifts || User.HasClaim(c => c.Type == "InstructorId") || canViewSalary || canViewSalary2)
             {
+                <hr class="sidebar-divider">
                 <div class="sidebar-heading">營養師管理</div>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTutor" aria-expanded="true" aria-controls="collapseTutor">
@@ -268,6 +281,8 @@
 
             @if (canViewPointRecords || canViewClientFoodRecords || canViewClientBodyData)
             {
+                <hr class="sidebar-divider">
+                <div class="sidebar-heading">客戶管理</div>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseClient"
                        aria-expanded="true" aria-controls="collapseClient">
@@ -467,13 +482,13 @@
                 </nav>
                 @RenderBody()
             </div>
-            <footer class="sticky-footer bg-white">
+            @* <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
                         <span>Copyright &copy; MyFitnessCoach 2026</span>
                     </div>
                 </div>
-            </footer>
+            </footer> *@
         </div>
     </div>
     <a class="scroll-to-top rounded" href="#page-top"><i class="fas fa-angle-up"></i></a>

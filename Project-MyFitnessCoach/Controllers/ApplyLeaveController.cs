@@ -50,10 +50,21 @@ namespace Project_MyFitnessCoach.Controllers
             var empId = User.GetEmployeeId();
             if (empId == null) return Forbid();
 
-            // 移除唯讀欄位的驗證
+            // 移除唯讀/自動計算欄位的驗證
             ModelState.Remove(nameof(vm.EmployeeName));
             ModelState.Remove(nameof(vm.DepartmentName));
             ModelState.Remove(nameof(vm.ManagerName));
+            ModelState.Remove(nameof(vm.HoursUsed));
+
+            // 步驟 4.3-2: 組合日期 + 小時
+            var startDate = vm.StartDate.Date.AddHours(vm.StartHour);
+            var endDate = vm.EndDate.Date.AddHours(vm.EndHour);
+
+            // 整點驗證
+            if (startDate.Minute != 0 || endDate.Minute != 0)
+            {
+                ModelState.AddModelError("", "請假時間必須為整點");
+            }
 
             if (!ModelState.IsValid)
             {
@@ -62,6 +73,8 @@ namespace Project_MyFitnessCoach.Controllers
                 reloadVm.LeaveTypeId = vm.LeaveTypeId;
                 reloadVm.StartDate = vm.StartDate;
                 reloadVm.EndDate = vm.EndDate;
+                reloadVm.StartHour = vm.StartHour;
+                reloadVm.EndHour = vm.EndHour;
                 reloadVm.HoursUsed = vm.HoursUsed;
                 reloadVm.Reason = vm.Reason;
                 reloadVm.LeaveDelegateId = vm.LeaveDelegateId;
@@ -72,8 +85,8 @@ namespace Project_MyFitnessCoach.Controllers
             {
                 EmployeeId = empId.Value,
                 LeaveTypeId = vm.LeaveTypeId,
-                StartDate = vm.StartDate,
-                EndDate = vm.EndDate,
+                StartDate = startDate,
+                EndDate = endDate,
                 HoursUsed = vm.HoursUsed,
                 Reason = vm.Reason,
                 LeaveDelegateId = vm.LeaveDelegateId
@@ -93,6 +106,8 @@ namespace Project_MyFitnessCoach.Controllers
             reloadVm2.LeaveTypeId = vm.LeaveTypeId;
             reloadVm2.StartDate = vm.StartDate;
             reloadVm2.EndDate = vm.EndDate;
+            reloadVm2.StartHour = vm.StartHour;
+            reloadVm2.EndHour = vm.EndHour;
             reloadVm2.HoursUsed = vm.HoursUsed;
             reloadVm2.Reason = vm.Reason;
             reloadVm2.LeaveDelegateId = vm.LeaveDelegateId;

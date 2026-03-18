@@ -82,8 +82,8 @@
                                 <tr class="text-center">
                                     <td>@req.EmployeeName</td>
                                     <td>@req.LeaveTypeName</td>
-                                    <td>@req.StartDate.ToString("yyyy-MM-dd")</td>
-                                    <td>@req.EndDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@req.StartDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>@req.EndDate.ToString("yyyy/MM/dd HH:mm")</td>
                                     <td>@req.HoursUsed.ToString("0.#")h / @req.DaysUsed.ToString("0.#")天</td>
                                     <td>@await Html.PartialAsync("_LeaveStatusBadge", req.Status)</td>
                                     <td>@(req.DelegateName ?? "-")</td>

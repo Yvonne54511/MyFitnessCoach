@@ -92,7 +92,7 @@
                                         }
                                     </td>
                                     <td>@req.LeaveTypeName</td>
-                                    <td>@req.StartDate.ToString("yyyy-MM-dd") ~ @req.EndDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@req.StartDate.ToString("yyyy/MM/dd HH:mm") ~ @req.EndDate.ToString("yyyy/MM/dd HH:mm")</td>
                                     <td>@req.HoursUsed.ToString("0.#")h / @req.DaysUsed.ToString("0.#")天</td>
                                     <td class="text-left" style="max-width:150px;">
                                         @if (req.IsCancelRequest)
@@ -170,7 +170,7 @@
                             </div>
                             <div class="modal-body">
                                 <p>確定要核准 <strong>@req.ApplicantName</strong> 的 <strong>@req.LeaveTypeName</strong> 假單嗎？</p>
-                                <p class="text-muted">日期：@req.StartDate.ToString("yyyy-MM-dd") ~ @req.EndDate.ToString("yyyy-MM-dd")（@req.HoursUsed.ToString("0.#") 小時）</p>
+                                <p class="text-muted">日期：@req.StartDate.ToString("yyyy/MM/dd HH:mm") ~ @req.EndDate.ToString("yyyy/MM/dd HH:mm")（@req.HoursUsed.ToString("0.#") 小時）</p>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>

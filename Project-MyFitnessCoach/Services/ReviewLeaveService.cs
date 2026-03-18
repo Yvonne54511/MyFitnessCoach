@@ -96,7 +96,7 @@ namespace Project_MyFitnessCoach.Services
 
             await _repo.UpdateAsync(request);
 
-            // 退還餘額
+            // 退還餘額 + 寫入變動紀錄
             var year = request.StartDate.Year;
             var balance = await _db.LeaveBalances
                 .FirstOrDefaultAsync(b => b.EmployeeId == request.EmployeeId
@@ -105,8 +105,23 @@ namespace Project_MyFitnessCoach.Services
 
             if (balance != null)
             {
+                var oldUsed = balance.UsedDays;
                 balance.UsedDays -= request.DaysUsed;
-                balance.RemainingDays = balance.TotalDays - balance.UsedDays;
+
+                _db.LeaveBalanceHistories.Add(new LeaveBalanceHistory
+                {
+                    LeaveBalanceId = balance.Id,
+                    ChangeType = "Reject",
+                    ChangeDays = request.DaysUsed,
+                    OldTotalDays = balance.TotalDays,
+                    NewTotalDays = balance.TotalDays,
+                    OldUsedDays = oldUsed,
+                    NewUsedDays = balance.UsedDays,
+                    Reason = $"假單駁回退還：{request.LeaveType?.Name ?? ""}",
+                    OperatorId = approverEmployeeId,
+                    CreatedAt = DateTime.Now
+                });
+
                 await _db.SaveChangesAsync();
             }
 
@@ -133,7 +148,7 @@ namespace Project_MyFitnessCoach.Services
 
             await _repo.UpdateAsync(request);
 
-            // 退還餘額
+            // 退還餘額 + 寫入變動紀錄
             var year = request.StartDate.Year;
             var balance = await _db.LeaveBalances
                 .FirstOrDefaultAsync(b => b.EmployeeId == request.EmployeeId
@@ -142,8 +157,23 @@ namespace Project_MyFitnessCoach.Services
 
             if (balance != null)
             {
+                var oldUsed = balance.UsedDays;
                 balance.UsedDays -= request.DaysUsed;
-                balance.RemainingDays = balance.TotalDays - balance.UsedDays;
+
+                _db.LeaveBalanceHistories.Add(new LeaveBalanceHistory
+                {
+                    LeaveBalanceId = balance.Id,
+                    ChangeType = "CancelApproved",
+                    ChangeDays = request.DaysUsed,
+                    OldTotalDays = balance.TotalDays,
+                    NewTotalDays = balance.TotalDays,
+                    OldUsedDays = oldUsed,
+                    NewUsedDays = balance.UsedDays,
+                    Reason = $"取消請假核准退還：{request.LeaveType?.Name ?? ""}",
+                    OperatorId = approverEmployeeId,
+                    CreatedAt = DateTime.Now
+                });
+
                 await _db.SaveChangesAsync();
             }
 
