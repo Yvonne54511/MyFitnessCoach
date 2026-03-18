@@ -51,8 +51,9 @@ namespace Project_MyFitnessCoach.Models.ViewModels
             1 => "已出貨",
             2 => "已送達",
             3 => "已取消",
-            4 => "申請退貨",
+            4 => "退貨申請",
             5 => "退貨申請中",
+            6 => "爭議",
             _ => "未知狀態"
         };
 

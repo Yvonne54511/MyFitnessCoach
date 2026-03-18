@@ -72,13 +72,13 @@ namespace Project_MyFitnessCoach.Repositories
             var totalThisMonth = await _context.ProductOrders.CountAsync(o => o.CreateAt >= startOfMonth);
             var totalLastMonth = await _context.ProductOrders.CountAsync(o => o.CreateAt >= startOfLastMonth && o.CreateAt <= endOfLastMonth);
             
-            // 待出貨 (Status = 1)
-            var pendingThisMonth = await _context.ProductOrders.CountAsync(o => o.Status == 1 && o.CreateAt >= startOfMonth);
-            var pendingLastMonth = await _context.ProductOrders.CountAsync(o => o.Status == 1 && o.CreateAt >= startOfLastMonth && o.CreateAt <= endOfLastMonth);
+            // 待出貨 (Status = 0)
+            var pendingThisMonth = await _context.ProductOrders.CountAsync(o => o.Status == 0 && o.CreateAt >= startOfMonth);
+            var pendingLastMonth = await _context.ProductOrders.CountAsync(o => o.Status == 0 && o.CreateAt >= startOfLastMonth && o.CreateAt <= endOfLastMonth);
             
-            // 爭議中/退貨申請 (Status = 4 or 5)
-            var disputedThisMonth = await _context.ProductOrders.CountAsync(o => (o.Status == 4 || o.Status == 5) && o.CreateAt >= startOfMonth);
-            var disputedLastMonth = await _context.ProductOrders.CountAsync(o => (o.Status == 4 || o.Status == 5) && o.CreateAt >= startOfLastMonth && o.CreateAt <= endOfLastMonth);
+            // 爭議中/退貨申請 (Status = 4, 5, 6)
+            var disputedThisMonth = await _context.ProductOrders.CountAsync(o => (o.Status == 4 || o.Status == 5 || o.Status == 6) && o.CreateAt >= startOfMonth);
+            var disputedLastMonth = await _context.ProductOrders.CountAsync(o => (o.Status == 4 || o.Status == 5 || o.Status == 6) && o.CreateAt >= startOfLastMonth && o.CreateAt <= endOfLastMonth);
 
             // 計算百分比變動
             double CalculateChange(int current, int previous)
@@ -145,11 +145,11 @@ namespace Project_MyFitnessCoach.Repositories
                 })
                 .ToListAsync();
 
-            // 待處理訂單 (Status = 1, 4 或 5，依時間降冪)
+            // 待處理訂單 (Status = 0, 1, 4, 5, 6，依時間降冪)
             var pendingOrders = await _context.ProductOrders
                 .Include(o => o.Member)
                 .ThenInclude(m => m.User)
-                .Where(o => o.Status == 1 || o.Status == 4 || o.Status == 5)
+                .Where(o => o.Status == 0 || o.Status == 1 || o.Status == 4 || o.Status == 5 || o.Status == 6)
                 .OrderByDescending(o => o.CreateAt)
                 .Select(o => new ProductOrderDto
                 {
@@ -166,9 +166,9 @@ namespace Project_MyFitnessCoach.Repositories
             {
                 TotalOrdersThisMonth = totalThisMonth,
                 TotalOrdersChangePercentage = CalculateChange(totalThisMonth, totalLastMonth),
-                PendingShipmentCount = await _context.ProductOrders.CountAsync(o => o.Status == 1), // 待出貨不限月份
+                PendingShipmentCount = await _context.ProductOrders.CountAsync(o => o.Status == 0), // 待出貨(待處理)不限月份
                 PendingShipmentChangePercentage = CalculateChange(pendingThisMonth, pendingLastMonth),
-                DisputedCount = await _context.ProductOrders.CountAsync(o => o.Status == 4 || o.Status == 5), // 爭議中不限月份
+                DisputedCount = await _context.ProductOrders.CountAsync(o => o.Status == 4 || o.Status == 5 || o.Status == 6), // 爭議中不限月份
                 DisputedChangePercentage = CalculateChange(disputedThisMonth, disputedLastMonth),
                 OrderTrends = trends,
                 CityDistributions = cityData,
