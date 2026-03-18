@@ -9,5 +9,6 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public decimal HoursUsed { get; set; }
         public string Reason { get; set; }
         public int? LeaveDelegateId { get; set; }
+        public int? ApprovingDelegateId { get; set; }
     }
 }

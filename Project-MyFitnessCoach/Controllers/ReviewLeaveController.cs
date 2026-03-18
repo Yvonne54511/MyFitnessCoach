@@ -16,7 +16,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         // GET: /ReviewLeave/Pending
-        [Function("review_LeaveRequests")]
+        [FunctionOrDelegation("review_LeaveRequests")]
         public async Task<IActionResult> Pending(string typeFilter)
         {
             var empId = User.GetEmployeeId();
@@ -35,7 +35,7 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         // GET: /ReviewLeave/Detail/{id}
-        [Function("review_LeaveRequests")]
+        [FunctionOrDelegation("review_LeaveRequests")]
         public async Task<IActionResult> Detail(int id)
         {
             var empId = User.GetEmployeeId();
@@ -50,7 +50,7 @@ namespace Project_MyFitnessCoach.Controllers
         // POST: /ReviewLeave/Approve
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Function("review_LeaveRequests")]
+        [FunctionOrDelegation("review_LeaveRequests")]
         public async Task<IActionResult> Approve(int id)
         {
             var empId = User.GetEmployeeId();
@@ -69,7 +69,7 @@ namespace Project_MyFitnessCoach.Controllers
         // POST: /ReviewLeave/Reject
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Function("review_LeaveRequests")]
+        [FunctionOrDelegation("review_LeaveRequests")]
         public async Task<IActionResult> Reject(int id, string rejectReason)
         {
             var empId = User.GetEmployeeId();
@@ -88,7 +88,7 @@ namespace Project_MyFitnessCoach.Controllers
         // POST: /ReviewLeave/ApproveCancelRequest
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Function("review_LeaveRequests")]
+        [FunctionOrDelegation("review_LeaveRequests")]
         public async Task<IActionResult> ApproveCancelRequest(int id)
         {
             var empId = User.GetEmployeeId();
@@ -107,7 +107,7 @@ namespace Project_MyFitnessCoach.Controllers
         // POST: /ReviewLeave/RejectCancelRequest
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Function("review_LeaveRequests")]
+        [FunctionOrDelegation("review_LeaveRequests")]
         public async Task<IActionResult> RejectCancelRequest(int id, string rejectReason)
         {
             var empId = User.GetEmployeeId();

@@ -49,7 +49,8 @@ return RedirectToAction("ReservationForm", "Reservation"); // 登入後直接導
 ## 4. 驗證配置 (Program.cs)
 確保 Cookie 驗證已正確配置登入路徑：
 ```csharp
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+builder.Services.
+Authentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.Cookie.Name = "ReservationDemo";

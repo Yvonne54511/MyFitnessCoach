@@ -1,0 +1,114 @@
+@model Project_MyFitnessCoach.Models.ViewModels.HolidayListViewModel
+
+@{
+    ViewData["Title"] = "國定假日管理";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="bx bx-calendar-event"></i> @ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bx bx-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bx bx-error-circle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    }
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bx bx-list-ul"></i> @Model.YearFilter 年度假日列表
+            </h6>
+            <div class="d-flex align-items-center">
+                <form method="get" class="form-inline mr-3">
+                    <select name="year" class="form-control form-control-sm" onchange="this.form.submit()">
+                        @foreach (var opt in Model.YearOptions)
+                        {
+                            <option value="@opt.Value" selected="@opt.Selected">@opt.Text</option>
+                        }
+                    </select>
+                </form>
+                <a asp-action="HolidayCreate" class="btn btn-primary btn-sm">
+                    <i class="bx bx-plus"></i> 新增假日
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (!Model.Holidays.Any())
+            {
+                <div class="text-center text-muted py-4">
+                    <i class="bx bx-calendar-x bx-lg"></i>
+                    <p class="mt-2">此年度尚無國定假日資料</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width:50px">#</th>
+                                <th>日期</th>
+                                <th>星期</th>
+                                <th>假日名稱</th>
+                                <th>狀態</th>
+                                <th style="width:160px">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ var idx = 1; }
+                            @foreach (var h in Model.Holidays)
+                            {
+                                var dayOfWeek = h.HolidayDate.ToString("ddd", new System.Globalization.CultureInfo("zh-TW"));
+                                <tr>
+                                    <td>@(idx++)</td>
+                                    <td>@h.HolidayDate.ToString("yyyy/MM/dd")</td>
+                                    <td>@dayOfWeek</td>
+                                    <td>@h.Name</td>
+                                    <td>
+                                        @if (h.IsActive)
+                                        {
+                                            <span class="badge badge-success">啟用</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-secondary">停用</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-action="HolidayEdit" asp-route-id="@h.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bx bx-edit"></i> 編輯
+                                        </a>
+                                        <form asp-action="HolidayDelete" method="post" class="d-inline"
+                                              onsubmit="return confirm('確定要刪除「@h.Name」嗎？')">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@h.Id" />
+                                            <input type="hidden" name="year" value="@Model.YearFilter" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bx bx-trash"></i> 刪除
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-muted small">共 @Model.Holidays.Count 筆假日</div>
+            }
+        </div>
+    </div>
+</div>

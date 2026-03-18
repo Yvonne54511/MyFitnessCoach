@@ -1,0 +1,116 @@
+@model Project_MyFitnessCoach.Models.ViewModels.BalanceHistoryViewModel
+
+@{
+    ViewData["Title"] = $"{Model.EmployeeName} - 額度異動紀錄";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="bx bx-history"></i> @ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    <!-- 員工資訊 -->
+    <div class="row mb-3">
+        <div class="col-auto">
+            <span class="text-muted">員工：</span><strong>@Model.EmployeeName</strong>
+        </div>
+        <div class="col-auto">
+            <span class="text-muted">部門：</span>@Model.DepartmentName
+        </div>
+        <div class="col-auto">
+            <span class="text-muted">年度：</span>@Model.Year
+        </div>
+    </div>
+
+    <!-- 篩選 -->
+    <div class="card shadow mb-4">
+        <div class="card-body py-2">
+            <form method="get" class="form-inline">
+                <input type="hidden" name="employeeId" value="@Model.EmployeeId" />
+                <input type="hidden" name="year" value="@Model.Year" />
+                <div class="form-group mr-3">
+                    <label class="mr-2">假別：</label>
+                    <select name="leaveTypeId" class="form-control form-control-sm" onchange="this.form.submit()">
+                        @foreach (var opt in Model.LeaveTypeOptions)
+                        {
+                            var sel = opt.Value == Model.LeaveTypeFilter?.ToString();
+                            <option value="@opt.Value" selected="@sel">@opt.Text</option>
+                        }
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 紀錄表格 -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bx bx-list-check"></i> 異動紀錄
+            </h6>
+        </div>
+        <div class="card-body">
+            @if (!Model.Items.Any())
+            {
+                <div class="text-center text-muted py-4">
+                    <i class="bx bx-data bx-lg"></i>
+                    <p class="mt-2">尚無異動紀錄</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-sm">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>時間</th>
+                                <th>假別</th>
+                                <th>異動類型</th>
+                                <th class="text-right">異動天數</th>
+                                <th class="text-right">總額變動</th>
+                                <th class="text-right">已用變動</th>
+                                <th>原因</th>
+                                <th>操作者</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                var badgeClass = item.ChangeType switch
+                                {
+                                    "AdminGrant" => "badge-success",
+                                    "Apply" => "badge-primary",
+                                    "Reject" => "badge-warning",
+                                    "CancelApproved" => "badge-info",
+                                    _ => "badge-secondary"
+                                };
+                                <tr>
+                                    <td class="text-nowrap">@item.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>@item.LeaveTypeName</td>
+                                    <td><span class="badge @badgeClass">@item.ChangeTypeDisplay</span></td>
+                                    <td class="text-right @(item.ChangeDays >= 0 ? "text-success" : "text-danger")">
+                                        @(item.ChangeDays >= 0 ? "+" : "")@item.ChangeDays.ToString("N2")
+                                    </td>
+                                    <td class="text-right">@item.OldTotalDays.ToString("N2") → @item.NewTotalDays.ToString("N2")</td>
+                                    <td class="text-right">@item.OldUsedDays.ToString("N2") → @item.NewUsedDays.ToString("N2")</td>
+                                    <td>
+                                        <span title="@item.Reason" style="max-width:200px; display:inline-block;"
+                                              class="text-truncate d-inline-block">@(item.Reason ?? "-")</span>
+                                    </td>
+                                    <td>@(item.OperatorName ?? "-")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-muted small">共 @Model.Items.Count 筆紀錄</div>
+            }
+        </div>
+    </div>
+
+    <a asp-action="BalanceList" asp-route-year="@Model.Year" class="btn btn-secondary">
+        <i class="bx bx-arrow-back"></i> 返回額度列表
+    </a>
+</div>

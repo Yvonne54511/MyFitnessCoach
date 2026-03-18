@@ -92,21 +92,65 @@ namespace Project_MyFitnessCoach.Services
                 .Where(e => e.DepartmentId == employee.DepartmentId && e.Id != employeeId && e.IsActive)
                 .ToListAsync();
 
+            // 步驟 4.3-1: 為所有啟用假別產生餘額卡片
             var year = DateTime.Now.Year;
-            var balances = await _db.LeaveBalances
+            var existingBalances = await _db.LeaveBalances
                 .Include(b => b.LeaveType)
                 .Where(b => b.EmployeeId == employeeId && b.Year == year)
                 .ToListAsync();
+
+            var balanceDtos = new List<LeaveBalanceDto>();
+            foreach (var lt in leaveTypes)
+            {
+                var b = existingBalances.FirstOrDefault(x => x.LeaveTypeId == lt.Id);
+                balanceDtos.Add(new LeaveBalanceDto
+                {
+                    LeaveTypeName = lt.Name,
+                    QuotaType = lt.QuotaType,
+                    WarnThresholdDays = lt.WarnThresholdDays,
+                    TotalDays = b?.TotalDays ?? (lt.QuotaType == "PreAllocated" ? lt.DaysPerYear : 0),
+                    UsedDays = b?.UsedDays ?? 0,
+                    RemainingDays = b != null
+                        ? (b.RemainingDays ?? (b.TotalDays - b.UsedDays))
+                        : (lt.QuotaType == "PreAllocated" ? lt.DaysPerYear : 0)
+                });
+            }
+
+            // 步驟 4.3-2: 載入國定假日清單
+            var holidays = await _db.Holidays
+                .Where(h => h.Year == year && h.IsActive)
+                .Select(h => h.HolidayDate.ToString("yyyy-MM-dd"))
+                .ToListAsync();
+
+            // 步驟 5.2: 判斷是否為主管，載入直屬下屬清單
+            var isManager = employee.ManagerId == null;
+            var subordinateOptions = new List<SelectListItem>();
+            if (isManager)
+            {
+                var subordinates = await _db.Employees
+                    .Include(e => e.User)
+                    .Where(e => e.ManagerId == employeeId && e.IsActive)
+                    .ToListAsync();
+                subordinateOptions = subordinates.Select(s => new SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = s.User?.UserName
+                }).ToList();
+            }
 
             return new AddLeaveViewModel
             {
                 EmployeeName = employee.User?.UserName,
                 DepartmentName = employee.Department?.Name,
                 ManagerName = employee.Manager?.User?.UserName ?? "無",
-                StartDate = DateTime.Today,
-                EndDate = DateTime.Today,
+                StartDate = DateTime.Today.AddHours(9),   // 預設 09:00
+                EndDate = DateTime.Today.AddHours(18),     // 預設 18:00
+                StartHour = 9,
+                EndHour = 18,
                 DefaultDelegateId = employee.WorkDelegateId,
                 LeaveDelegateId = employee.WorkDelegateId,
+                IsManager = isManager,
+                SubordinateOptions = subordinateOptions,
                 LeaveTypeOptions = leaveTypes.Select(lt => new SelectListItem
                 {
                     Value = lt.Id.ToString(),
@@ -120,69 +164,117 @@ namespace Project_MyFitnessCoach.Services
                     Value = c.Id.ToString(),
                     Text = c.User?.UserName
                 })).ToList(),
-                Balances = balances.Select(b => new LeaveBalanceDto
-                {
-                    LeaveTypeName = b.LeaveType?.Name,
-                    TotalDays = b.TotalDays,
-                    UsedDays = b.UsedDays,
-                    RemainingDays = b.RemainingDays ?? (b.TotalDays - b.UsedDays)
-                }).ToList()
+                Balances = balanceDtos,
+                Holidays = holidays
             };
         }
 
         public async Task<Result> ApplyAsync(AddLeaveRequestDto dto)
         {
-            // 驗證日期
-            if (dto.StartDate > dto.EndDate)
-                return Result.Failure("開始日期不可晚於結束日期");
+            // 驗證時間
+            if (dto.StartDate >= dto.EndDate)
+                return Result.Failure("開始時間必須早於結束時間");
 
-            // 4.2-2: 以小時為單位，計算天數
-            decimal hoursUsed = dto.HoursUsed;
-            if (hoursUsed <= 0)
-                return Result.Failure("請假小時數必須大於 0");
+            // 步驟 4.3-2: 驗證整點
+            if (dto.StartDate.Minute != 0 || dto.EndDate.Minute != 0)
+                return Result.Failure("請假時間必須為整點");
 
-            decimal daysUsed = Math.Round(hoursUsed / 8.0m, 1);
+            // 驗證小時範圍
+            int startH = dto.StartDate.Hour;
+            int endH = dto.EndDate.Hour;
+            if (startH < 9 || startH > 17)
+                return Result.Failure("開始時間小時需在 09:00 ~ 17:00 之間");
+            if (dto.EndDate.TimeOfDay != TimeSpan.Zero) // 若 EndDate 非跨日的 00:00
+            {
+                if (endH < 10 || endH > 18)
+                    return Result.Failure("結束時間小時需在 10:00 ~ 18:00 之間");
+            }
 
-            // 驗證小時數不超過日期區間工作日上限
-            int maxBusinessDays = (int)CalculateBusinessDays(dto.StartDate, dto.EndDate);
-            int maxHours = maxBusinessDays * 8;
-            if (hoursUsed > maxHours)
-                return Result.Failure($"請假小時數 ({hoursUsed}) 超出工作日上限 ({maxHours} 小時 / {maxBusinessDays} 天)");
+            // 步驟 4.3-2: 後端自動計算請假時數（不信任前端）
+            var holidays = await GetHolidaysAsync(dto.StartDate.Year);
+            decimal hoursUsed = CalculateBusinessHours(dto.StartDate, dto.EndDate, holidays);
+            if (hoursUsed < 1)
+                return Result.Failure("請假時數不足 1 小時，請確認開始與結束時間");
+
+            // 步驟 4.3: 精度 2 位小數
+            decimal daysUsed = Math.Round(hoursUsed / 8.0m, 2);
 
             // 查詢假別
             var leaveType = await _db.LeaveTypes.FindAsync(dto.LeaveTypeId);
             if (leaveType == null)
                 return Result.Failure("無效的假別");
 
-            // 驗證餘額
+            // 步驟 4.3-1: 依 QuotaType 分流驗證餘額
             var year = dto.StartDate.Year;
             var balance = await _db.LeaveBalances
                 .FirstOrDefaultAsync(b => b.EmployeeId == dto.EmployeeId
                     && b.LeaveTypeId == dto.LeaveTypeId
                     && b.Year == year);
 
-            if (balance != null)
+            switch (leaveType.QuotaType)
             {
-                var remaining = balance.TotalDays - balance.UsedDays;
-                if (daysUsed > remaining)
-                    return Result.Failure($"「{leaveType.Name}」剩餘 {remaining:N1} 天，不足以請 {daysUsed:N1} 天");
-            }
-            else if (leaveType.DaysPerYear > 0)
-            {
-                balance = new LeaveBalance
-                {
-                    EmployeeId = dto.EmployeeId,
-                    LeaveTypeId = dto.LeaveTypeId,
-                    Year = year,
-                    TotalDays = leaveType.DaysPerYear,
-                    UsedDays = 0,
-                    RemainingDays = leaveType.DaysPerYear
-                };
-                _db.LeaveBalances.Add(balance);
-                await _db.SaveChangesAsync();
+                case "PreAllocated": // 特休
+                    if (balance == null)
+                    {
+                        balance = new LeaveBalance
+                        {
+                            EmployeeId = dto.EmployeeId,
+                            LeaveTypeId = dto.LeaveTypeId,
+                            Year = year,
+                            TotalDays = leaveType.DaysPerYear,
+                            UsedDays = 0
+                        };
+                        _db.LeaveBalances.Add(balance);
+                        await _db.SaveChangesAsync();
+                    }
+                    var remainingPre = balance.TotalDays - balance.UsedDays;
+                    if (daysUsed > remainingPre)
+                        return Result.Failure($"「{leaveType.Name}」剩餘 {remainingPre:N2} 天，不足以請 {daysUsed:N2} 天");
+                    break;
 
-                if (daysUsed > leaveType.DaysPerYear)
-                    return Result.Failure($"「{leaveType.Name}」年度額度 {leaveType.DaysPerYear} 天，不足以請 {daysUsed:N1} 天");
+                case "Unlimited": // 病假、事假、公假
+                    if (balance == null)
+                    {
+                        balance = new LeaveBalance
+                        {
+                            EmployeeId = dto.EmployeeId,
+                            LeaveTypeId = dto.LeaveTypeId,
+                            Year = year,
+                            TotalDays = 0,
+                            UsedDays = 0
+                        };
+                        _db.LeaveBalances.Add(balance);
+                        await _db.SaveChangesAsync();
+                    }
+                    // 不做餘額上限檢查，僅追蹤使用量
+                    break;
+
+                case "ApprovalRequired": // 婚假、喪假
+                    if (balance == null || balance.TotalDays <= 0)
+                        return Result.Failure($"「{leaveType.Name}」尚未取得額度，請先提交證明文件並等待管理員核定");
+                    var remainingAppr = balance.TotalDays - balance.UsedDays;
+                    if (daysUsed > remainingAppr)
+                        return Result.Failure($"「{leaveType.Name}」剩餘 {remainingAppr:N2} 天，不足以請 {daysUsed:N2} 天");
+                    break;
+
+                default:
+                    return Result.Failure("未知的假別額度類型");
+            }
+
+            // 步驟 5.2: 判斷主管身份
+            var applicant = await _db.Employees.FindAsync(dto.EmployeeId);
+            bool isManager = applicant?.ManagerId == null;
+
+            // 主管必須指定代審人
+            if (isManager)
+            {
+                if (dto.ApprovingDelegateId == null || dto.ApprovingDelegateId == 0)
+                    return Result.Failure("主管請假必須指定代審人");
+
+                var isSubordinate = await _db.Employees
+                    .AnyAsync(e => e.Id == dto.ApprovingDelegateId && e.ManagerId == dto.EmployeeId && e.IsActive);
+                if (!isSubordinate)
+                    return Result.Failure("代審人必須為您的直屬下屬");
             }
 
             // 新增請假申請
@@ -196,17 +288,51 @@ namespace Project_MyFitnessCoach.Services
                 DaysUsed = daysUsed,
                 Reason = dto.Reason,
                 LeaveDelegateId = dto.LeaveDelegateId,
-                Status = "Pending",
+                Status = isManager ? "Approved" : "Pending",
+                ApprovedBy = isManager ? dto.EmployeeId : null,
+                ApprovedAt = isManager ? DateTime.Now : null,
                 CreatedAt = DateTime.Now
             };
 
             await _repo.AddAsync(leaveRequest);
 
-            // 更新餘額
+            // 主管假單：建立代審授權記錄
+            if (isManager)
+            {
+                _db.LeaveApprovalDelegations.Add(new LeaveApprovalDelegation
+                {
+                    ManagerEmployeeId = dto.EmployeeId,
+                    DelegateEmployeeId = dto.ApprovingDelegateId.Value,
+                    LeaveRequestId = leaveRequest.Id,
+                    StartDate = leaveRequest.StartDate,
+                    EndDate = leaveRequest.EndDate,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now
+                });
+                await _db.SaveChangesAsync();
+            }
+
+            // 更新餘額 + 寫入變動紀錄
             if (balance != null)
             {
+                var oldUsed = balance.UsedDays;
                 balance.UsedDays += daysUsed;
-                balance.RemainingDays = balance.TotalDays - balance.UsedDays;
+
+                // 寫入 LeaveBalanceHistory
+                _db.LeaveBalanceHistories.Add(new LeaveBalanceHistory
+                {
+                    LeaveBalanceId = balance.Id,
+                    ChangeType = "Apply",
+                    ChangeDays = -daysUsed,
+                    OldTotalDays = balance.TotalDays,
+                    NewTotalDays = balance.TotalDays,
+                    OldUsedDays = oldUsed,
+                    NewUsedDays = balance.UsedDays,
+                    Reason = $"請假申請：{leaveType.Name} {dto.StartDate:yyyy/MM/dd HH:mm}~{dto.EndDate:yyyy/MM/dd HH:mm}",
+                    OperatorId = dto.EmployeeId,
+                    CreatedAt = DateTime.Now
+                });
+
                 await _db.SaveChangesAsync();
             }
 
@@ -254,7 +380,51 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "Pending" && request.Status != "Approved")
                 return Result.Failure("此假單狀態無法取消");
 
-            // 保存原狀態，供駁回時恢復
+            // 步驟 5.2: 主管假單（自動核准）取消時直接生效，不進 CancelPending
+            bool isManager = request.Employee?.ManagerId == null;
+            if (isManager && request.Status == "Approved")
+            {
+                request.Status = "Cancelled";
+                request.CancelRequestedAt = DateTime.Now;
+                request.CancelReason = cancelReason;
+                await _repo.UpdateAsync(request);
+
+                // 退還餘額
+                var year = request.StartDate.Year;
+                var balance = await _db.LeaveBalances
+                    .FirstOrDefaultAsync(b => b.EmployeeId == request.EmployeeId
+                        && b.LeaveTypeId == request.LeaveTypeId
+                        && b.Year == year);
+                if (balance != null)
+                {
+                    var oldUsed = balance.UsedDays;
+                    balance.UsedDays -= request.DaysUsed;
+                    _db.LeaveBalanceHistories.Add(new LeaveBalanceHistory
+                    {
+                        LeaveBalanceId = balance.Id,
+                        ChangeType = "CancelApproved",
+                        ChangeDays = request.DaysUsed,
+                        OldTotalDays = balance.TotalDays,
+                        NewTotalDays = balance.TotalDays,
+                        OldUsedDays = oldUsed,
+                        NewUsedDays = balance.UsedDays,
+                        Reason = $"主管自行取消假單退還：{request.LeaveType?.Name ?? ""}",
+                        OperatorId = employeeId,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+
+                // 停用代審授權
+                var delegation = await _db.LeaveApprovalDelegations
+                    .FirstOrDefaultAsync(d => d.LeaveRequestId == requestId && d.IsActive);
+                if (delegation != null)
+                    delegation.IsActive = false;
+
+                await _db.SaveChangesAsync();
+                return Result.Success(null);
+            }
+
+            // 一般員工：保存原狀態，進入 CancelPending 流程
             request.OriginalStatus = request.Status;
             request.Status = "CancelPending";
             request.CancelRequestedAt = DateTime.Now;
@@ -331,15 +501,65 @@ namespace Project_MyFitnessCoach.Services
 
         // ========== 工具方法 ==========
 
-        private static decimal CalculateBusinessDays(DateTime start, DateTime end)
+        /// <summary>
+        /// 取得指定年度的國定假日集合
+        /// </summary>
+        public async Task<HashSet<DateTime>> GetHolidaysAsync(int year)
         {
-            decimal count = 0;
+            var dates = await _db.Holidays
+                .Where(h => h.Year == year && h.IsActive)
+                .Select(h => h.HolidayDate.Date)
+                .ToListAsync();
+            return new HashSet<DateTime>(dates);
+        }
+
+        /// <summary>
+        /// 根據精確的開始/結束時間計算有效請假時數
+        /// 工作時間：09:00~12:00 (3h) + 13:00~18:00 (5h) = 每天 8 小時
+        /// 自動排除週末、午休時間、國定假日
+        /// </summary>
+        private decimal CalculateBusinessHours(DateTime start, DateTime end, HashSet<DateTime> holidays)
+        {
+            if (start >= end) return 0;
+
+            decimal totalHours = 0;
+
+            var morningStart = new TimeSpan(9, 0, 0);
+            var morningEnd = new TimeSpan(12, 0, 0);
+            var afternoonStart = new TimeSpan(13, 0, 0);
+            var afternoonEnd = new TimeSpan(18, 0, 0);
+
             for (var date = start.Date; date <= end.Date; date = date.AddDays(1))
             {
-                if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
-                    count++;
+                // 跳過週末
+                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                    continue;
+
+                // 跳過國定假日
+                if (holidays.Contains(date))
+                    continue;
+
+                // 當天的實際起始/結束時間
+                var dayStart = (date == start.Date) ? start.TimeOfDay : morningStart;
+                var dayEnd = (date == end.Date) ? end.TimeOfDay : afternoonEnd;
+
+                // 計算上午時段的重疊
+                var amStart = Max(dayStart, morningStart);
+                var amEnd = Min(dayEnd, morningEnd);
+                if (amEnd > amStart)
+                    totalHours += (decimal)(amEnd - amStart).TotalHours;
+
+                // 計算下午時段的重疊
+                var pmStart = Max(dayStart, afternoonStart);
+                var pmEnd = Min(dayEnd, afternoonEnd);
+                if (pmEnd > pmStart)
+                    totalHours += (decimal)(pmEnd - pmStart).TotalHours;
             }
-            return count;
+
+            return totalHours;
         }
+
+        private static TimeSpan Max(TimeSpan a, TimeSpan b) => a > b ? a : b;
+        private static TimeSpan Min(TimeSpan a, TimeSpan b) => a < b ? a : b;
     }
 }

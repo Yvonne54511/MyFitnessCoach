@@ -18,6 +18,24 @@ namespace Project_MyFitnessCoach.Services
             _db = db;
         }
 
+        // ========== 步驟 5.2: 共用審核權限驗證 ==========
+
+        private async Task<bool> CanReviewAsync(LeaveRequest request, int reviewerEmployeeId)
+        {
+            // 條件一：申請者的直屬主管就是 reviewer
+            if (request.Employee?.ManagerId == reviewerEmployeeId)
+                return true;
+
+            // 條件二：存在有效的代審授權
+            var now = DateTime.Now;
+            return await _db.LeaveApprovalDelegations
+                .AnyAsync(d => d.ManagerEmployeeId == request.Employee.ManagerId
+                    && d.DelegateEmployeeId == reviewerEmployeeId
+                    && d.IsActive
+                    && d.StartDate <= now
+                    && d.EndDate >= now);
+        }
+
         // ========== 待我審核列表 ==========
 
         public async Task<PendingReviewListViewModel> GetPendingListAsync(int managerEmployeeId)
@@ -81,7 +99,7 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "Pending")
                 return Result.Failure("此假單狀態無法核准");
 
-            if (!CanReview(request, approverEmployeeId))
+            if (!await CanReviewAsync(request, approverEmployeeId))
                 return Result.Failure("您無權審核此假單");
 
             request.Status = "Approved";
@@ -105,7 +123,7 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "Pending")
                 return Result.Failure("此假單狀態無法駁回");
 
-            if (!CanReview(request, approverEmployeeId))
+            if (!await CanReviewAsync(request, approverEmployeeId))
                 return Result.Failure("您無權審核此假單");
 
             request.Status = "Rejected";
@@ -115,7 +133,7 @@ namespace Project_MyFitnessCoach.Services
 
             await _repo.UpdateAsync(request);
 
-            // 退還餘額
+            // 退還餘額 + 寫入變動紀錄
             var year = request.StartDate.Year;
             var balance = await _db.LeaveBalances
                 .FirstOrDefaultAsync(b => b.EmployeeId == request.EmployeeId
@@ -124,8 +142,23 @@ namespace Project_MyFitnessCoach.Services
 
             if (balance != null)
             {
+                var oldUsed = balance.UsedDays;
                 balance.UsedDays -= request.DaysUsed;
-                balance.RemainingDays = balance.TotalDays - balance.UsedDays;
+
+                _db.LeaveBalanceHistories.Add(new LeaveBalanceHistory
+                {
+                    LeaveBalanceId = balance.Id,
+                    ChangeType = "Reject",
+                    ChangeDays = request.DaysUsed,
+                    OldTotalDays = balance.TotalDays,
+                    NewTotalDays = balance.TotalDays,
+                    OldUsedDays = oldUsed,
+                    NewUsedDays = balance.UsedDays,
+                    Reason = $"假單駁回退還：{request.LeaveType?.Name ?? ""}",
+                    OperatorId = approverEmployeeId,
+                    CreatedAt = DateTime.Now
+                });
+
                 await _db.SaveChangesAsync();
             }
 
@@ -143,7 +176,7 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "CancelPending")
                 return Result.Failure("此假單不是取消審核中狀態");
 
-            if (!CanReview(request, approverEmployeeId))
+            if (!await CanReviewAsync(request, approverEmployeeId))
                 return Result.Failure("您無權審核此假單");
 
             request.Status = "Cancelled";
@@ -152,7 +185,7 @@ namespace Project_MyFitnessCoach.Services
 
             await _repo.UpdateAsync(request);
 
-            // 退還餘額
+            // 退還餘額 + 寫入變動紀錄
             var year = request.StartDate.Year;
             var balance = await _db.LeaveBalances
                 .FirstOrDefaultAsync(b => b.EmployeeId == request.EmployeeId
@@ -161,8 +194,23 @@ namespace Project_MyFitnessCoach.Services
 
             if (balance != null)
             {
+                var oldUsed = balance.UsedDays;
                 balance.UsedDays -= request.DaysUsed;
-                balance.RemainingDays = balance.TotalDays - balance.UsedDays;
+
+                _db.LeaveBalanceHistories.Add(new LeaveBalanceHistory
+                {
+                    LeaveBalanceId = balance.Id,
+                    ChangeType = "CancelApproved",
+                    ChangeDays = request.DaysUsed,
+                    OldTotalDays = balance.TotalDays,
+                    NewTotalDays = balance.TotalDays,
+                    OldUsedDays = oldUsed,
+                    NewUsedDays = balance.UsedDays,
+                    Reason = $"取消請假核准退還：{request.LeaveType?.Name ?? ""}",
+                    OperatorId = approverEmployeeId,
+                    CreatedAt = DateTime.Now
+                });
+
                 await _db.SaveChangesAsync();
             }
 
@@ -181,7 +229,7 @@ namespace Project_MyFitnessCoach.Services
             if (request.Status != "CancelPending")
                 return Result.Failure("此假單不是取消審核中狀態");
 
-            if (!CanReview(request, approverEmployeeId))
+            if (!await CanReviewAsync(request, approverEmployeeId))
                 return Result.Failure("您無權審核此假單");
 
             // 恢復原狀態
@@ -201,7 +249,11 @@ namespace Project_MyFitnessCoach.Services
         public async Task<LeaveRequestDto> GetDetailAsync(int requestId, int reviewerEmployeeId)
         {
             var r = await _repo.GetByIdAsync(requestId);
-            if (r == null || !CanReview(r, reviewerEmployeeId))
+            if (r == null)
+                return null;
+
+            // 步驟 5.2: 使用 CanReviewAsync 判斷權限
+            if (!await CanReviewAsync(r, managerEmployeeId))
                 return null;
 
             return new LeaveRequestDto
