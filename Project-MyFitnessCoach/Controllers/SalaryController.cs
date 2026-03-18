@@ -220,25 +220,22 @@ namespace Project_MyFitnessCoach.Controllers
 
 					if (dbRecordSuccess)
 					{
-						// 4. 發送通知
-						_ = Task.Run(async () =>
+						// 4. 發送通知 (直接 await 確保通知一定能發出)
+						try
 						{
-							try
+							int userId = await _salaryService.GetUserIdByInstructorIdAsync(request.InstructorId);
+							if (userId > 0)
 							{
-								int userId = await _salaryService.GetUserIdByInstructorIdAsync(request.InstructorId);
-								if (userId > 0)
-								{
-									await _notificationService.SendAsync(
-										userId, 
-										null, 
-										NotifyType.Salary,
-										$"{notifyTitle} 金額：NT$ {request.Amount:N0} (約 {amountUsd:F2} USD)，請至我的錢包查看。",
-										"/Salary/MyWallet"
-									);
-								}
+								await _notificationService.SendAsync(
+									userId, 
+									null, 
+									NotifyType.Salary,
+									$"{notifyTitle} 金額：NT$ {request.Amount:N0} (約 {amountUsd:F2} USD)，請至我的錢包查看。",
+									"/Salary/MyWallet"
+								);
 							}
-							catch (Exception ex) { Console.WriteLine($"Notification Error: {ex.Message}"); }
-						});
+						}
+						catch (Exception ex) { Console.WriteLine($"Notification Error: {ex.Message}"); }
 
 						return Json(new { success = true, message = $"已成功透過 PayPal 匯款 {amountUsd:F2} USD (匯率: {rate})，並已記錄至教練錢包。" });
 					}

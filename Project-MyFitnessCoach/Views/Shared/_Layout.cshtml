@@ -459,6 +459,13 @@
 
                         if(n.notifyType === "Report1") iconClass = "bx bx-error text-danger";
                         if(n.notifyType === "Booking") iconClass = "bx bx-calendar-check text-success";
+                        if(n.notifyType === "Salary") {
+                            if(n.title.includes("獎金")) {
+                                iconClass = "bx bx-gift text-primary";
+                            } else {
+                                iconClass = "bx bx-money-withdraw text-success";
+                            }
+                        }
 
                         var item = `
                             <a class="dropdown-item d-flex align-items-center notif-item ${bgClass}" href="${targetUrl}" data-id="${n.id}">
