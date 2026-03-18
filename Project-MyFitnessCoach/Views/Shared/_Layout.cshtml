@@ -29,7 +29,6 @@
             <a class="sidebar-brand d-flex align-items-center justify-content-center" asp-controller="Dashboard" asp-action="Index">
                 <div class="sidebar-brand-text mx-3">@(ViewBag.Title ?? "後台管理")</div>
             </a>
-            <br>
             <hr class="sidebar-divider">
             <div class="sidebar-heading">數據統計</div>
             <li class="nav-item">
@@ -114,10 +113,11 @@
                 }
                 }
 
-            <hr class="sidebar-divider">
+            
 
             @if (canEditPassword || canEditInstructorDetails)
             {
+                <hr class="sidebar-divider">
                 <div class="sidebar-heading">個人中心</div>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUser" aria-expanded="true" aria-controls="collapseUser">

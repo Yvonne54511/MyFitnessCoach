@@ -89,6 +89,8 @@ public partial class MyFitnessCoachDbContext : DbContext
 
     public virtual DbSet<LeaveBalanceHistory> LeaveBalanceHistories { get; set; }
 
+    public virtual DbSet<LeaveApprovalDelegation> LeaveApprovalDelegations { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Food>(entity =>
@@ -839,6 +841,31 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasForeignKey(e => e.OperatorId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_BalHist_Operator");
+        });
+
+        modelBuilder.Entity<LeaveApprovalDelegation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.StartDate).HasColumnType("datetime2");
+            entity.Property(e => e.EndDate).HasColumnType("datetime2");
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime2").HasDefaultValueSql("GETDATE()");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(e => e.ManagerEmployee).WithMany()
+                .HasForeignKey(e => e.ManagerEmployeeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ApprDel_Manager");
+
+            entity.HasOne(e => e.DelegateEmployee).WithMany()
+                .HasForeignKey(e => e.DelegateEmployeeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ApprDel_Delegate");
+
+            entity.HasOne(e => e.LeaveRequest).WithMany()
+                .HasForeignKey(e => e.LeaveRequestId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ApprDel_LeaveReq");
         });
 
         OnModelCreatingPartial(modelBuilder);

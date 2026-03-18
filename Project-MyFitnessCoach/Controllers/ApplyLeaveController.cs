@@ -56,6 +56,7 @@ namespace Project_MyFitnessCoach.Controllers
             ModelState.Remove(nameof(vm.ManagerName));
             ModelState.Remove(nameof(vm.HoursUsed));
             ModelState.Remove(nameof(vm.ApprovingDelegateId));
+            ModelState.Remove(nameof(vm.DelegateWarningMessage));
 
             // 步驟 4.3-2: 組合日期 + 小時
             var startDate = vm.StartDate.Date.AddHours(vm.StartHour);

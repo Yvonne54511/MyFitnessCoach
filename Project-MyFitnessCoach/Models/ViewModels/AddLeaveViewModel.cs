@@ -41,7 +41,7 @@ namespace Project_MyFitnessCoach.Models.ViewModels
         // 代理人判斷（4.2-1）
         public int? DefaultDelegateId { get; set; }
         public bool DelegateOnLeave { get; set; }
-        public string DelegateWarningMessage { get; set; }
+        public string? DelegateWarningMessage { get; set; }
 
         // 下拉選單
         public List<SelectListItem> LeaveTypeOptions { get; set; } = new List<SelectListItem>();
