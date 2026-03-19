@@ -59,6 +59,12 @@ namespace Project_MyFitnessCoach.Controllers
             return View(data);
         }
 
+        public IActionResult FoodRecords()
+        {
+            ViewBag.Title = "飲食紀錄";
+            return View();
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateKeyWord(string word, int category, int weight)
         {
