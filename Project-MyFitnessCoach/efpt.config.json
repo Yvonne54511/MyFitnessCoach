@@ -19,6 +19,18 @@
    "T4TemplatePath": null,
    "Tables": [
       {
+         "Name": "[dbo].[BodyRecords]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Departments]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Employees]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[FoodCategories]",
          "ObjectType": 0
       },
@@ -35,6 +47,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[Holidays]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Instructors]",
          "ObjectType": 0
       },
@@ -48,6 +64,30 @@
       },
       {
          "Name": "[dbo].[KeyWords]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LeaveApprovalDelegations]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LeaveAttachments]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LeaveBalanceHistories]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LeaveBalances]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LeaveRequests]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LeaveTypes]",
          "ObjectType": 0
       },
       {
@@ -129,6 +169,10 @@
       {
          "Name": "[dbo].[UserWallets]",
          "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[vw_EmployeeDeptInfo]",
+         "ObjectType": 3
       },
       {
          "Name": "[dbo].[vw_RoleFunctions]",

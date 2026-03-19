@@ -64,6 +64,14 @@ namespace Project_MyFitnessCoach.Controllers
         {
             if (string.IsNullOrEmpty(word)) return BadRequest("字詞不能為空");
 
+            if (category == 0)
+            {
+                // 將忽略的字詞存入本地文字檔，不進資料庫
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "ignored_words.txt");
+                await System.IO.File.AppendAllLinesAsync(filePath, new[] { word });
+                return Ok(new { success = true, message = $"已將「{word}」加入本地忽略清單" });
+            }
+
             var keyWord = new Models.EfModels.KeyWord
             {
                 Word = word,
