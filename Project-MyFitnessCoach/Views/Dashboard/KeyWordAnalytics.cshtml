@@ -56,6 +56,13 @@
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">所有關鍵字出現頻率明細 (點擊「未分類」字詞可進行快速歸類)</h6>
                     <div class="form-inline">
+                        <!-- 快速搜尋 -->
+                        <div class="input-group input-group-sm mr-2">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            </div>
+                            <input type="text" id="filterSearch" class="form-control" placeholder="快速搜尋字詞..." style="width: 150px;">
+                        </div>
                         <!-- 類別篩選 -->
                         <select id="filterCategory" class="form-control form-control-sm mr-2">
                             <option value="all">所有類別</option>
@@ -187,24 +194,7 @@
     </div>
 </div>
 
-<!-- MicroModal 結構 -->
-<div class="modal-micromodal" id="modal-alert" aria-hidden="true">
-    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-alert-title">
-            <header class="modal__header">
-                <h2 class="modal__title" id="modal-alert-title">提示</h2>
-                <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
-            </header>
-            <main class="modal__content" id="modal-alert-content">
-                這是提示內容
-            </main>
-            <footer class="modal__footer">
-                <button class="modal__btn modal__btn-primary" data-micromodal-close>確定</button>
-            </footer>
-        </div>
-    </div>
-</div>
-
+<!-- MicroModal 結構 (保留用於 confirm，Alert 改用 Notyf) -->
 <div class="modal-micromodal" id="modal-confirm" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1" data-micromodal-close>
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-confirm-title">
@@ -283,15 +273,18 @@
 @section Scripts {
     <script src="~/vendor/chart.js/Chart.min.js"></script>
     <script src="~/lib/micromodal/micromodal.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true
+        });
+
         // 初始化 MicroModal
         MicroModal.init();
-
-        function showMicroAlert(title, message) {
-            $('#modal-alert-title').text(title);
-            $('#modal-alert-content').text(message);
-            MicroModal.show('modal-alert');
-        }
 
         function showMicroConfirm(title, message, onConfirm) {
             $('#modal-confirm-title').text(title);
@@ -303,18 +296,18 @@
             MicroModal.show('modal-confirm');
         }
 
-        // 設定預設
+        // Chart.js 設定預設
         Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
         Chart.defaults.global.defaultFontColor = '#858796';
 
-        // 準備資料
+        // 準備圖表資料
         var posLabels = @Html.Raw(Json.Serialize(Model.Where(m => m.Category == 1).Take(10).Select(m => m.Word)));
         var posCounts = @Html.Raw(Json.Serialize(Model.Where(m => m.Category == 1).Take(10).Select(m => m.Count)));
         
         var negLabels = @Html.Raw(Json.Serialize(Model.Where(m => m.Category == -1).Take(10).Select(m => m.Word)));
         var negCounts = @Html.Raw(Json.Serialize(Model.Where(m => m.Category == -1).Take(10).Select(m => m.Count)));
 
-        // 正向圖表 (橫向長條圖)
+        // 正向圖表
         var ctxPos = document.getElementById("posKeyWordChart");
         var posChart = new Chart(ctxPos, {
             type: 'horizontalBar',
@@ -338,7 +331,7 @@
             }
         });
 
-        // 負向圖表 (橫向長條圖)
+        // 負向圖表
         var ctxNeg = document.getElementById("negKeyWordChart");
         var negChart = new Chart(ctxNeg, {
             type: 'horizontalBar',
@@ -364,20 +357,22 @@
 
         // 篩選功能實作
         function applyFilters() {
+            var searchText = $('#filterSearch').val().toLowerCase();
             var selectedCategory = $('#filterCategory').val();
             var minCount = parseInt($('#filterMinCount').val()) || 0;
             var visibleCount = 0;
 
             $('.kw-row').each(function() {
                 var row = $(this);
-                // 使用 String() 強制轉型，避免 jQuery 把 "null" 變成 null 物件導致 toString() 失敗
+                var word = row.data('word').toString().toLowerCase();
                 var category = String(row.data('category'));
                 var count = parseInt(row.data('count'));
 
+                var searchMatch = word.includes(searchText);
                 var categoryMatch = (selectedCategory === 'all') || (category === selectedCategory);
                 var countMatch = count >= minCount;
 
-                if (categoryMatch && countMatch) {
+                if (searchMatch && categoryMatch && countMatch) {
                     row.removeClass('d-none');
                     visibleCount++;
                 } else {
@@ -385,7 +380,6 @@
                 }
             });
 
-            // 處理無結果顯示
             if (visibleCount === 0) {
                 $('#kwTable').addClass('d-none');
                 $('#noResults').removeClass('d-none');
@@ -396,14 +390,14 @@
         }
 
         // 綁定事件
-        $('#filterCategory, #filterMinCount').on('change keyup', applyFilters);
+        $('#filterSearch, #filterCategory, #filterMinCount').on('change keyup', applyFilters);
 
         // 快速歸類 Modal 控制
         function openQuickAddModal(word) {
             $('#modalWord').val(word);
             $('#modalWeight').val(3);
             $('#weightDisplay').text(3);
-            setCategory(1); // 預設正向
+            setCategory(1);
             $('#quickAddModal').modal('show');
         }
 
@@ -413,22 +407,14 @@
                     $('#modalCategory').val(0);
                     $('#btnPos, #btnNeg').removeClass('active');
                     $('#btnIgnore').addClass('active');
-                    // 忽略通常不需要調整權重，可以直接提交
                     submitQuickAdd();
                 });
                 return;
             }
-
             $('#modalCategory').val(cat);
-            // 移除所有 active 狀態
             $('#btnPos, #btnNeg, #btnIgnore').removeClass('active');
-            
-            // 根據選擇增加 active 狀態
-            if (cat === 1) {
-                $('#btnPos').addClass('active');
-            } else if (cat === -1) {
-                $('#btnNeg').addClass('active');
-            }
+            if (cat === 1) $('#btnPos').addClass('active');
+            else if (cat === -1) $('#btnNeg').addClass('active');
         }
 
         function updateWeightDisplay(val) {
@@ -440,37 +426,29 @@
             var category = parseInt($('#modalCategory').val());
             var weight = parseInt($('#modalWeight').val());
 
-            var data = {
-                word: word,
-                category: category,
-                weight: weight
-            };
+            var data = { word: word, category: category, weight: weight };
 
             $.post('/Dashboard/CreateKeyWord', data, function(response) {
                 if (response.success) {
                     $('#quickAddModal').modal('hide');
-                    
-                    // 找到對應的行並移除，提供即時回饋
                     var $targetRow = $(`.kw-row[data-word="${word}"]`);
                     $targetRow.fadeOut(400, function() {
                         $(this).remove();
-                        applyFilters(); // 重新觸發篩選邏輯，處理「找不到結果」的顯示
+                        applyFilters();
                     });
-
-                    showMicroAlert('成功', response.message);
-                    
-                    // 清除舊的事件綁定，避免重複觸發
-                    $(document).off('click', '#modal-alert .modal__btn-primary');
-                    
-                    // 只有當類別不是「忽略」(0) 時，才需要重整頁面以更新圖表
+                    Toast.fire({
+                        icon: 'success',
+                        title: response.message
+                    });
                     if (category !== 0) {
-                        $(document).on('click', '#modal-alert .modal__btn-primary', function() {
-                            location.reload();
-                        });
+                        setTimeout(function() { location.reload(); }, 1500);
                     }
                 }
             }).fail(function(xhr) {
-                showMicroAlert('儲存失敗', xhr.responseText);
+                Toast.fire({
+                    icon: 'error',
+                    title: xhr.responseText || '儲存失敗'
+                });
             });
         }
     </script>

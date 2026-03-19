@@ -473,8 +473,8 @@
             podiumOrder.forEach(idx => {
                 var inst = top3[idx];
                 if (inst) {
-                    var rankClass = (idx === 0) ? 'rank-2' : (idx === 1 ? 'rank-1' : 'rank-3');
                     var rankNum = idx + 1;
+                    var rankClass = 'rank-' + rankNum;
                     podiumHtml += `
                         <div class="podium-item ${rankClass}" onclick="jumpToDetail(${inst.instructorId}, '${inst.instructorName}')" style="cursor:pointer;">
                             <div class="podium-name">${inst.instructorName}</div>

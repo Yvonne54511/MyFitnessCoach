@@ -60,11 +60,10 @@ namespace Project_MyFitnessCoach.Controllers
 
         // POST: KeyWords/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _service.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            return Ok(new { success = true });
         }
 
         // AJAX 更新類別
