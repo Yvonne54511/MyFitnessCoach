@@ -96,6 +96,7 @@
                                     <th>異動點數</th>
                                     <th>類別</th>
                                     <th>關聯單號</th>
+                                    <th>狀態</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -132,13 +133,26 @@
                                                     <span>預約單: #@detail.ReserveOrderId.Value</span>
                                                 }
                                             </td>
+                                            <td>
+                                                @{
+                                                    var detailBadgeClass = Model.Status switch
+                                                    {
+                                                        0 => "badge-warning",
+                                                        1 => "badge-success",
+                                                        2 => "badge-info",
+                                                        3 => "badge-danger",
+                                                        _ => "badge-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @detailBadgeClass">@Model.StatusName</span>
+                                            </td>
                                         </tr>
                                     }
                                 }
                                 else
                                 {
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted py-4">無相關異動紀錄</td>
+                                        <td colspan="7" class="text-center text-muted py-4">無相關異動紀錄</td>
                                     </tr>
                                 }
                             </tbody>
@@ -164,9 +178,12 @@
 
                 @if (Model.Status == 0)
                 {
-                    <button class="btn btn-primary shadow-sm">
-                        <i class="fas fa-check-circle me-1"></i> 確認收款
-                    </button>
+                    <form asp-action="CompletePayment" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-primary shadow-sm">
+                            <i class="fas fa-check-circle me-1"></i> 確認收款
+                        </button>
+                    </form>
                 }
             </div>
         </div>

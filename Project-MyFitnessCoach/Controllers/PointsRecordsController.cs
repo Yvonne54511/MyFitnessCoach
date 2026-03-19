@@ -26,6 +26,7 @@ namespace Project_MyFitnessCoach.Controllers
                 .Include(r => r.UserWallet)
                 .ThenInclude(w => w.Member)
                 .ThenInclude(m => m.User)
+                .Include(r => r.PointOrder)
                 .AsQueryable();
 
             // 若有輸入紀錄 ID，優先以 ID 搜尋並直接返回結果
