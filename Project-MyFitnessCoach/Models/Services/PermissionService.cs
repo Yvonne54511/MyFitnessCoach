@@ -2,6 +2,7 @@ using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Repositories;
 using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Models.ViewModels;
+using Project_MyFitnessCoach.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Project_MyFitnessCoach.Models.Services
@@ -13,19 +14,22 @@ namespace Project_MyFitnessCoach.Models.Services
         private readonly IRoleFunctionRepository _rfRepo;
         private readonly IUserRepository _userRepo;
         private readonly MyFitnessCoachDbContext _context;
+        private readonly EmployeeService _employeeService;
 
         public PermissionService(
             IRoleRepository roleRepo,
             IFunctionRepository funcRepo,
             IRoleFunctionRepository rfRepo,
             IUserRepository userRepo,
-            MyFitnessCoachDbContext context)
+            MyFitnessCoachDbContext context,
+            EmployeeService employeeService)
         {
             _roleRepo = roleRepo;
             _funcRepo = funcRepo;
             _rfRepo = rfRepo;
             _userRepo = userRepo;
             _context = context;
+            _employeeService = employeeService;
         }
 
         // Roles
@@ -131,6 +135,9 @@ namespace Project_MyFitnessCoach.Models.Services
 
             if (role == null) return;
 
+            // 記錄更新前的舊 UserIds，用於後續判斷被移除的使用者
+            var oldUserIds = role.UserRoles.Select(ur => ur.UserId).ToList();
+
             // Update Functions
             _context.RoleFunctions.RemoveRange(role.RoleFunctions);
             foreach (var fId in functionIds)
@@ -146,6 +153,31 @@ namespace Project_MyFitnessCoach.Models.Services
             }
 
             await _context.SaveChangesAsync();
+
+            // ── 步驟 3.2：角色指派後自動建立/停用 Employee ──
+
+            // 被加入此角色的使用者 → 檢查是否需要建立 Employee
+            foreach (var uId in userIds)
+            {
+                var userRoleNames = await _context.UserRoles
+                    .Where(ur => ur.UserId == uId)
+                    .Select(ur => ur.Role.RoleName)
+                    .ToListAsync();
+
+                await _employeeService.EnsureEmployeeExistsAsync(uId, userRoleNames);
+            }
+
+            // 被移除此角色的使用者 → 檢查是否需要停用 Employee
+            var removedUserIds = oldUserIds.Except(userIds);
+            foreach (var uId in removedUserIds)
+            {
+                var userRoleNames = await _context.UserRoles
+                    .Where(ur => ur.UserId == uId)
+                    .Select(ur => ur.Role.RoleName)
+                    .ToListAsync();
+
+                await _employeeService.DeactivateEmployeeIfNoEmployeeRolesAsync(uId, userRoleNames);
+            }
         }
     }
 }
