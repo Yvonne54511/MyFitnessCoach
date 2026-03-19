@@ -232,8 +232,7 @@ namespace Project_MyFitnessCoach.Controllers
             var dto = new StaffInviteDto
             {
                 UserName = model.UserName,
-                Email = model.Email,
-                RoleIds = model.RoleIds
+                Email = model.Email
             };
 
             var result = await _userService.InviteStaffAsync(dto, code => 

@@ -8,6 +8,7 @@ namespace Project_MyFitnessCoach.Repositories
         Task<List<Employee>> GetAllAsync(string? deptFilter, string? keyword);
         Task<Employee?> GetByIdAsync(int id);
         Task<Employee?> GetByUserIdAsync(int userId);
+        Task CreateAsync(Employee entity);
         Task UpdateAsync(Employee entity);
     }
 
@@ -62,6 +63,12 @@ namespace Project_MyFitnessCoach.Repositories
             return await _context.Employees
                 .Include(e => e.User)
                 .FirstOrDefaultAsync(e => e.UserId == userId);
+        }
+
+        public async Task CreateAsync(Employee entity)
+        {
+            _context.Employees.Add(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Employee entity)
