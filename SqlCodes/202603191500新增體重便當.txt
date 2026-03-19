@@ -1,0 +1,37 @@
+-- =============================================
+-- 1. 新增商品分類 (包含原本的 4 個分類與新的「健康便當」)
+-- =============================================
+
+INSERT [dbo].[ProductCategories] ([CategoryName], [SortOrder], [IsActive]) VALUES (N'健康便當', 5, 1)
+GO
+
+
+-- =============================================
+-- 2. 新增健康便當商品資料 (對應 CategoryId = 5)
+-- =============================================
+
+INSERT [dbo].[Products] ([CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (5, N'低脂雙拼烤雞腿便當', N'/images/products/bento_01.jpg', CAST(180 AS Decimal(18, 0)), CAST(150 AS Decimal(18, 0)), N'嚴選去骨雞腿肉，搭配時令水煮蔬菜，健康無負擔', 1, 1)
+GO
+INSERT [dbo].[Products] ([CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (5, N'日式鹽烤鯖魚健康餐', N'/images/products/bento_02.jpg', CAST(190 AS Decimal(18, 0)), CAST(160 AS Decimal(18, 0)), N'富含Omega-3，搭配紫米飯與和風配菜，營養滿分', 2, 1)
+GO
+INSERT [dbo].[Products] ([CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (5, N'蒜香低脂牛腱輕食盒', N'/images/products/bento_03.jpg', CAST(220 AS Decimal(18, 0)), CAST(180 AS Decimal(18, 0)), N'慢火滷製特選牛腱，肉質Q彈，高蛋白增肌首選', 3, 1)
+
+INSERT [dbo].[Products] ([CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (5, N'舒肥嫩雞胸藜麥沙拉', N'/images/products/bento_04.jpg', CAST(160 AS Decimal(18, 0)), CAST(139 AS Decimal(18, 0)), N'低GI超級食物紅藜麥，結合大量鮮脆生菜與低溫舒肥雞胸', 4, 1)
+GO
+INSERT [dbo].[Products] ([CategoryId], [Name], [ImageUrl], [OriginalPrice], [UnitPrice], [Description], [SortOrder], [IsActive]) VALUES (5, N'田園鮮蔬豆腐鮮菇餐', N'/images/products/bento_05.jpg', CAST(150 AS Decimal(18, 0)), CAST(120 AS Decimal(18, 0)), N'純素可食，多種菇類與非基改豆腐，植物性蛋白好吸收', 5, 1)
+GO
+
+
+
+INSERT [dbo].[BodyRecords] ([MemberId], [Weight], [BodyFat], [SkeletalMuscle], [WaistCircumference], [CreateAt], [Note], [ImageUrl]) VALUES (3, 49.5, CAST(26.6 AS Decimal(4, 1)), CAST(23.1 AS Decimal(4, 1)), CAST(67.5 AS Decimal(5, 1)), CAST(N'2025-12-11T08:30:00.0000000' AS DateTime2), N'週末聚餐較多，稍微水腫回彈，不氣餒', NULL)
+GO
+INSERT [dbo].[BodyRecords] ([MemberId], [Weight], [BodyFat], [SkeletalMuscle], [WaistCircumference], [CreateAt], [Note], [ImageUrl]) VALUES (3, 48.8, CAST(26.2 AS Decimal(4, 1)), CAST(23.1 AS Decimal(4, 1)), CAST(66.8 AS Decimal(5, 1)), CAST(N'2025-12-21T08:30:00.0000000' AS DateTime2), N'恢復正常飲食與運動，體重回到下降趨勢', NULL)
+GO
+INSERT [dbo].[BodyRecords] ([MemberId], [Weight], [BodyFat], [SkeletalMuscle], [WaistCircumference], [CreateAt], [Note], [ImageUrl]) VALUES (3, 48.8, CAST(26.0 AS Decimal(4, 1)), CAST(23.3 AS Decimal(4, 1)), CAST(66.5 AS Decimal(5, 1)), CAST(N'2025-12-31T08:30:00.0000000' AS DateTime2), N'遇到停滯期，但肌肉量微幅增加，體態感覺變緊實', NULL)
+GO
+INSERT [dbo].[BodyRecords] ([MemberId], [Weight], [BodyFat], [SkeletalMuscle], [WaistCircumference], [CreateAt], [Note], [ImageUrl]) VALUES (3, 48.2, CAST(25.6 AS Decimal(4, 1)), CAST(23.2 AS Decimal(4, 1)), CAST(66.0 AS Decimal(5, 1)), CAST(N'2026-01-10T08:30:00.0000000' AS DateTime2), N'突破停滯期！持續保持運動習慣看見成效', NULL)
+GO
+INSERT [dbo].[BodyRecords] ([MemberId], [Weight], [BodyFat], [SkeletalMuscle], [WaistCircumference], [CreateAt], [Note], [ImageUrl]) VALUES (3, 48.6, CAST(25.8 AS Decimal(4, 1)), CAST(23.2 AS Decimal(4, 1)), CAST(66.5 AS Decimal(5, 1)), CAST(N'2026-01-20T08:30:00.0000000' AS DateTime2), N'最近工作壓力大且睡眠不足，身體有些反撲和水腫', NULL)
+GO
+INSERT [dbo].[BodyRecords] ([MemberId], [Weight], [BodyFat], [SkeletalMuscle], [WaistCircumference], [CreateAt], [Note], [ImageUrl]) VALUES (3, 47.5, CAST(25.1 AS Decimal(4, 1)), CAST(23.4 AS Decimal(4, 1)), CAST(65.0 AS Decimal(5, 1)), CAST(N'2026-01-30T08:30:00.0000000' AS DateTime2), N'好好休息後水腫消退，體脂降幅明顯，達成近期新低點！', NULL)
+GO
