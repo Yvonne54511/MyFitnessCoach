@@ -718,7 +718,6 @@
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <form asp-action="CancelRequest" method="post">
-                            @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@req.Id" />
                             <div class="modal-header">
                                 <h5 class="modal-title">

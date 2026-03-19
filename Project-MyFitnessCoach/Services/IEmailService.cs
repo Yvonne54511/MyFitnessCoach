@@ -12,12 +12,12 @@ namespace Project_MyFitnessCoach.Services
         /// <summary>
         /// 發送重設密碼驗證信
         /// </summary>
-        Task<bool> SendResetPwdEmailAsync(string userEmail, string userName, string resetUrl);
+        Task<bool> SendResetPwdEmailAsync(string userEmail, string userName, string userAccount, string resetUrl);
 
         /// <summary>
         /// (相容舊版) 發送重設密碼驗證信
         /// </summary>
-        bool SendPasswordResetEmail(string email, string userName, string resetUrl);
+        bool SendPasswordResetEmail(string email, string userName, string userAccount, string resetUrl);
 
         /// <summary>
         /// (相容舊版) 發送員工邀請驗證信

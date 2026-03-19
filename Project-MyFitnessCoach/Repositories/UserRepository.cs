@@ -9,6 +9,7 @@ namespace Project_MyFitnessCoach.Repositories
         Task<User?> GetUserByIdAsync(int id);
         Task<User?> GetUserByEmailAsync(string email);
         Task<User?> GetUserByConfirmCodeAsync(string code);
+        Task CreateUserAsync(User user);
         Task CreateUserAsync(User user, IEnumerable<int> roleIds);
         Task UpdateUserAsync(User user, IEnumerable<int> roleIds);
         Task DeleteUserAsync(int id);
@@ -67,6 +68,12 @@ namespace Project_MyFitnessCoach.Repositories
         public async Task<User?> GetUserByConfirmCodeAsync(string code)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.NewMemberConfirmCode == code);
+        }
+
+        public async Task CreateUserAsync(User user)
+        {
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
         }
 
         public async Task CreateUserAsync(User user, IEnumerable<int> roleIds)

@@ -33,10 +33,10 @@ namespace Project_MyFitnessCoach.Models.ViewModels
         public int StartHour { get; set; } = 9;
         public int EndHour { get; set; } = 18;
 
-        // 唯讀帶入
-        public string EmployeeName { get; set; }
-        public string DepartmentName { get; set; }
-        public string ManagerName { get; set; }
+        // 唯讀帶入（不參與表單提交，標記為 nullable 避免 ModelState 驗證失敗）
+        public string? EmployeeName { get; set; }
+        public string? DepartmentName { get; set; }
+        public string? ManagerName { get; set; }
 
         // 代理人判斷（4.2-1）
         public int? DefaultDelegateId { get; set; }

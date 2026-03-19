@@ -1,6 +1,8 @@
 @model Project_MyFitnessCoach.Models.ViewModels.InstructorRatingViewModel
 @{
     ViewData["Title"] = "營養師評分統計 Dashboard";
+    var userFunctions = User.FindAll("Function").Select(f => f.Value).ToList();
+    bool canAdminLeaveBalances = userFunctions.Contains("admin_LeaveBalances");
 }
 
 <div class="container-fluid">
@@ -11,9 +13,12 @@
                 <a asp-action="Rating" asp-route-year="@Model.SelectedYear" asp-route-month="@Model.SelectedMonth" class="btn btn-primary active border-right">
                     <i class="fas fa-star-half-alt mr-1"></i> 營養師評分統計
                 </a>
-                <a asp-action="KeyWordAnalytics" asp-route-year="@Model.SelectedYear" asp-route-month="@Model.SelectedMonth" class="btn btn-white text-primary border-right">
-                    <i class="fas fa-search mr-1"></i> 評論字詞分析
-                </a>
+                @if (canAdminLeaveBalances)
+                {
+                    <a asp-action="KeyWordAnalytics" asp-route-year="@Model.SelectedYear" asp-route-month="@Model.SelectedMonth" class="btn btn-white text-primary border-right">
+                        <i class="fas fa-search mr-1"></i> 評論字詞分析
+                    </a>
+                }
                 <button type="button" class="btn btn-white text-info" data-toggle="modal" data-target="#rankingModal">
                     <i class="fas fa-trophy mr-1 text-warning"></i> 查看排名
                 </button>

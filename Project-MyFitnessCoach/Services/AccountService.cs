@@ -178,7 +178,7 @@ namespace Project_MyFitnessCoach.Services
 
             try
             {
-                emailSent = _emailService.SendPasswordResetEmail(user.Email, user.UserName, resetUrl);
+                emailSent = _emailService.SendPasswordResetEmail(user.Email, user.UserName, user.Account, resetUrl);
             }
             catch (Exception ex)
             {

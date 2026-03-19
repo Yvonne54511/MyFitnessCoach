@@ -382,7 +382,7 @@
                                 @foreach (var item in Model.Roles)
                                 {
                                     <tr>
-                                        <td><strong>@item.RoleName</strong></td>
+                                        <td><strong>@RoleDisplayHelper.ToDisplayName(item.RoleName)</strong></td>
                                         <td><small class="text-muted">@item.Description</small></td>
                                         <td class="text-center">
                                             <span class="badge @(item.IsActive ? "badge-success" : "badge-secondary")">
@@ -487,7 +487,7 @@
                                 @foreach (var row in Model.RolePermissionRows)
                                 {
                                     <tr>
-                                        <td><strong>@row.RoleName</strong></td>
+                                        <td><strong>@RoleDisplayHelper.ToDisplayName(row.RoleName)</strong></td>
                                         <td>
                                             @if (!string.IsNullOrEmpty(row.FunctionNames))
                                             {
@@ -633,7 +633,7 @@
                             <option value="">-- 請選擇角色 --</option>
                             @foreach (var role in Model.Roles.Where(r => r.IsActive))
                             {
-                                <option value="@role.Id">@role.RoleName</option>
+                                <option value="@role.Id">@RoleDisplayHelper.ToDisplayName(role.RoleName)</option>
                             }
                         </select>
                     </div>

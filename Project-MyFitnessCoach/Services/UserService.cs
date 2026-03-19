@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Project_MyFitnessCoach.Models.EfModels;
 using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Repositories;
@@ -44,12 +45,17 @@ namespace Project_MyFitnessCoach.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
+        private readonly EmployeeService _employeeService;
+        private readonly MyFitnessCoachDbContext _context;
         private readonly PasswordHasher<User> _passwordHasher;
 
-        public UserService(IUserRepository userRepository, IEmailService emailService)
+        public UserService(IUserRepository userRepository, IEmailService emailService,
+            EmployeeService employeeService, MyFitnessCoachDbContext context)
         {
             _userRepository = userRepository;
             _emailService = emailService;
+            _employeeService = employeeService;
+            _context = context;
             _passwordHasher = new PasswordHasher<User>();
         }
 
@@ -121,7 +127,7 @@ namespace Project_MyFitnessCoach.Services
                 NewMemberConfirmCodeExpiry = DateTime.Now.AddDays(7)
             };
 
-            await _userRepository.CreateUserAsync(user, dto.RoleIds);
+            await _userRepository.CreateUserAsync(user);
 
             var invitationUrl = generateUrl(confirmCode);
             var emailSent = _emailService.SendStaffInvitationEmail(dto.Email, dto.UserName, invitationUrl);
@@ -144,6 +150,16 @@ namespace Project_MyFitnessCoach.Services
             };
 
             await _userRepository.UpdateUserAsync(user, dto.RoleIds);
+
+            // ── 步驟 3.2：角色指派後自動建立/停用 Employee ──
+            var newRoleNames = await _context.Roles
+                .Where(r => dto.RoleIds.Contains(r.Id))
+                .Select(r => r.RoleName)
+                .ToListAsync();
+
+            await _employeeService.EnsureEmployeeExistsAsync(dto.Id, newRoleNames);
+            await _employeeService.DeactivateEmployeeIfNoEmployeeRolesAsync(dto.Id, newRoleNames);
+
             return new StaffResultDto { IsSuccess = true, Message = "更新成功" };
         }
 

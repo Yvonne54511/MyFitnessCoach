@@ -56,7 +56,7 @@ namespace Project_MyFitnessCoach.Services
             return await SendEmailAsync(userEmail, subject, bodyHtml);
         }
 
-        public async Task<bool> SendResetPwdEmailAsync(string userEmail, string userName, string resetUrl)
+        public async Task<bool> SendResetPwdEmailAsync(string userEmail, string userName, string userAccount, string resetUrl)
         {
             var subject = "MyFitnessCoach 重設密碼請求";
             var bodyHtml = $@"
@@ -75,7 +75,7 @@ namespace Project_MyFitnessCoach.Services
                 <p style='margin:0;font-size:15px;line-height:1.8;'>我們收到了您的密碼重置請求，請點擊下方按鈕重新設置。</p>
             </div>
             <div style='padding:36px;'>
-                <p style='margin:0 0 14px;'>Hi {userName}，</p>
+                <p style='margin:0 0 14px;'>Hi {userName}({userAccount})，</p>
                 <p style='margin:0 0 24px;line-height:1.8;'>請在 30 分鐘內點擊下方按鈕重新設定您的 MyFitnessCoach 帳戶密碼。</p>
                 <p style='margin:0 0 28px;'>
                     <a href='{resetUrl}' style='display:inline-block;padding:14px 28px;border-radius:999px;background:linear-gradient(135deg,#f2a531,#e47b22);color:#fffaf2;text-decoration:none;font-weight:700;'>重設密碼</a>
@@ -135,9 +135,9 @@ namespace Project_MyFitnessCoach.Services
         }
 
         // 相容舊版介面的實作
-        public bool SendPasswordResetEmail(string email, string userName, string resetUrl)
+        public bool SendPasswordResetEmail(string email, string userName, string userAccount, string resetUrl)
         {
-            return Task.Run(() => SendResetPwdEmailAsync(email, userName, resetUrl)).Result;
+            return Task.Run(() => SendResetPwdEmailAsync(email, userName, userAccount, resetUrl)).Result;
         }
 
         public bool SendStaffInvitationEmail(string email, string userName, string invitationUrl)

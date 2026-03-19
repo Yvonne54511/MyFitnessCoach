@@ -24,10 +24,6 @@ namespace Project_MyFitnessCoach.Models.ViewModel
         [EmailAddress(ErrorMessage = "請輸入正確的電子郵件格式")]
         [Display(Name = "電子郵件")]
         public string Email { get; set; }
-
-        [Required(ErrorMessage = "請至少選擇一個角色")]
-        [Display(Name = "角色")]
-        public List<int> RoleIds { get; set; } = new List<int>();
     }
 
     public class StaffEditViewModel

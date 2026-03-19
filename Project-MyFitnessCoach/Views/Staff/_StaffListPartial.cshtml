@@ -20,7 +20,7 @@
                     <td>@item.UserName</td>
                     <td>@item.Email</td>
                     <td>@item.Account</td>
-                    <td>@string.Join(", ", item.Roles)</td>
+                    <td>@RoleDisplayHelper.ToDisplayNames(item.Roles)</td>
                     <td>
                         @if (item.IsActive)
                         {

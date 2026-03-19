@@ -44,7 +44,6 @@
             }
 
             <form asp-action="Login" method="post" class="account-form">
-                @Html.AntiForgeryToken()
                 <input type="hidden" name="returnUrl" value="@returnUrl" />
                 <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
 
@@ -75,6 +74,31 @@
             <div class="card-links">
                 <a asp-action="ForgetPassword">忘記密碼</a>
             </div>
+
+            <hr style="border-color: #e0e0e0; margin: 1rem 0;" />
+            <p style="text-align: center; color: #888; font-size: 0.85rem; margin-bottom: 0.5rem;">快速登入（測試用）</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;">
+                <button type="button" class="quick-login-btn" data-account="huqingwei12" data-password="123456"
+                        style="padding: 0.4rem 0.75rem; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 6px; background: #f8f9fa; cursor: pointer; transition: background 0.2s;">
+                    角色-營養師
+                </button>
+                <button type="button" class="quick-login-btn" data-account="gaoqingxing26" data-password="123456"
+                        style="padding: 0.4rem 0.75rem; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 6px; background: #f8f9fa; cursor: pointer; transition: background 0.2s;">
+                    角色-採購人員
+                </button>
+                <button type="button" class="quick-login-btn" data-account="zhaoyuqing36" data-password="123456"
+                        style="padding: 0.4rem 0.75rem; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 6px; background: #f8f9fa; cursor: pointer; transition: background 0.2s;">
+                    角色-行銷人員
+                </button>
+                <button type="button" class="quick-login-btn" data-account="chenzhiming1" data-password="123456"
+                        style="padding: 0.4rem 0.75rem; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 6px; background: #f8f9fa; cursor: pointer; transition: background 0.2s;">
+                    角色-採購主管
+                </button>
+                <button type="button" class="quick-login-btn" data-account="admin1" data-password="123456"
+                        style="padding: 0.4rem 0.75rem; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 6px; background: #f8f9fa; cursor: pointer; transition: background 0.2s;">
+                    角色-系統管理員
+                </button>
+            </div>
         </section>
     </main>
 
@@ -93,6 +117,17 @@
                 eyeIcon.classList.toggle('fa-eye', isPassword);
             });
         }
+
+        // 快速登入按鈕
+        document.querySelectorAll('.quick-login-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var account = this.getAttribute('data-account');
+                var password = this.getAttribute('data-password');
+                document.getElementById('Account').value = account;
+                document.getElementById('Password').value = password;
+                document.querySelector('.account-form').submit();
+            });
+        });
     </script>
 </body>
 </html>

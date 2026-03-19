@@ -5,7 +5,7 @@
     <input type="hidden" name="roleId" value="@Model.RoleId" />
     
     <div class="modal-header bg-info text-white">
-        <h5 class="modal-title">編輯角色權限與人員 - @Model.RoleName</h5>
+        <h5 class="modal-title">編輯角色權限與人員 - @RoleDisplayHelper.ToDisplayName(Model.RoleName)</h5>
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
