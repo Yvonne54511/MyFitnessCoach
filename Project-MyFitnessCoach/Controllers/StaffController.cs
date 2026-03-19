@@ -177,9 +177,9 @@ namespace Project_MyFitnessCoach.Controllers
                 Roles = s.Roles
             }).ToList();
 
-            // 員工列表：排除只有 member 或 instructor 角色的使用者
+            // 員工列表：排除只有 member 或 instructor 角色的使用者（無角色的也顯示）
             var staffList = allStaff
-                .Where(s => s.Roles.Any(r => r != "member" && r != "instructor"))
+                .Where(s => !s.Roles.Any() || s.Roles.Any(r => r != "member" && r != "instructor"))
                 .ToList();
             // 營養師列表：有 instructor 角色的使用者
             ViewBag.InstructorList = allStaff
@@ -214,7 +214,7 @@ namespace Project_MyFitnessCoach.Controllers
                 IsConfirmed = s.IsConfirmed,
                 IsActive = s.IsActive,
                 Roles = s.Roles
-            }).Where(s => s.Roles.Any(r => r != "member" && r != "instructor"))
+            }).Where(s => !s.Roles.Any() || s.Roles.Any(r => r != "member" && r != "instructor"))
             .ToList();
 
             return PartialView("_StaffListPartial", staffList);
