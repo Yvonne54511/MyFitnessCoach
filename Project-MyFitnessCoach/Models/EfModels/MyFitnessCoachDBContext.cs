@@ -715,14 +715,6 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasConstraintName("FK_RoleFunctions_Role");
         });
 
-        modelBuilder.Entity<SensitiveWord>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Sensitiv__3214EC07CB0D3897");
-
-            entity.HasIndex(e => e.Word, "UQ_SensitiveWords_Word").IsUnique();
-
-            entity.Property(e => e.Word).HasMaxLength(50);
-        });
 
         modelBuilder.Entity<PointsRecordDetail>(entity =>
         {
