@@ -729,6 +729,49 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasConstraintName("FK_Shifts_Instructors");
         });
 
+        modelBuilder.Entity<PointOrder>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__PointOrd__3214EC0746269E1A");
+
+            entity.Property(e => e.CreateAt).HasPrecision(7);
+            entity.Property(e => e.DiscountedPrice).HasColumnType("decimal(18, 0)");
+            entity.Property(e => e.OriginalPrice).HasColumnType("decimal(18, 0)");
+
+            entity.HasOne(d => d.Member).WithMany(p => p.PointOrders)
+                .HasForeignKey(d => d.MemberId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PointOrders_Members");
+
+            entity.HasOne(d => d.TopUpPlan).WithMany(p => p.PointOrders)
+                .HasForeignKey(d => d.TopUpPlanId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PointOrders_TopUpPlans");
+        });
+
+        modelBuilder.Entity<PointsRecordDetail>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__PointsRe__3214EC07");
+
+            entity.Property(e => e.CreateAt).HasPrecision(0);
+            entity.Property(e => e.MerchandiseCategory)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasOne(d => d.PointOrder).WithMany(p => p.PointsRecordDetails)
+                .HasForeignKey(d => d.PointOrderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PointsRecordDetails_PointOrders");
+
+            entity.HasOne(d => d.ReserveOrder).WithMany(p => p.PointsRecordDetails)
+                .HasForeignKey(d => d.ReserveOrderId)
+                .HasConstraintName("FK_PointsRecordDetails_ReserveOrders");
+
+            entity.HasOne(d => d.UserWallet).WithMany(p => p.PointsRecordDetails)
+                .HasForeignKey(d => d.UserWalletId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PointsRecordDetails_UserWallets");
+        });
+
         modelBuilder.Entity<TopUpPlan>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__TopUpPla__3214EC07E1DBA0D1");
