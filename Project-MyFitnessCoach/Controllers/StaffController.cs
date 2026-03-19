@@ -224,21 +224,29 @@ namespace Project_MyFitnessCoach.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Invite(StaffInviteViewModel model)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || model.RoleIds == null || model.RoleIds.Count == 0)
             {
-                return Json(new { success = false, message = "資料格式錯誤" });
+                return Json(new { success = false, message = "請填寫完整資料，並至少選擇一個角色" });
             }
 
-            var dto = new StaffInviteDto
+            try
             {
-                UserName = model.UserName,
-                Email = model.Email
-            };
+                var dto = new StaffInviteDto
+                {
+                    UserName = model.UserName,
+                    Email = model.Email,
+                    RoleIds = model.RoleIds
+                };
 
-            var result = await _userService.InviteStaffAsync(dto, code => 
-                Url.Action("Activate", "Staff", new { code }, Request.Scheme));
+                var result = await _userService.InviteStaffAsync(dto, code =>
+                    Url.Action("Activate", "Staff", new { code }, Request.Scheme));
 
-            return Json(new { success = result.IsSuccess, message = result.Message });
+                return Json(new { success = result.IsSuccess, message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "邀請失敗：" + ex.Message });
+            }
         }
 
         [HttpGet]

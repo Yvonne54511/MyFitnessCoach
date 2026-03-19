@@ -124,18 +124,27 @@ namespace Project_MyFitnessCoach.Services
                 IsConfirmed = false,
                 IsActive = true,
                 NewMemberConfirmCode = confirmCode,
-                NewMemberConfirmCodeExpiry = DateTime.Now.AddDays(7)
+                NewMemberConfirmCodeExpiry = DateTime.Now.AddDays(7),
+                // 透過導覽屬性建立 UserRole，EF Core 在同一筆交易中一起儲存
+                UserRoles = dto.RoleIds.Select(roleId => new UserRole { RoleId = roleId }).ToList()
             };
 
             await _userRepository.CreateUserAsync(user);
 
+            // ── 步驟 3.2：角色為必填，檢查是否需要建立 Employee 記錄 ──
+            var roleNames = await _context.Roles
+                .Where(r => dto.RoleIds.Contains(r.Id))
+                .Select(r => r.RoleName)
+                .ToListAsync();
+            await _employeeService.EnsureEmployeeExistsAsync(user.Id, roleNames);
+
             var invitationUrl = generateUrl(confirmCode);
             var emailSent = _emailService.SendStaffInvitationEmail(dto.Email, dto.UserName, invitationUrl);
 
-            return new StaffResultDto 
-            { 
-                IsSuccess = emailSent, 
-                Message = emailSent ? "邀請已送出" : "邀請送出失敗，請檢查 SMTP 設定" 
+            return new StaffResultDto
+            {
+                IsSuccess = emailSent,
+                Message = emailSent ? "邀請已送出" : "邀請送出失敗，請檢查 SMTP 設定"
             };
         }
 
