@@ -23,7 +23,8 @@ namespace Project_MyFitnessCoach.Controllers
         public async Task<IActionResult> Index()
         {
             var dtos = await _service.GetAllAsync();
-            var vms = dtos.Select(d => new KeyWordViewModel { 
+            // 只顯示正向 (1) 和 負向 (-1) 的關鍵字，忽略類別 0
+            var vms = dtos.Where(d => d.Category != 0).Select(d => new KeyWordViewModel { 
                 Id = d.Id, 
                 Word = d.Word,
                 Category = d.Category,
@@ -71,8 +72,13 @@ namespace Project_MyFitnessCoach.Controllers
 		[Function("edit_KeyWords")]
 		public async Task<IActionResult> UpdateCategory(int id, int category)
         {
+            if (category == 0)
+            {
+                await _service.DeleteAsync(id);
+                return Ok(new { deleted = true });
+            }
             await _service.UpdateCategoryAsync(id, category);
-            return Ok();
+            return Ok(new { deleted = false });
         }
 
         // AJAX 更新權重

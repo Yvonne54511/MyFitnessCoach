@@ -110,6 +110,22 @@ namespace Project_MyFitnessCoach.Repositories
             var dbKeyWords = _db.KeyWords.ToList();
             var dbWordSet = new HashSet<string>(dbKeyWords.Select(k => k.Word));
 
+            // 內建常用廢詞庫 (停用詞)
+            var stopWords = new HashSet<string> { 
+                "的", "了", "在", "是", "我", "你", "他", "她", "它", "們", 
+                "這", "那", "有", "也", "就", "不", "都", "而", "及", "與", 
+                "著", "或", "之", "還", "又", "可以", "覺得", "非常", "真的", 
+                "一個", "這裡", "在那", "因為", "所以", "但是", "如果"
+            };
+
+            // 讀取本地手動忽略清單 (不進資料庫的詞)
+            string ignoredPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "ignored_words.txt");
+            if (System.IO.File.Exists(ignoredPath))
+            {
+                var manualIgnored = System.IO.File.ReadAllLines(ignoredPath);
+                foreach (var w in manualIgnored) stopWords.Add(w);
+            }
+
             // 1. 統計資料庫已有關鍵字的次數
             var results = dbKeyWords
                 .Where(kw => kw.Category != 0)
@@ -126,7 +142,6 @@ namespace Project_MyFitnessCoach.Repositories
 
             foreach (var review in rawReviews)
             {
-                // 先根據標點符號切段，避免跨標點匹配
                 var segments = review.Split(separators, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var segment in segments)
                 {
@@ -137,8 +152,8 @@ namespace Project_MyFitnessCoach.Repositories
                         for (int i = 0; i <= segment.Length - len; i++)
                         {
                             string gram = segment.Substring(i, len);
-                            // 排除純數字或空格
-                            if (string.IsNullOrWhiteSpace(gram) || gram.All(char.IsDigit)) continue;
+                            // 排除純數字、空格、或包含在停用詞中的詞
+                            if (string.IsNullOrWhiteSpace(gram) || gram.All(char.IsDigit) || stopWords.Contains(gram)) continue;
                             
                             if (nGramCounts.ContainsKey(gram)) nGramCounts[gram]++;
                             else nGramCounts[gram] = 1;
@@ -147,9 +162,9 @@ namespace Project_MyFitnessCoach.Repositories
                 }
             }
 
-            // 3. 過濾出重複 > 5次 且 不在資料庫裡的字詞
+            // 3. 過濾出重複 > 5次 且 不在資料庫裡的字詞 (也排除停用詞)
             var rawDiscovered = nGramCounts
-                .Where(kvp => kvp.Value >= 5 && !dbWordSet.Contains(kvp.Key))
+                .Where(kvp => kvp.Value >= 5 && !dbWordSet.Contains(kvp.Key) && !stopWords.Contains(kvp.Key))
                 .Select(kvp => new KeyWordFrequencyDto
                 {
                     Word = kvp.Key,

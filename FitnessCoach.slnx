@@ -25,6 +25,7 @@
     <File Path="SqlCodes/Migration_Step4.4.sql" />
     <File Path="SqlCodes/Migration_Step5.2_LeaveApprovalDelegations.sql" />
     <File Path="SqlCodes/MyFitnessCoachDb.sql" />
+    <File Path="SqlCodes/MyFitnessCoachDb_03191214.sql" />
   </Folder>
   <Project Path="Project-MyFitnessCoach/Project-MyFitnessCoach.csproj" Id="3c0b97ec-6f4c-4122-9581-b622a33095a2" />
 </Solution>
