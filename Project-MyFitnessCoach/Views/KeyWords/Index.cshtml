@@ -168,7 +168,21 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $('#deleteForm-' + id).submit();
+                    // 使用 AJAX 進行刪除
+                    $.post('@Url.Action("Delete", "KeyWords")', { id: id }, function(res) {
+                        if (res.success) {
+                            var $row = $('tr[data-id="' + id + '"]');
+                            $row.fadeOut(400, function() {
+                                $(this).remove();
+                            });
+                            Toast.fire({
+                                icon: 'success',
+                                title: '已成功刪除關鍵字：' + word
+                            });
+                        }
+                    }).fail(function() {
+                        Swal.fire('錯誤', '刪除失敗', 'error');
+                    });
                 }
             });
         }
@@ -186,10 +200,10 @@
 
             var style = "";
             if (category === 1) {
-                var lightness = Math.Max(10, 50 - (weight * 8));
+                var lightness = Math.max(10, 50 - (weight * 8));
                 style = "background-color: hsl(120, 70%, " + lightness + "%); color: white;";
             } else if (category === -1) {
-                var lightness = Math.Max(10, 50 - (weight * 8));
+                var lightness = Math.max(10, 50 - (weight * 8));
                 style = "background-color: hsl(0, 80%, " + lightness + "%); color: white;";
             } else if (category === 0) {
                 style = "background-color: #858796; color: white;";
