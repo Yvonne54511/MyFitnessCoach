@@ -129,7 +129,7 @@ namespace Project_MyFitnessCoach.Services
                 UserRoles = dto.RoleIds.Select(roleId => new UserRole { RoleId = roleId }).ToList()
             };
 
-            await _userRepository.CreateUserAsync(user);
+            await _userRepository.CreateUserAsync(user, dto.RoleIds);
 
             // ── 步驟 3.2：角色為必填，檢查是否需要建立 Employee 記錄 ──
             var roleNames = await _context.Roles
