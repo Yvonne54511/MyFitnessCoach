@@ -53,7 +53,6 @@
                         <span class="font-weight-bold">@Model.CurrentDelegateName</span>
                     </div>
                     <form asp-action="RemoveDelegate" method="post" class="d-inline">
-                        @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-sm btn-outline-danger"
                                 onclick="return confirm('確定要解除代理人設定嗎？')">
                             <i class="bx bx-user-x"></i> 解除代理
@@ -80,7 +79,6 @@
         </div>
         <div class="card-body">
             <form asp-action="WorkDelegate" method="post">
-                @Html.AntiForgeryToken()
                 <div class="row align-items-end">
                     <div class="col-md-8">
                         <div class="form-group">

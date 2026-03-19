@@ -21,9 +21,9 @@ namespace Project_MyFitnessCoach.Models.ViewModels
         [Display(Name = "啟用狀態")]
         public bool IsActive { get; set; }
 
-        // 唯讀顯示
-        public string UserName { get; set; }
-        public string Account { get; set; }
+        // 唯讀顯示（不參與表單提交，必須標記為 nullable 避免 ModelState 驗證失敗）
+        public string? UserName { get; set; }
+        public string? Account { get; set; }
 
         public List<SelectListItem> DepartmentOptions { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> ManagerOptions { get; set; } = new List<SelectListItem>();
