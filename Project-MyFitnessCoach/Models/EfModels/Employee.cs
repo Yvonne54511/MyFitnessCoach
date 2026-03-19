@@ -1,5 +1,4 @@
-#nullable disable
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Project_MyFitnessCoach.Models.EfModels;
@@ -20,23 +19,31 @@ public partial class Employee
 
     public bool IsActive { get; set; }
 
-    public virtual User User { get; set; }
+    public virtual Department Department { get; set; } = null!;
 
-    public virtual Department Department { get; set; }
+    public virtual ICollection<Department> Departments { get; set; } = new List<Department>();
 
-    public virtual Employee Manager { get; set; }
+    public virtual ICollection<Employee> InverseManager { get; set; } = new List<Employee>();
 
-    public virtual Employee WorkDelegate { get; set; }
+    public virtual ICollection<Employee> InverseWorkDelegate { get; set; } = new List<Employee>();
 
-    public virtual ICollection<Employee> Subordinates { get; set; } = new List<Employee>();
+    public virtual ICollection<LeaveApprovalDelegation> LeaveApprovalDelegationDelegateEmployees { get; set; } = new List<LeaveApprovalDelegation>();
 
-    public virtual ICollection<Employee> DelegateOf { get; set; } = new List<Employee>();
+    public virtual ICollection<LeaveApprovalDelegation> LeaveApprovalDelegationManagerEmployees { get; set; } = new List<LeaveApprovalDelegation>();
 
-    public virtual ICollection<LeaveRequest> LeaveRequests { get; set; } = new List<LeaveRequest>();
-
-    public virtual ICollection<LeaveRequest> DelegatedLeaveRequests { get; set; } = new List<LeaveRequest>();
-
-    public virtual ICollection<LeaveRequest> ApprovedLeaveRequests { get; set; } = new List<LeaveRequest>();
+    public virtual ICollection<LeaveBalanceHistory> LeaveBalanceHistories { get; set; } = new List<LeaveBalanceHistory>();
 
     public virtual ICollection<LeaveBalance> LeaveBalances { get; set; } = new List<LeaveBalance>();
+
+    public virtual ICollection<LeaveRequest> LeaveRequestApprovedByNavigations { get; set; } = new List<LeaveRequest>();
+
+    public virtual ICollection<LeaveRequest> LeaveRequestEmployees { get; set; } = new List<LeaveRequest>();
+
+    public virtual ICollection<LeaveRequest> LeaveRequestLeaveDelegates { get; set; } = new List<LeaveRequest>();
+
+    public virtual Employee? Manager { get; set; }
+
+    public virtual User User { get; set; } = null!;
+
+    public virtual Employee? WorkDelegate { get; set; }
 }

@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.EntityFrameworkCore
+@using Project_MyFitnessCoach.Models.EfModels
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="utf-8">
@@ -27,7 +29,6 @@
             <a class="sidebar-brand d-flex align-items-center justify-content-center" asp-controller="Dashboard" asp-action="Index">
                 <div class="sidebar-brand-text mx-3">@(ViewBag.Title ?? "後台管理")</div>
             </a>
-            <br>
             <hr class="sidebar-divider">
             <div class="sidebar-heading">數據統計</div>
             <li class="nav-item">
@@ -42,7 +43,7 @@
                     </div>
                 </div>
             </li>
-            <br />
+            
 
             @{
 
@@ -94,12 +95,29 @@
                 bool canViewDeptLeave = userFunctions.Contains("view_DeptLeave");
                 bool canAdminLeaveRequests = userFunctions.Contains("admin_LeaveRequests");
                 bool canAdminEmployees = userFunctions.Contains("admin_Employees");
+                bool canAdminHolidays = userFunctions.Contains("admin_Holidays");
+                bool canAdminLeaveBalances = userFunctions.Contains("admin_LeaveBalances");
+
+                // 步驟 5.2: 查詢是否有代審授權
+                bool hasDelegation = false;
+                if (hasEmployeeId)
+                {
+                    var dbContext = Context.RequestServices.GetRequiredService<MyFitnessCoachDbContext>();
+                    var empIdValue = int.Parse(User.FindFirst("EmployeeId").Value);
+                    var now = DateTime.Now;
+                    hasDelegation = await dbContext.LeaveApprovalDelegations
+                        .AnyAsync(d => d.DelegateEmployeeId == empIdValue
+                            && d.IsActive
+                            && d.StartDate <= now
+                            && d.EndDate >= now);
+                }
                 }
 
-            <hr class="sidebar-divider">
+            
 
             @if (canEditPassword || canEditInstructorDetails)
             {
+                <hr class="sidebar-divider">
                 <div class="sidebar-heading">個人中心</div>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUser" aria-expanded="true" aria-controls="collapseUser">
@@ -123,7 +141,8 @@
 
             @if (canViewLeaveRequests || canEditLeaveRequests || canEditWorkDelegate
                         || canReviewLeaveRequests || canViewDeptLeave
-                        || canAdminLeaveRequests || canAdminEmployees)
+                        || canAdminLeaveRequests || canAdminEmployees
+                        || canAdminHolidays || canAdminLeaveBalances)
             {
                 <hr class="sidebar-divider">
                 <div class="sidebar-heading">請假系統</div>
@@ -156,8 +175,8 @@
                     </li>
                 }
 
-                @* 主管審核功能（需有 Employee 身份）*@
-                @if (hasEmployeeId && (canReviewLeaveRequests || canViewDeptLeave))
+                @* 主管審核功能（需有 Employee 身份）— 步驟 5.2: 含代審授權 *@
+                @if (hasEmployeeId && (canReviewLeaveRequests || canViewDeptLeave || hasDelegation))
                 {
                     <li class="nav-item">
                         <a class="nav-link collapsed" href="#" data-toggle="collapse"
@@ -167,7 +186,7 @@
                         </a>
                         <div id="collapseReviewLeave" class="collapse" data-parent="#accordionSidebar">
                             <div class="bg-white py-2 collapse-inner rounded">
-                                @if (canReviewLeaveRequests)
+                                @if (canReviewLeaveRequests || hasDelegation)
                                 {
                                     <a class="collapse-item" asp-controller="ReviewLeave" asp-action="Pending">待我審核</a>
                                 }
@@ -181,7 +200,7 @@
                 }
 
                 @* 管理員功能 *@
-                @if (canAdminLeaveRequests || canAdminEmployees)
+                @if (canAdminLeaveRequests || canAdminEmployees || canAdminHolidays || canAdminLeaveBalances)
                 {
                     <li class="nav-item">
                         <a class="nav-link collapsed" href="#" data-toggle="collapse"
@@ -199,16 +218,25 @@
                                 {
                                     <a class="collapse-item" asp-controller="AdminLeave" asp-action="EmployeeList">員工代理人管理</a>
                                 }
+                                @if (canAdminHolidays)
+                                {
+                                    <a class="collapse-item" asp-controller="AdminLeave" asp-action="HolidayList">國定假日管理</a>
+                                }
+                                @if (canAdminLeaveBalances)
+                                {
+                                    <a class="collapse-item" asp-controller="AdminLeave" asp-action="BalanceList">假別額度管理</a>
+                                }
                             </div>
                         </div>
                     </li>
                 }
             }
 
-            <hr class="sidebar-divider">
+           
 
             @if (canEditUserAccounts || canEditRoleFunctions || canEditViolations)
             {
+                <hr class="sidebar-divider">
                 <div class="sidebar-heading">帳號管理</div>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStaff" aria-expanded="true" aria-controls="collapseStaff">
@@ -234,9 +262,10 @@
                     </div>
                 </li>
             }
-            <hr class="sidebar-divider">
+            
             @if (canEditInstructorShifts || canViewInstructorShifts || User.HasClaim(c => c.Type == "InstructorId") || canViewSalary || canViewSalary2)
             {
+                <hr class="sidebar-divider">
                 <div class="sidebar-heading">營養師管理</div>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTutor" aria-expanded="true" aria-controls="collapseTutor">
@@ -270,6 +299,8 @@
 
             @if (canViewPointRecords || canViewClientFoodRecords || canViewClientBodyData)
             {
+                <hr class="sidebar-divider">
+                <div class="sidebar-heading">客戶管理</div>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseClient"
                        aria-expanded="true" aria-controls="collapseClient">
@@ -415,7 +446,7 @@
         </ul>
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-3 static-top">
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
@@ -469,13 +500,13 @@
                 </nav>
                 @RenderBody()
             </div>
-            <footer class="sticky-footer bg-white">
+            @* <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
                         <span>Copyright &copy; MyFitnessCoach 2026</span>
                     </div>
                 </div>
-            </footer>
+            </footer> *@
         </div>
     </div>
     <a class="scroll-to-top rounded" href="#page-top"><i class="fas fa-angle-up"></i></a>

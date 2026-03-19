@@ -1,0 +1,169 @@
+@model Project_MyFitnessCoach.Models.ViewModels.BalanceListViewModel
+
+@{
+    ViewData["Title"] = "假別額度管理";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="bx bx-wallet"></i> @ViewData["Title"]</h2>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bx bx-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bx bx-error-circle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    }
+
+    <!-- 篩選列 -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mr-3">
+                    <label class="mr-2">年度：</label>
+                    <input type="number" name="year" value="@Model.YearFilter" class="form-control form-control-sm"
+                           style="width:100px" min="2020" max="2030" />
+                </div>
+                <div class="form-group mr-3">
+                    <label class="mr-2">部門：</label>
+                    <select name="departmentFilter" class="form-control form-control-sm">
+                        @foreach (var opt in Model.DepartmentOptions)
+                        {
+                            <option value="@opt.Value" selected="@(opt.Value == Model.DepartmentFilter)">@opt.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group mr-3">
+                    <label class="mr-2">搜尋：</label>
+                    <input type="text" name="searchKeyword" value="@Model.SearchKeyword"
+                           class="form-control form-control-sm" placeholder="員工姓名" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bx bx-search"></i> 查詢
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 額度表格 -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bx bx-table"></i> @Model.YearFilter 年度員工假別額度
+            </h6>
+        </div>
+        <div class="card-body">
+            @if (!Model.Items.Any())
+            {
+                <div class="text-center text-muted py-4">
+                    <i class="bx bx-data bx-lg"></i>
+                    <p class="mt-2">無符合條件的資料</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-sm">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>員工</th>
+                                <th>部門</th>
+                                <th>假別</th>
+                                <th>額度類型</th>
+                                <th class="text-right">總額(天)</th>
+                                <th class="text-right">已用(天)</th>
+                                <th class="text-right">剩餘(天)</th>
+                                <th style="width:180px">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                var rowClass = "";
+                                if (item.QuotaType == "Unlimited" && item.WarnThresholdDays.HasValue
+                                    && item.UsedDays >= item.WarnThresholdDays.Value)
+                                {
+                                    rowClass = "table-warning";
+                                }
+                                <tr class="@rowClass">
+                                    <td>@item.EmployeeName</td>
+                                    <td>@item.DepartmentName</td>
+                                    <td>@item.LeaveTypeName</td>
+                                    <td>
+                                        @switch (item.QuotaType)
+                                        {
+                                            case "PreAllocated":
+                                                <span class="badge badge-info">系統配額</span>
+                                                break;
+                                            case "Unlimited":
+                                                <span class="badge badge-secondary">無上限</span>
+                                                @if (item.WarnThresholdDays.HasValue)
+                                                {
+                                                    <small class="text-muted ml-1">(警示: @item.WarnThresholdDays 天)</small>
+                                                }
+                                                break;
+                                            case "ApprovalRequired":
+                                                <span class="badge badge-warning">需核准</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="text-right">
+                                        @if (item.QuotaType == "Unlimited")
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                        else
+                                        {
+                                            @item.TotalDays.ToString("N2")
+                                        }
+                                    </td>
+                                    <td class="text-right">@item.UsedDays.ToString("N2")</td>
+                                    <td class="text-right">
+                                        @if (item.QuotaType == "Unlimited")
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                        else
+                                        {
+                                            @item.RemainingDays.ToString("N2")
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.QuotaType == "ApprovalRequired")
+                                        {
+                                            <a asp-action="BalanceGrant"
+                                               asp-route-employeeId="@item.EmployeeId"
+                                               asp-route-leaveTypeId="@item.LeaveTypeId"
+                                               asp-route-year="@Model.YearFilter"
+                                               class="btn btn-sm btn-outline-success">
+                                                <i class="bx bx-plus-circle"></i> 給假
+                                            </a>
+                                        }
+                                        <a asp-action="BalanceHistory"
+                                           asp-route-employeeId="@item.EmployeeId"
+                                           asp-route-year="@Model.YearFilter"
+                                           class="btn btn-sm btn-outline-info">
+                                            <i class="bx bx-history"></i> 紀錄
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-muted small">共 @Model.Items.Count 筆</div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,15 +1,15 @@
 @model string
 
 @{
-    var (badgeClass, label) = Model switch
+    var (pillClass, icon, label) = Model switch
     {
-        "Pending" => ("badge-warning", "待審核"),
-        "Approved" => ("badge-success", "已核准"),
-        "Rejected" => ("badge-danger", "已駁回"),
-        "CancelPending" => ("badge-warning", "取消審核中"),
-        "Cancelled" => ("badge-secondary", "已取消"),
-        _ => ("badge-info", Model ?? "未知")
+        "Pending" => ("status-pill--pending", "bx bx-time-five", "待審核"),
+        "Approved" => ("status-pill--approved", "bx bx-check-circle", "已核准"),
+        "Rejected" => ("status-pill--rejected", "bx bx-x-circle", "已駁回"),
+        "CancelPending" => ("status-pill--cancel-pending", "bx bx-revision", "取消審核中"),
+        "Cancelled" => ("status-pill--cancelled", "bx bx-block", "已取消"),
+        _ => ("status-pill--cancelled", "bx bx-help-circle", Model ?? "未知")
     };
 }
 
-<span class="badge @badgeClass">@label</span>
+<span class="status-pill @pillClass"><i class="@icon"></i> @label</span>

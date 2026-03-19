@@ -1,0 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace Project_MyFitnessCoach.Models.EfModels;
+
+public partial class LeaveBalanceHistory
+{
+    public int Id { get; set; }
+
+    public int LeaveBalanceId { get; set; }
+
+    public string ChangeType { get; set; } = null!;
+
+    public decimal ChangeDays { get; set; }
+
+    public decimal OldTotalDays { get; set; }
+
+    public decimal NewTotalDays { get; set; }
+
+    public decimal OldUsedDays { get; set; }
+
+    public decimal NewUsedDays { get; set; }
+
+    public string? Reason { get; set; }
+
+    public int OperatorId { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public virtual LeaveBalance LeaveBalance { get; set; } = null!;
+
+    public virtual Employee Operator { get; set; } = null!;
+}

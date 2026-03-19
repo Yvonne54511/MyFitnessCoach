@@ -39,7 +39,7 @@
                                 </tr>
                                 <tr>
                                     <th class="text-muted">請假日期</th>
-                                    <td>@Model.StartDate.ToString("yyyy-MM-dd") ~ @Model.EndDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@Model.StartDate.ToString("yyyy/MM/dd HH:mm") ~ @Model.EndDate.ToString("yyyy/MM/dd HH:mm")</td>
                                 </tr>
                                 <tr>
                                     <th class="text-muted">時數</th>
@@ -63,7 +63,7 @@
                                 </tr>
                                 <tr>
                                     <th class="text-muted">申請時間</th>
-                                    <td>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</td>
                                 </tr>
                                 <tr>
                                     <th class="text-muted">審核者</th>
@@ -73,7 +73,7 @@
                                 {
                                     <tr>
                                         <th class="text-muted">審核時間</th>
-                                        <td>@Model.ApprovedAt.Value.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td>@Model.ApprovedAt.Value.ToString("yyyy/MM/dd HH:mm")</td>
                                     </tr>
                                 }
                                 @if (!string.IsNullOrEmpty(Model.RejectReason))
@@ -103,7 +103,7 @@
                                 </tr>
                                 <tr>
                                     <th class="text-muted">申請取消時間</th>
-                                    <td>@Model.CancelRequestedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@Model.CancelRequestedAt?.ToString("yyyy/MM/dd HH:mm")</td>
                                 </tr>
                             </table>
                         </div>
