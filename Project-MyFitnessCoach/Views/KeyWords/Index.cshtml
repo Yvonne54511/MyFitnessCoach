@@ -8,6 +8,10 @@
     <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
+        #keyWordTable thead th {
+            color: white !important;
+            background-color: #343a40 !important;
+        }
         .category-select {
             width: 120px;
         }
@@ -83,7 +87,6 @@
                                     <select class="form-control form-control-sm category-select mx-auto" onchange="updateCategory(@item.Id, this.value, this)">
                                         <!option value="1" @(item.Category == 1 ? "selected" : "")>正向 (1)</!option>
                                         <!option value="-1" @(item.Category == -1 ? "selected" : "")>負向 (-1)</!option>
-                                        <!option value="0" @(item.Category == 0 ? "selected" : "")>忽略 (0)</!option>
                                     </select>
                                 </td>
                                 <td>
@@ -195,12 +198,23 @@
         }
 
         function updateCategory(id, category, element) {
-            $.post('@Url.Action("UpdateCategory", "KeyWords")', { id: id, category: category }, function() {
-                updateBadgeColor(id, category);
-                Toast.fire({
-                    icon: 'success',
-                    title: '類別已更新'
-                });
+            $.post('@Url.Action("UpdateCategory", "KeyWords")', { id: id, category: category }, function(res) {
+                if (res.deleted) {
+                    var $row = $('tr[data-id="' + id + '"]');
+                    $row.fadeOut(400, function() {
+                        $(this).remove();
+                    });
+                    Toast.fire({
+                        icon: 'info',
+                        title: '已忽略該字詞並從庫中移除'
+                    });
+                } else {
+                    updateBadgeColor(id, category);
+                    Toast.fire({
+                        icon: 'success',
+                        title: '類別已更新'
+                    });
+                }
             }).fail(function() {
                 Swal.fire('錯誤', '更新類別失敗', 'error');
             });
