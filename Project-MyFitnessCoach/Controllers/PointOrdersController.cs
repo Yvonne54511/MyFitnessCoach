@@ -195,88 +195,7 @@ namespace Project_MyFitnessCoach.Controllers
             return View(viewModel);
         }
 
-        // 同意取消儲值訂單 (軟刪除)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelOrder(int id)
-        {
-            var order = await _context.PointOrders
-                .Include(p => p.Member).ThenInclude(m => m.UserWallet)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (order == null) return NotFound();
-            if (order.Status == 3)
-            {
-                TempData["ErrorMessage"] = "該訂單已被取消，不須重複操作。";
-                return RedirectToAction(nameof(Details), new { id = id });
-            }
-
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                int oldStatus = order.Status;
-                
-                // 1. 更新訂單狀態為「已取消」(3)
-                order.Status = 3;
-                _context.Entry(order).State = EntityState.Modified;
-
-                // 2. 處理錢包退點 (僅當原狀態為已完成時)
-                if (oldStatus == 1)
-                {
-                    var wallet = order.Member.UserWallet;
-                    if (wallet != null)
-                    {
-                        wallet.CurrentBalance -= order.PointQty;
-                        wallet.LastUpdated = DateTime.Now;
-                        _context.Entry(wallet).State = EntityState.Modified;
-
-                        // 3. 記錄取消異動 (類別：已取消)
-                        var cancelRecord = new PointsRecordDetail
-                        {
-                            PointOrderId = order.Id,
-                            UserWalletId = wallet.Id,
-                            CreateAt = DateTime.Now,
-                            PointAmount = -order.PointQty, // 負值代表扣除
-                            MerchandiseCategory = "已取消",
-                            ReserveOrderId = null
-                        };
-                        _context.PointsRecordDetails.Add(cancelRecord);
-                    }
-                }
-                else
-                {
-                    // 若是待付款取消，僅記錄流水帳但不扣點 (或依需求決定是否記錄)
-                    var wallet = order.Member.UserWallet;
-                    if (wallet != null)
-                    {
-                        var cancelRecord = new PointsRecordDetail
-                        {
-                            PointOrderId = order.Id,
-                            UserWalletId = wallet.Id,
-                            CreateAt = DateTime.Now,
-                            PointAmount = 0,
-                            MerchandiseCategory = "已取消",
-                            ReserveOrderId = null
-                        };
-                        _context.PointsRecordDetails.Add(cancelRecord);
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                TempData["SuccessMessage"] = "訂單已成功取消，並同步校正錢包點數。";
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                TempData["ErrorMessage"] = $"取消過程發生錯誤：{ex.Message}";
-            }
-
-            return RedirectToAction(nameof(Details), new { id = id });
-        }
-
-        // 處理儲值請求
+        // 處理儲值請求 (手動直接儲值)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Recharge(int memberId, int pointAmount, decimal price)
@@ -303,14 +222,16 @@ namespace Project_MyFitnessCoach.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 3. 建立 PointOrder
+                // 3. 建立 PointOrder (直接設為已完成 1)
                 var pointOrder = new PointOrder
                 {
                     MemberId = memberId,
+                    TopUpPlanId = 1, // 預設為手動儲值方案
                     CreateAt = DateTime.Now,
                     PointQty = pointAmount,
                     OriginalPrice = price,
-                    DiscountedPrice = price // 暫不考慮折扣
+                    DiscountedPrice = price,
+                    Status = 1 
                 };
                 _context.PointOrders.Add(pointOrder);
                 await _context.SaveChangesAsync();
@@ -319,7 +240,6 @@ namespace Project_MyFitnessCoach.Controllers
                 var wallet = member.UserWallet;
                 if (wallet == null)
                 {
-                    // 若無錢包則建立一個 (理論上註冊時應已建立)
                     wallet = new UserWallet
                     {
                         MemberId = memberId,
@@ -334,14 +254,14 @@ namespace Project_MyFitnessCoach.Controllers
                 wallet.LastUpdated = DateTime.Now;
                 _context.Entry(wallet).State = EntityState.Modified;
 
-                // 5. 記錄點數增減 (PointsRecordDetail)
+                // 5. 記錄點數增減 (PointsRecordDetail - 類別設為 Recharge)
                 var record = new PointsRecordDetail
                 {
                     PointOrderId = pointOrder.Id,
                     UserWalletId = wallet.Id,
                     CreateAt = DateTime.Now,
                     PointAmount = pointAmount,
-                    MerchandiseCategory = "Recharge", // 儲值
+                    MerchandiseCategory = "Recharge",
                     ReserveOrderId = null
                 };
                 _context.PointsRecordDetails.Add(record);
@@ -349,7 +269,7 @@ namespace Project_MyFitnessCoach.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                TempData["SuccessMessage"] = $"儲值成功！已存入 {pointAmount} 點。";
+                TempData["SuccessMessage"] = $"儲值成功！已為 {member.User.UserName} 存入 {pointAmount} 點。";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -359,5 +279,131 @@ namespace Project_MyFitnessCoach.Controllers
                 return View();
             }
         }
+
+        // 確認收款 (Status 0 -> 1)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CompletePayment(int id)
+        {
+            var order = await _context.PointOrders
+                .Include(p => p.Member).ThenInclude(m => m.UserWallet)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (order == null) return NotFound();
+            if (order.Status != 0)
+            {
+                TempData["ErrorMessage"] = "僅有待付款訂單可以執行確認收款。";
+                return RedirectToAction(nameof(Details), new { id = id });
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. 更新訂單狀態
+                order.Status = 1;
+                _context.Entry(order).State = EntityState.Modified;
+
+                // 2. 更新錢包
+                var wallet = order.Member.UserWallet;
+                if (wallet == null)
+                {
+                    wallet = new UserWallet { MemberId = order.MemberId, CurrentBalance = 0, LastUpdated = DateTime.Now };
+                    _context.UserWallets.Add(wallet);
+                    await _context.SaveChangesAsync();
+                }
+
+                wallet.CurrentBalance += order.PointQty;
+                wallet.LastUpdated = DateTime.Now;
+
+                // 3. 記錄流水帳
+                var record = new PointsRecordDetail
+                {
+                    PointOrderId = order.Id,
+                    UserWalletId = wallet.Id,
+                    CreateAt = DateTime.Now,
+                    PointAmount = order.PointQty,
+                    MerchandiseCategory = "Recharge"
+                };
+                _context.PointsRecordDetails.Add(record);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                TempData["SuccessMessage"] = "收款確認成功，點數已存入會員錢包。";
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["ErrorMessage"] = $"確認收款失敗：{ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Details), new { id = id });
+        }
+
+        // 同意取消儲值訂單
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(int id)
+        {
+            var order = await _context.PointOrders
+                .Include(p => p.Member).ThenInclude(m => m.UserWallet)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (order == null) return NotFound();
+            if (order.Status == 3)
+            {
+                TempData["ErrorMessage"] = "該訂單已被取消，不須重複操作。";
+                return RedirectToAction(nameof(Details), new { id = id });
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                int oldStatus = order.Status;
+                
+                // 1. 更新訂單狀態為「已取消」(3)
+                order.Status = 3;
+                _context.Entry(order).State = EntityState.Modified;
+
+                var wallet = order.Member.UserWallet;
+                if (wallet != null)
+                {
+                    // 2. 處理錢包退點 (僅當原狀態為已完成時才扣除餘額)
+                    int refundAmount = 0;
+                    if (oldStatus == 1)
+                    {
+                        refundAmount = -order.PointQty;
+                        wallet.CurrentBalance += refundAmount; // 加負值 = 扣除
+                        wallet.LastUpdated = DateTime.Now;
+                        _context.Entry(wallet).State = EntityState.Modified;
+                    }
+
+                    // 3. 記錄取消異動 (無論原本是否完成，都必須記錄在流水帳)
+                    var cancelRecord = new PointsRecordDetail
+                    {
+                        PointOrderId = order.Id,
+                        UserWalletId = wallet.Id,
+                        CreateAt = DateTime.Now,
+                        PointAmount = refundAmount, // 已完成訂單為負值，待付款訂單為 0
+                        MerchandiseCategory = "已取消",
+                        ReserveOrderId = null
+                    };
+                    _context.PointsRecordDetails.Add(cancelRecord);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                TempData["SuccessMessage"] = "訂單已成功取消，並同步更新點數紀錄。";
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["ErrorMessage"] = $"取消過程發生錯誤：{ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Details), new { id = id });
+        }
     }
 }
+
+    
