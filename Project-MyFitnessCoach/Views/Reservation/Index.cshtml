@@ -9,6 +9,12 @@
 
 @section Styles {
     <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <style>
+        .table thead th {
+            color: white !important;
+            background-color: #343a40 !important;
+        }
+    </style>
 }
 
 <div class="container mt-4">
@@ -56,8 +62,8 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover table-striped">
-                    <thead class="table-dark">
+                <table class="table table-hover table-striped" id="reservationTable">
+                    <thead class="table-dark text-white">
                         <tr class="text-center">
                             <th>日期</th>
                             <th>時段</th>

@@ -46,13 +46,13 @@ namespace Project_MyFitnessCoach.Services
                 LeaveTypeName = r.LeaveType?.Name,
                 StartDate = r.StartDate,
                 EndDate = r.EndDate,
-                HoursUsed = r.HoursUsed,
-                DaysUsed = r.DaysUsed,
+                HoursUsed = r.HoursUsed ?? 0,
+                DaysUsed = r.DaysUsed ?? 0,
                 Reason = r.Reason,
                 DelegateName = r.LeaveDelegate?.User?.UserName,
                 Status = r.Status,
                 CreatedAt = r.CreatedAt,
-                ApproverName = r.Approver?.User?.UserName,
+                ApproverName = r.ApprovedByNavigation?.User?.UserName,
                 ApprovedAt = r.ApprovedAt,
                 RejectReason = r.RejectReason,
                 OriginalStatus = r.OriginalStatus,
@@ -111,7 +111,7 @@ namespace Project_MyFitnessCoach.Services
                     TotalDays = b?.TotalDays ?? (lt.QuotaType == "PreAllocated" ? lt.DaysPerYear : 0),
                     UsedDays = b?.UsedDays ?? 0,
                     RemainingDays = b != null
-                        ? (b.RemainingDays ?? (b.TotalDays - b.UsedDays))
+                        ? (b.RemainingDays ?? (b.TotalDays - b.UsedDays)) ?? 0
                         : (lt.QuotaType == "PreAllocated" ? lt.DaysPerYear : 0)
                 });
             }
@@ -227,7 +227,7 @@ namespace Project_MyFitnessCoach.Services
                         _db.LeaveBalances.Add(balance);
                         await _db.SaveChangesAsync();
                     }
-                    var remainingPre = balance.TotalDays - balance.UsedDays;
+                    var remainingPre = (balance.TotalDays ?? 0) - (balance.UsedDays ?? 0);
                     if (daysUsed > remainingPre)
                         return Result.Failure($"「{leaveType.Name}」剩餘 {remainingPre:N2} 天，不足以請 {daysUsed:N2} 天");
                     break;
@@ -252,7 +252,7 @@ namespace Project_MyFitnessCoach.Services
                 case "ApprovalRequired": // 婚假、喪假
                     if (balance == null || balance.TotalDays <= 0)
                         return Result.Failure($"「{leaveType.Name}」尚未取得額度，請先提交證明文件並等待管理員核定");
-                    var remainingAppr = balance.TotalDays - balance.UsedDays;
+                    var remainingAppr = (balance.TotalDays ?? 0) - (balance.UsedDays ?? 0);
                     if (daysUsed > remainingAppr)
                         return Result.Failure($"「{leaveType.Name}」剩餘 {remainingAppr:N2} 天，不足以請 {daysUsed:N2} 天");
                     break;
@@ -315,8 +315,8 @@ namespace Project_MyFitnessCoach.Services
             // 更新餘額 + 寫入變動紀錄
             if (balance != null)
             {
-                var oldUsed = balance.UsedDays;
-                balance.UsedDays += daysUsed;
+                var oldUsed = balance.UsedDays ?? 0;
+                balance.UsedDays = (balance.UsedDays ?? 0) + daysUsed;
 
                 // 寫入 LeaveBalanceHistory
                 _db.LeaveBalanceHistories.Add(new LeaveBalanceHistory
@@ -324,10 +324,10 @@ namespace Project_MyFitnessCoach.Services
                     LeaveBalanceId = balance.Id,
                     ChangeType = "Apply",
                     ChangeDays = -daysUsed,
-                    OldTotalDays = balance.TotalDays,
-                    NewTotalDays = balance.TotalDays,
+                    OldTotalDays = balance.TotalDays ?? 0,
+                    NewTotalDays = balance.TotalDays ?? 0,
                     OldUsedDays = oldUsed,
-                    NewUsedDays = balance.UsedDays,
+                    NewUsedDays = balance.UsedDays ?? 0,
                     Reason = $"請假申請：{leaveType.Name} {dto.StartDate:yyyy/MM/dd HH:mm}~{dto.EndDate:yyyy/MM/dd HH:mm}",
                     OperatorId = dto.EmployeeId,
                     CreatedAt = DateTime.Now
@@ -397,17 +397,17 @@ namespace Project_MyFitnessCoach.Services
                         && b.Year == year);
                 if (balance != null)
                 {
-                    var oldUsed = balance.UsedDays;
-                    balance.UsedDays -= request.DaysUsed;
+                    var oldUsed = balance.UsedDays ?? 0;
+                    balance.UsedDays = (balance.UsedDays ?? 0) - (request.DaysUsed ?? 0);
                     _db.LeaveBalanceHistories.Add(new LeaveBalanceHistory
                     {
                         LeaveBalanceId = balance.Id,
                         ChangeType = "CancelApproved",
-                        ChangeDays = request.DaysUsed,
-                        OldTotalDays = balance.TotalDays,
-                        NewTotalDays = balance.TotalDays,
+                        ChangeDays = request.DaysUsed ?? 0,
+                        OldTotalDays = balance.TotalDays ?? 0,
+                        NewTotalDays = balance.TotalDays ?? 0,
                         OldUsedDays = oldUsed,
-                        NewUsedDays = balance.UsedDays,
+                        NewUsedDays = balance.UsedDays ?? 0,
                         Reason = $"主管自行取消假單退還：{request.LeaveType?.Name ?? ""}",
                         OperatorId = employeeId,
                         CreatedAt = DateTime.Now
@@ -508,9 +508,9 @@ namespace Project_MyFitnessCoach.Services
         {
             var dates = await _db.Holidays
                 .Where(h => h.Year == year && h.IsActive)
-                .Select(h => h.HolidayDate.Date)
+                .Select(h => h.HolidayDate)
                 .ToListAsync();
-            return new HashSet<DateTime>(dates);
+            return new HashSet<DateTime>(dates.Select(d => d.ToDateTime(TimeOnly.MinValue)));
         }
 
         /// <summary>

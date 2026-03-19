@@ -50,8 +50,8 @@ namespace Project_MyFitnessCoach.Services
                 LeaveTypeName = r.LeaveType?.Name,
                 StartDate = r.StartDate,
                 EndDate = r.EndDate,
-                HoursUsed = r.HoursUsed,
-                DaysUsed = r.DaysUsed,
+                HoursUsed = r.HoursUsed ?? 0,
+                DaysUsed = r.DaysUsed ?? 0,
                 Reason = r.Reason,
                 DelegateName = r.LeaveDelegate?.User?.UserName,
                 CreatedAt = r.CreatedAt,
@@ -142,18 +142,18 @@ namespace Project_MyFitnessCoach.Services
 
             if (balance != null)
             {
-                var oldUsed = balance.UsedDays;
-                balance.UsedDays -= request.DaysUsed;
+                var oldUsed = balance.UsedDays ?? 0;
+                balance.UsedDays = (balance.UsedDays ?? 0) - (request.DaysUsed ?? 0);
 
                 _db.LeaveBalanceHistories.Add(new LeaveBalanceHistory
                 {
                     LeaveBalanceId = balance.Id,
                     ChangeType = "Reject",
-                    ChangeDays = request.DaysUsed,
-                    OldTotalDays = balance.TotalDays,
-                    NewTotalDays = balance.TotalDays,
+                    ChangeDays = request.DaysUsed ?? 0,
+                    OldTotalDays = balance.TotalDays ?? 0,
+                    NewTotalDays = balance.TotalDays ?? 0,
                     OldUsedDays = oldUsed,
-                    NewUsedDays = balance.UsedDays,
+                    NewUsedDays = balance.UsedDays ?? 0,
                     Reason = $"假單駁回退還：{request.LeaveType?.Name ?? ""}",
                     OperatorId = approverEmployeeId,
                     CreatedAt = DateTime.Now
@@ -194,18 +194,18 @@ namespace Project_MyFitnessCoach.Services
 
             if (balance != null)
             {
-                var oldUsed = balance.UsedDays;
-                balance.UsedDays -= request.DaysUsed;
+                var oldUsed = balance.UsedDays ?? 0;
+                balance.UsedDays = (balance.UsedDays ?? 0) - (request.DaysUsed ?? 0);
 
                 _db.LeaveBalanceHistories.Add(new LeaveBalanceHistory
                 {
                     LeaveBalanceId = balance.Id,
                     ChangeType = "CancelApproved",
-                    ChangeDays = request.DaysUsed,
-                    OldTotalDays = balance.TotalDays,
-                    NewTotalDays = balance.TotalDays,
+                    ChangeDays = request.DaysUsed ?? 0,
+                    OldTotalDays = balance.TotalDays ?? 0,
+                    NewTotalDays = balance.TotalDays ?? 0,
                     OldUsedDays = oldUsed,
-                    NewUsedDays = balance.UsedDays,
+                    NewUsedDays = balance.UsedDays ?? 0,
                     Reason = $"取消請假核准退還：{request.LeaveType?.Name ?? ""}",
                     OperatorId = approverEmployeeId,
                     CreatedAt = DateTime.Now
@@ -265,13 +265,13 @@ namespace Project_MyFitnessCoach.Services
                 LeaveTypeName = r.LeaveType?.Name,
                 StartDate = r.StartDate,
                 EndDate = r.EndDate,
-                HoursUsed = r.HoursUsed,
-                DaysUsed = r.DaysUsed,
+                HoursUsed = r.HoursUsed ?? 0,
+                DaysUsed = r.DaysUsed ?? 0,
                 Reason = r.Reason,
                 DelegateName = r.LeaveDelegate?.User?.UserName,
                 Status = r.Status,
                 CreatedAt = r.CreatedAt,
-                ApproverName = r.Approver?.User?.UserName,
+                ApproverName = r.ApprovedByNavigation?.User?.UserName,
                 ApprovedAt = r.ApprovedAt,
                 RejectReason = r.RejectReason,
                 OriginalStatus = r.OriginalStatus,
@@ -322,8 +322,8 @@ namespace Project_MyFitnessCoach.Services
                 LeaveTypeName = r.LeaveType?.Name,
                 StartDate = r.StartDate,
                 EndDate = r.EndDate,
-                HoursUsed = r.HoursUsed,
-                DaysUsed = r.DaysUsed,
+                HoursUsed = r.HoursUsed ?? 0,
+                DaysUsed = r.DaysUsed ?? 0,
                 Status = r.Status,
                 DelegateName = r.LeaveDelegate?.User?.UserName
             }).ToList();

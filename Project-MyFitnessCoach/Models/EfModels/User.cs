@@ -31,6 +31,8 @@ public partial class User
 
     public DateTime? ResetPasswordConfirmCodeExpiry { get; set; }
 
+    public virtual Employee Employee { get; set; }
+
     public virtual ICollection<Instructor> Instructors { get; set; } = new List<Instructor>();
 
     public virtual ICollection<Member> Members { get; set; } = new List<Member>();
