@@ -1,5 +1,6 @@
 ﻿@using Microsoft.EntityFrameworkCore
 @using Project_MyFitnessCoach.Models.EfModels
+@using Project_MyFitnessCoach.Models.Helpers
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -418,16 +419,7 @@
             {
                 var account = User.FindFirst("Account")?.Value;
                 var roles = User.FindAll(System.Security.Claims.ClaimTypes.Role).Select(r => r.Value);
-                var roleMapping = new Dictionary<string, string>
-                {
-                    { "member", "會員" },
-                    { "instructor", "營養師" },
-                    { "purchasor", "採購人員" },
-                    { "marketor", "行銷人員" },
-                    { "admin", "系統管理員" },
-                    { "manager", "主管" }
-                };
-                var chineseRoles = string.Join(", ", roles.Select(r => roleMapping.ContainsKey(r) ? roleMapping[r] : r));
+                var chineseRoles = RoleDisplayHelper.ToDisplayNames(roles);
 
                 <div class="sidebar-card sidebar-login-info d-none d-lg-flex flex-column align-items-start" style="padding: 1rem; margin: 0 1rem 1rem 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 0.35rem;">
                     <div class="text-white-50 small mb-2">登入資訊</div>
