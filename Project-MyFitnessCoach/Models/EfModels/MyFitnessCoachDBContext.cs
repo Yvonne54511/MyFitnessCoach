@@ -75,8 +75,6 @@ public partial class MyFitnessCoachDbContext : DbContext
 
     public virtual DbSet<RoleFunction> RoleFunctions { get; set; }
 
-    public virtual DbSet<SensitiveWord> SensitiveWords { get; set; }
-
     public virtual DbSet<Shift> Shifts { get; set; }
 
     public virtual DbSet<TopUpPlan> TopUpPlans { get; set; }
@@ -649,14 +647,6 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasConstraintName("FK_RoleFunctions_Role");
         });
 
-        modelBuilder.Entity<SensitiveWord>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Sensitiv__3214EC07CB0D3897");
-
-            entity.HasIndex(e => e.Word, "UQ_SensitiveWords_Word").IsUnique();
-
-            entity.Property(e => e.Word).HasMaxLength(50);
-        });
 
         modelBuilder.Entity<Shift>(entity =>
         {
