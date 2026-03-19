@@ -1,5 +1,5 @@
-#nullable disable
-using System;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Project_MyFitnessCoach.Models.EfModels;
 
@@ -9,14 +9,8 @@ public partial class LeaveBalanceHistory
 
     public int LeaveBalanceId { get; set; }
 
-    /// <summary>
-    /// AdminGrant(管理員給假), Apply(請假扣除), Reject(駁回退還), CancelApproved(取消退還)
-    /// </summary>
-    public string ChangeType { get; set; }
+    public string ChangeType { get; set; } = null!;
 
-    /// <summary>
-    /// 正數=增加, 負數=扣除
-    /// </summary>
     public decimal ChangeDays { get; set; }
 
     public decimal OldTotalDays { get; set; }
@@ -27,13 +21,13 @@ public partial class LeaveBalanceHistory
 
     public decimal NewUsedDays { get; set; }
 
-    public string Reason { get; set; }
+    public string? Reason { get; set; }
 
     public int OperatorId { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual LeaveBalance LeaveBalance { get; set; }
+    public virtual LeaveBalance LeaveBalance { get; set; } = null!;
 
-    public virtual Employee Operator { get; set; }
+    public virtual Employee Operator { get; set; } = null!;
 }

@@ -86,15 +86,15 @@ namespace Project_MyFitnessCoach.Services
         {
             return await _context.Instructors
                 .Include(i => i.User)
-                .Include(i => i.InstructorWallet)
+                .Include(i => i.InstructorWallets)
                 .Where(i => i.IsActive)
                 .Select(i => new SalaryInstructorViewModel
                 {
                     Id = i.Id,
                     Name = i.User.UserName,
                     ImageUrl = null, // UI 不顯示圖片，直接設為 null 避免任何 404
-                    WalletBalance = i.InstructorWallet != null ? i.InstructorWallet.CurrentBalance : 0,
-                    LastUpdated = i.InstructorWallet != null ? i.InstructorWallet.LastUpdated : DateTime.MinValue
+                    WalletBalance = i.InstructorWallets.FirstOrDefault() != null ? i.InstructorWallets.First().CurrentBalance : 0,
+                    LastUpdated = i.InstructorWallets.FirstOrDefault() != null ? i.InstructorWallets.First().LastUpdated : DateTime.MinValue
                 })
                 .ToListAsync();
         }

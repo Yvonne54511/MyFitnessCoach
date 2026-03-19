@@ -38,7 +38,7 @@ namespace Project_MyFitnessCoach.Repositories
                 .Include(r => r.Employee).ThenInclude(e => e.Department)
                 .Include(r => r.LeaveType)
                 .Include(r => r.LeaveDelegate).ThenInclude(d => d.User)
-                .Include(r => r.Approver).ThenInclude(a => a.User)
+                .Include(r => r.ApprovedByNavigation).ThenInclude(a => a.User)
                 .Where(r => r.EmployeeId == employeeId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -51,8 +51,8 @@ namespace Project_MyFitnessCoach.Repositories
                 .Include(r => r.Employee).ThenInclude(e => e.Department)
                 .Include(r => r.LeaveType)
                 .Include(r => r.LeaveDelegate).ThenInclude(d => d.User)
-                .Include(r => r.Approver).ThenInclude(a => a.User)
-                .Include(r => r.Attachments)
+                .Include(r => r.ApprovedByNavigation).ThenInclude(a => a.User)
+                .Include(r => r.LeaveAttachments)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
@@ -66,7 +66,7 @@ namespace Project_MyFitnessCoach.Repositories
             {
                 TotalDaysThisYear = requests
                     .Where(r => r.Status == "Approved")
-                    .Sum(r => r.DaysUsed),
+                    .Sum(r => r.DaysUsed ?? 0),
                 PendingCount = requests.Count(r => r.Status == "Pending"),
                 ApprovedCount = requests.Count(r => r.Status == "Approved"),
                 RejectedCount = requests.Count(r => r.Status == "Rejected"),

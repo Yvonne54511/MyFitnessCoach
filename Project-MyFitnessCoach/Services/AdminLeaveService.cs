@@ -37,10 +37,10 @@ namespace Project_MyFitnessCoach.Services
                 LeaveTypeName = r.LeaveType?.Name,
                 StartDate = r.StartDate,
                 EndDate = r.EndDate,
-                HoursUsed = r.HoursUsed,
-                DaysUsed = r.DaysUsed,
+                HoursUsed = r.HoursUsed ?? 0,
+                DaysUsed = r.DaysUsed ?? 0,
                 Status = r.Status,
-                ApproverName = r.Approver?.User?.UserName
+                ApproverName = r.ApprovedByNavigation?.User?.UserName
             }).ToList();
 
             return new AdminLeaveListViewModel
@@ -76,13 +76,13 @@ namespace Project_MyFitnessCoach.Services
                 LeaveTypeName = r.LeaveType?.Name,
                 StartDate = r.StartDate,
                 EndDate = r.EndDate,
-                HoursUsed = r.HoursUsed,
-                DaysUsed = r.DaysUsed,
+                HoursUsed = r.HoursUsed ?? 0,
+                DaysUsed = r.DaysUsed ?? 0,
                 Reason = r.Reason,
                 DelegateName = r.LeaveDelegate?.User?.UserName,
                 Status = r.Status,
                 CreatedAt = r.CreatedAt,
-                ApproverName = r.Approver?.User?.UserName,
+                ApproverName = r.ApprovedByNavigation?.User?.UserName,
                 ApprovedAt = r.ApprovedAt,
                 RejectReason = r.RejectReason,
                 OriginalStatus = r.OriginalStatus,
@@ -103,7 +103,7 @@ namespace Project_MyFitnessCoach.Services
                 .Select(h => new HolidayItemDto
                 {
                     Id = h.Id,
-                    HolidayDate = h.HolidayDate,
+                    HolidayDate = h.HolidayDate.ToDateTime(TimeOnly.MinValue),
                     Name = h.Name,
                     Year = h.Year,
                     IsActive = h.IsActive
@@ -137,7 +137,7 @@ namespace Project_MyFitnessCoach.Services
             return new HolidayEditViewModel
             {
                 Id = h.Id,
-                HolidayDate = h.HolidayDate,
+                HolidayDate = h.HolidayDate.ToDateTime(TimeOnly.MinValue),
                 Name = h.Name,
                 IsActive = h.IsActive
             };
@@ -146,13 +146,14 @@ namespace Project_MyFitnessCoach.Services
         public async Task<Result> CreateHolidayAsync(HolidayEditViewModel vm)
         {
             // 檢查重複日期
-            var exists = await _db.Holidays.AnyAsync(h => h.HolidayDate == vm.HolidayDate.Date);
+            var dateOnly = DateOnly.FromDateTime(vm.HolidayDate);
+            var exists = await _db.Holidays.AnyAsync(h => h.HolidayDate == dateOnly);
             if (exists)
                 return Result.Failure($"日期 {vm.HolidayDate:yyyy/MM/dd} 已存在，不可重複新增");
 
             var holiday = new Holiday
             {
-                HolidayDate = vm.HolidayDate.Date,
+                HolidayDate = dateOnly,
                 Name = vm.Name,
                 Year = vm.HolidayDate.Year,
                 IsActive = vm.IsActive
@@ -171,11 +172,12 @@ namespace Project_MyFitnessCoach.Services
                 return Result.Failure("找不到此假日");
 
             // 檢查日期重複（排除自身）
-            var exists = await _db.Holidays.AnyAsync(h => h.HolidayDate == vm.HolidayDate.Date && h.Id != vm.Id);
+            var dateOnly = DateOnly.FromDateTime(vm.HolidayDate);
+            var exists = await _db.Holidays.AnyAsync(h => h.HolidayDate == dateOnly && h.Id != vm.Id);
             if (exists)
                 return Result.Failure($"日期 {vm.HolidayDate:yyyy/MM/dd} 已被其他假日使用");
 
-            holiday.HolidayDate = vm.HolidayDate.Date;
+            holiday.HolidayDate = dateOnly;
             holiday.Name = vm.Name;
             holiday.Year = vm.HolidayDate.Year;
             holiday.IsActive = vm.IsActive;
@@ -243,7 +245,7 @@ namespace Project_MyFitnessCoach.Services
                         TotalDays = b?.TotalDays ?? (lt.QuotaType == "PreAllocated" ? lt.DaysPerYear : 0),
                         UsedDays = b?.UsedDays ?? 0,
                         RemainingDays = b != null
-                            ? (b.RemainingDays ?? (b.TotalDays - b.UsedDays))
+                            ? (b.RemainingDays ?? (b.TotalDays - b.UsedDays)) ?? 0
                             : (lt.QuotaType == "PreAllocated" ? lt.DaysPerYear : 0),
                         Year = targetYear,
                         BalanceId = b?.Id
@@ -295,7 +297,7 @@ namespace Project_MyFitnessCoach.Services
                 CurrentTotalDays = balance?.TotalDays ?? 0,
                 CurrentUsedDays = balance?.UsedDays ?? 0,
                 CurrentRemainingDays = balance != null
-                    ? (balance.RemainingDays ?? (balance.TotalDays - balance.UsedDays))
+                    ? (balance.RemainingDays ?? (balance.TotalDays - balance.UsedDays)) ?? 0
                     : 0
             };
         }
@@ -332,9 +334,9 @@ namespace Project_MyFitnessCoach.Services
             }
             else
             {
-                oldTotal = balance.TotalDays;
-                oldUsed = balance.UsedDays;
-                balance.TotalDays += grantDays;
+                oldTotal = balance.TotalDays ?? 0;
+                oldUsed = balance.UsedDays ?? 0;
+                balance.TotalDays = (balance.TotalDays ?? 0) + grantDays;
             }
 
             // 寫入變動紀錄
@@ -344,9 +346,9 @@ namespace Project_MyFitnessCoach.Services
                 ChangeType = "AdminGrant",
                 ChangeDays = grantDays,
                 OldTotalDays = oldTotal,
-                NewTotalDays = balance.TotalDays,
+                NewTotalDays = balance.TotalDays ?? 0,
                 OldUsedDays = oldUsed,
-                NewUsedDays = balance.UsedDays,
+                NewUsedDays = balance.UsedDays ?? 0,
                 Reason = reason,
                 OperatorId = operatorId,
                 CreatedAt = DateTime.Now

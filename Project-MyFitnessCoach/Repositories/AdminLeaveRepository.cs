@@ -26,7 +26,7 @@ namespace Project_MyFitnessCoach.Repositories
                 .Include(r => r.Employee).ThenInclude(e => e.User)
                 .Include(r => r.Employee).ThenInclude(e => e.Department)
                 .Include(r => r.LeaveType)
-                .Include(r => r.Approver).ThenInclude(a => a.User)
+                .Include(r => r.ApprovedByNavigation).ThenInclude(a => a.User)
                 .AsQueryable();
 
             // 部門篩選
@@ -83,7 +83,7 @@ namespace Project_MyFitnessCoach.Repositories
             {
                 TotalThisMonth = monthRequests
                     .Where(r => r.Status == "Approved")
-                    .Sum(r => r.DaysUsed),
+                    .Sum(r => r.DaysUsed ?? 0),
                 PendingCount = monthRequests.Count(r => r.Status == "Pending"),
                 ApprovedCount = monthRequests.Count(r => r.Status == "Approved"),
                 RejectedCount = monthRequests.Count(r => r.Status == "Rejected"),
@@ -98,8 +98,8 @@ namespace Project_MyFitnessCoach.Repositories
                 .Include(r => r.Employee).ThenInclude(e => e.Department)
                 .Include(r => r.LeaveType)
                 .Include(r => r.LeaveDelegate).ThenInclude(d => d.User)
-                .Include(r => r.Approver).ThenInclude(a => a.User)
-                .Include(r => r.Attachments)
+                .Include(r => r.ApprovedByNavigation).ThenInclude(a => a.User)
+                .Include(r => r.LeaveAttachments)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
     }

@@ -1,5 +1,5 @@
-#nullable disable
-using System;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Project_MyFitnessCoach.Models.EfModels;
 
@@ -21,9 +21,9 @@ public partial class LeaveApprovalDelegation
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual Employee ManagerEmployee { get; set; }
+    public virtual Employee DelegateEmployee { get; set; } = null!;
 
-    public virtual Employee DelegateEmployee { get; set; }
+    public virtual LeaveRequest LeaveRequest { get; set; } = null!;
 
-    public virtual LeaveRequest LeaveRequest { get; set; }
+    public virtual Employee ManagerEmployee { get; set; } = null!;
 }
