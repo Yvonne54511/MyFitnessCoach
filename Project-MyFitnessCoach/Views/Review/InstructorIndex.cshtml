@@ -65,8 +65,7 @@
 </div>
 
 <!-- Report Modal (Bootstrap 4 Style) -->
-<div class="modal fade" id="reportModal" tabindex="-1" role="dialog" aria-labelledby="reportModalLabel" aria-hidden="true">
-    <!-- ... unchanged content ... -->
+<div class="modal fade" id="reportModal" tabindex="-1" role="dialog" aria-labelledby="reportModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <form asp-action="ReportReview" method="post">
@@ -126,7 +125,8 @@
                 }
             });
 
-            $('.report-btn').on('click', function() {
+            // 使用事件委派以支援 DataTables 分頁點擊
+            $(document).on('click', '.report-btn', function() {
                 var reviewId = $(this).data('review-id');
                 var memberName = $(this).data('member-name');
                 $('#modalReviewId').val(reviewId);
