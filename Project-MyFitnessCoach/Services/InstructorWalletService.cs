@@ -20,8 +20,6 @@ namespace Project_MyFitnessCoach.Services
             _walletRepository = walletRepository;
         }
 
-    // ... GetWalletByInstructorIdAsync ...
-
         public async Task<bool> AddSalaryEntryAsync(int instructorId, decimal amount, string note, string category = "月薪與加給")
         {
             var wallet = await _walletRepository.GetByInstructorIdAsync(instructorId);
@@ -35,8 +33,8 @@ namespace Project_MyFitnessCoach.Services
             var detail = new Project_MyFitnessCoach.Models.EfModels.InstructorWalletDetail
             {
                 InstructorWalletId = wallet.Id,
-                SalaryDate = DateTime.Now.ToString("yyyy-MM-dd"), // 修正為 string 格式
-                TotalAmount = amount, // 使用 decimal 賦值
+                SalaryDate = DateTime.Now.ToString("yyyy-MM-dd"), 
+                TotalAmount = amount,
                 Category = category,
                 CreatedAt = DateTime.Now
             };

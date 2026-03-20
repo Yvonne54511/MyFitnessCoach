@@ -15,7 +15,40 @@
         .bg-soft-success { background-color: #e1f5ea; color: #1cc88a; }
         .bg-soft-primary { background-color: #e8eeff; color: #4e73df; }
         .icon-box-sm { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 0.9rem; }
-        .history-item-row:hover { background-color: #f8f9fc; }
+        .history-item-row { 
+            transition: all 0.3s ease; 
+        }
+        .history-item-row:hover td { 
+            background-color: #f8f9fc; 
+            border-top: 1px solid #e3e6f0;
+            border-bottom: 1px solid #e3e6f0;
+        }
+        .history-item-row:hover td:first-child {
+            border-left: 4px solid #4e73df;
+            transform: translateX(5px);
+        }
+        .history-item-row .icon-box-sm {
+            transition: all 0.3s ease;
+        }
+        .history-item-row:hover .bg-soft-success {
+            background-color: #1cc88a !important;
+        }
+        .history-item-row:hover .bg-soft-primary {
+            background-color: #4e73df !important;
+        }
+        .history-item-row:hover .icon-box-sm i {
+            color: #ffffff !important;
+        }
+        /* 無紀錄狀態的顏色交換 */
+        .empty-history-item td {
+            transition: all 0.3s ease;
+        }
+        .empty-history-item:hover td {
+            background-color: #eaecf4 !important;
+        }
+        .empty-history-item:hover i {
+            color: #ffffff !important;
+        }
     </style>
 }
 

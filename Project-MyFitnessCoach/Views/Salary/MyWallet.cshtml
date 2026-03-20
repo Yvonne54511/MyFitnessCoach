@@ -27,14 +27,44 @@
         letter-spacing: -1px;
     }
     .history-item {
-        transition: all 0.2s ease;
-        border-left: 4px solid transparent;
+        transition: all 0.3s ease;
     }
-    .history-item:hover {
+    /* 讓 hover 效果作用於 td 以確保相容性 */
+    .history-item:hover td {
         background-color: #f8f9fc;
-        border-left-4px solid #4e73df;
+        border-top: 1px solid #e3e6f0;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    .history-item:hover td:first-child {
+        border-left: 4px solid #4e73df;
         transform: translateX(5px);
     }
+    
+    /* 圖標顏色交換效果 */
+    .history-item .icon-box {
+        transition: all 0.3s ease;
+    }
+    .history-item:hover .bg-soft-success {
+        background-color: #1cc88a !important;
+    }
+    .history-item:hover .bg-soft-primary {
+        background-color: #4e73df !important;
+    }
+    /* 強制圖標變白 */
+    .history-item:hover .icon-box i {
+        color: #ffffff !important;
+    }
+    /* 無紀錄狀態的顏色交換 */
+    .empty-history-item td {
+        transition: all 0.3s ease;
+    }
+    .empty-history-item:hover td {
+        background-color: #eaecf4 !important;
+    }
+    .empty-history-item:hover i {
+        color: #ffffff !important;
+    }
+
     .icon-box {
         width: 45px;
         height: 45px;
@@ -194,7 +224,7 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive" style="max-height: 500px; overflow-y: auto; overflow-x: hidden;">
-                        <table class="table table-hover align-middle mb-0">
+                        <table class="table align-middle mb-0">
                             <thead class="bg-light text-muted small text-uppercase sticky-top shadow-sm">
                                 <tr>
                                     <th class="ps-4 border-0 py-3">類別 / 日期</th>
@@ -240,10 +270,10 @@
                                 }
                                 else
                                 {
-                                    <tr>
+                                    <tr class="empty-history-item">
                                         <td colspan="3" class="text-center py-5">
                                             <div class="py-5">
-                                                <img src="https://img.icons8.com/bubbles/100/000000/empty-box.png" alt="Empty" class="mb-3">
+                                                <i class="fas fa-history fa-4x mb-3" style="color: #eaecf4;"></i>
                                                 <h6 class="text-muted">目前尚無任何交易明細紀錄</h6>
                                             </div>
                                         </td>

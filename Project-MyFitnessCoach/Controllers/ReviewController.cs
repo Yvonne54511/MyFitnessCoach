@@ -29,7 +29,23 @@ namespace Project_MyFitnessCoach.Controllers
         public async Task<IActionResult> AdminIndex()
         {
             var dtos = await _service.GetAdminReviewsAsync();
-            return View(dtos);
+            
+            // 排序邏輯：
+            // 0: 有檢舉、未封鎖、未停權 (最優先)
+            // 1: 有檢舉、已封鎖、未停權
+            // 2: 無檢舉、已封鎖、未停權
+            // 3: 無檢舉、未封鎖、未停權 (一般)
+            // 4: 其他 (已停權，視為處理完成)
+            var sortedDtos = dtos.OrderBy(r => {
+                bool hasReport = !string.IsNullOrEmpty(r.ReportMessage);
+                if (r.IsSuspended) return 4;
+                if (hasReport && !r.IsBanned) return 0;
+                if (hasReport && r.IsBanned) return 1;
+                if (!hasReport && r.IsBanned) return 2;
+                return 3;
+            }).ThenByDescending(r => r.CreatedAt);
+
+            return View(sortedDtos);
         }
 
         [Authorize]

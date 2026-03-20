@@ -7,6 +7,7 @@
 @section Styles {
     <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
     <style>
         #keyWordTable thead th {
             color: white !important;
@@ -122,15 +123,8 @@
     <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
     <script>
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 1500,
-            timerProgressBar: true
-        });
-
         $(document).ready(function() {
             $('#keyWordTable').DataTable({
                 "columnDefs": [
@@ -153,6 +147,28 @@
                     }
                 }
             });
+
+            // 顯示 TempData 訊息
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                iziToast.success({
+                    title: '成功',
+                    message: '@TempData["SuccessMessage"]',
+                    position: 'topRight'
+                });
+                </text>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                iziToast.error({
+                    title: '錯誤',
+                    message: '@TempData["ErrorMessage"]',
+                    position: 'topRight'
+                });
+                </text>
+            }
         });
 
         function confirmDelete(id, word) {
@@ -186,10 +202,10 @@
 
             var style = "";
             if (category === 1) {
-                var lightness = Math.Max(10, 50 - (weight * 8));
+                var lightness = Math.max(10, 50 - (weight * 8));
                 style = "background-color: hsl(120, 70%, " + lightness + "%); color: white;";
             } else if (category === -1) {
-                var lightness = Math.Max(10, 50 - (weight * 8));
+                var lightness = Math.max(10, 50 - (weight * 8));
                 style = "background-color: hsl(0, 80%, " + lightness + "%); color: white;";
             } else if (category === 0) {
                 style = "background-color: #858796; color: white;";
@@ -204,31 +220,42 @@
                     $row.fadeOut(400, function() {
                         $(this).remove();
                     });
-                    Toast.fire({
-                        icon: 'info',
-                        title: '已忽略該字詞並從庫中移除'
+                    iziToast.info({
+                        title: '資訊',
+                        message: '已忽略該字詞並從庫中移除',
+                        position: 'topRight'
                     });
                 } else {
                     updateBadgeColor(id, category);
-                    Toast.fire({
-                        icon: 'success',
-                        title: '類別已更新'
+                    iziToast.success({
+                        title: '成功',
+                        message: '類別已更新',
+                        position: 'topRight'
                     });
                 }
             }).fail(function() {
-                Swal.fire('錯誤', '更新類別失敗', 'error');
+                iziToast.error({
+                    title: '錯誤',
+                    message: '更新類別失敗',
+                    position: 'topRight'
+                });
             });
         }
 
         function updateWeight(id, weight) {
             $.post('@Url.Action("UpdateWeight", "KeyWords")', { id: id, weight: weight }, function() {
                 updateBadgeColor(id, null, weight);
-                Toast.fire({
-                    icon: 'success',
-                    title: '權重已更新'
+                iziToast.success({
+                    title: '成功',
+                    message: '權重已更新',
+                    position: 'topRight'
                 });
             }).fail(function() {
-                Swal.fire('錯誤', '更新權重失敗', 'error');
+                iziToast.error({
+                    title: '錯誤',
+                    message: '更新權重失敗',
+                    position: 'topRight'
+                });
             });
         }
     </script>

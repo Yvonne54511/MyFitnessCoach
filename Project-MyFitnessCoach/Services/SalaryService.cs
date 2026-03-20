@@ -37,7 +37,7 @@ namespace Project_MyFitnessCoach.Services
         {
             var result = new SalaryRankingsViewModel();
 
-            // 1. 預約最多 (Top Booked) - Based on Shifts where IsBooked is true
+            // 1. 預約最多 (Top Booked)
             result.TopBooked = await _context.Shifts
                 .Where(s => s.IsBooked)
                 .GroupBy(s => new { s.InstructorId, s.Instructor.User.UserName })
@@ -51,7 +51,7 @@ namespace Project_MyFitnessCoach.Services
                 })
                 .ToListAsync();
 
-            // 2. 評分最高 (Top Rated) - Average rating from Reviews (not banned)
+            // 2. 評分最高 (Top Rated)
             result.TopRated = await _context.Reviews
                 .Where(r => !r.IsBanned)
                 .GroupBy(r => new { r.InstructorId, r.Instructor.User.UserName })
@@ -65,7 +65,7 @@ namespace Project_MyFitnessCoach.Services
                 })
                 .ToListAsync();
 
-            // 3. 好評最多 (Most Positive Reviews) - Count of Reviews with Rating >= 4
+            // 3. 好評最多 (Most Positive Reviews)
             result.MostPositiveReviews = await _context.Reviews
                 .Where(r => !r.IsBanned && r.Rating >= 4)
                 .GroupBy(r => new { r.InstructorId, r.Instructor.User.UserName })
@@ -92,7 +92,7 @@ namespace Project_MyFitnessCoach.Services
                 {
                     Id = i.Id,
                     Name = i.User.UserName,
-                    ImageUrl = null, // UI 不顯示圖片，直接設為 null 避免任何 404
+                    ImageUrl = null, // UI 不顯示圖片，直接設為 null 避免 any 404
                     WalletBalance = i.InstructorWallets.FirstOrDefault() != null ? i.InstructorWallets.First().CurrentBalance : 0,
                     LastUpdated = i.InstructorWallets.FirstOrDefault() != null ? i.InstructorWallets.First().LastUpdated : DateTime.MinValue
                 })
@@ -128,7 +128,7 @@ namespace Project_MyFitnessCoach.Services
                 })
                 .ToListAsync();
 
-            // 2. Performance Metrics Calculation using bool helper
+            // 2. Performance Metrics Calculation
             var monthlyMetrics = await GetPeriodMetricsAsync(instructorId, year, month, isAnnual: false);
             var annualMetrics = await GetPeriodMetricsAsync(instructorId, year, month, isAnnual: true);
 
@@ -141,7 +141,7 @@ namespace Project_MyFitnessCoach.Services
                 monthlyTrends.Add(count);
             }
 
-            // 3. Global Scores Calculation using bool helper
+            // 3. Global Scores Calculation
             var allInstructors = await _context.Instructors.Where(i => i.IsActive).Select(i => i.Id).ToListAsync();
             double globalTotalScore = 0;
             double annualGlobalTotalScore = 0;
@@ -159,7 +159,7 @@ namespace Project_MyFitnessCoach.Services
             {
                 InstructorId = instructorId,
                 InstructorName = instructor.User.UserName,
-                InstructorEmail = instructor.User.Email, // 傳遞 Email
+                InstructorEmail = instructor.User.Email,
                 HourWage = instructor.HourWage,
                 Year = year,
                 Month = month,
@@ -180,7 +180,6 @@ namespace Project_MyFitnessCoach.Services
             detail.BonusAmount = Math.Round(detail.SuggestedBonus, 0);
             detail.AnnualBonusAmount = Math.Round(detail.AnnualSuggestedBonus, 0);
 
-			// 注入匯率設定 (從 Controller 移至此處)
 			detail.TwdToUsdRate = _configuration.GetValue<double>("CurrencySettings:TwdToUsdRate", 32.0);
 
             return detail;
@@ -215,7 +214,6 @@ namespace Project_MyFitnessCoach.Services
             double avgRating = await reviews.AnyAsync() ? await reviews.AverageAsync(r => r.Rating) : 0;
             int positiveCount = await reviews.CountAsync(r => r.Rating >= 4);
 
-            // Apply different weights based on period
             double weightedScore = (!isAnnual)
                 ? (bookingCount * 0.5) + (avgRating * 0.3) + (positiveCount * 0.4)
                 : (bookingCount * 0.3) + (avgRating * 0.4) + (positiveCount * 0.5);

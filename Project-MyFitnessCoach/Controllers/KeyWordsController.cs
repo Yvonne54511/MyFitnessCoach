@@ -34,7 +34,8 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         // GET: KeyWords/Create
-        public IActionResult Create()
+		[Function("edit_KeyWords")]
+		public IActionResult Create()
         {
             return View();
         }
@@ -42,7 +43,7 @@ namespace Project_MyFitnessCoach.Controllers
         // POST: KeyWords/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-		[Function("create_KeyWords")]
+		[Function("edit_KeyWords")]
 		public async Task<IActionResult> Create(KeyWordViewModel vm)
         {
             if (ModelState.IsValid)
@@ -53,6 +54,7 @@ namespace Project_MyFitnessCoach.Controllers
                     Weight = vm.Weight
                 };
                 await _service.CreateAsync(dto);
+                TempData["SuccessMessage"] = "關鍵字詞已成功新增";
                 return RedirectToAction(nameof(Index));
             }
             return View(vm);
@@ -60,10 +62,11 @@ namespace Project_MyFitnessCoach.Controllers
 
         // POST: KeyWords/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+		[Function("edit_KeyWords")]
+		public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _service.DeleteAsync(id);
+            TempData["SuccessMessage"] = "關鍵字詞已成功刪除";
             return RedirectToAction(nameof(Index));
         }
 
