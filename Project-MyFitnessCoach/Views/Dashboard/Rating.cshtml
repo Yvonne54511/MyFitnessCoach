@@ -424,15 +424,16 @@
         .rank-2 .podium-avatar { margin-top: -35px; border-color: #858796; }
         .rank-3 .podium-avatar { margin-top: -35px; border-color: #cd7f32; }
         
-        .podium-name { font-weight: bold; color: #4e73df; margin-bottom: 5px; text-align: center; }
-        .podium-score { font-size: 1.2rem; font-weight: 800; color: #5a5c69; }
+        .podium-name { font-weight: bold; color: #4e73df; margin-bottom: 8px; text-align: center; }
+        .podium-score { font-size: 1.2rem; font-weight: 800; color: #5a5c69; margin-bottom: 45px; }
         
         .crown-icon {
             position: absolute;
-            top: -30px;
-            font-size: 1.5rem;
+            top: -45px;
+            font-size: 1.8rem;
             color: #f6c23e;
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            z-index: 10;
         }
     </style>
 }
@@ -473,7 +474,7 @@
             podiumOrder.forEach(idx => {
                 var inst = top3[idx];
                 if (inst) {
-                    var rankClass = (idx === 0) ? 'rank-2' : (idx === 1 ? 'rank-1' : 'rank-3');
+                    var rankClass = `rank-${idx + 1}`;
                     var rankNum = idx + 1;
                     podiumHtml += `
                         <div class="podium-item ${rankClass}" onclick="jumpToDetail(${inst.instructorId}, '${inst.instructorName}')" style="cursor:pointer;">
