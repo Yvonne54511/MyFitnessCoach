@@ -450,12 +450,37 @@
                 if (response.success) {
                     $('#quickAddModal').modal('hide');
                     
-                    // 找到對應的行並移除，提供即時回饋
+                    // 找到對應的行
                     var $targetRow = $(`.kw-row[data-word="${word}"]`);
-                    $targetRow.fadeOut(400, function() {
-                        $(this).remove();
-                        applyFilters(); // 重新觸發篩選邏輯，處理「找不到結果」的顯示
-                    });
+                    
+                    if (category === 0) {
+                        // 類別為忽略 (0)，則移除該行
+                        $targetRow.fadeOut(400, function() {
+                            $(this).remove();
+                            applyFilters(); // 重新處理無結果顯示
+                        });
+                    } else {
+                        // 即時更新行狀態與外觀
+                        $targetRow.attr('data-category', category);
+                        $targetRow.data('category', category); // 同步更新 jQuery 的 data 快取
+                        $targetRow.removeClass('table-warning clickable-row');
+                        $targetRow.find('.fa-exclamation-triangle').remove();
+                        $targetRow.prop('onclick', null).off('click'); // 移除點擊事件
+                        $targetRow.css('cursor', 'default');
+
+                        // 更新類別欄內容
+                        var categoryBadge = category === 1 
+                            ? '<span class="badge badge-success">正向</span>' 
+                            : '<span class="badge badge-danger">負向</span>';
+                        $targetRow.find('td:nth-child(2)').html(categoryBadge);
+
+                        // 更新進度條顏色
+                        var progressBarColor = category === 1 ? 'bg-success' : 'bg-danger';
+                        $targetRow.find('.progress-bar').removeClass('bg-warning').addClass(progressBarColor);
+
+                        // 重新套用篩選（以防使用者當前正處於某個類別篩選下）
+                        applyFilters();
+                    }
 
                     showMicroAlert('成功', response.message);
                     
