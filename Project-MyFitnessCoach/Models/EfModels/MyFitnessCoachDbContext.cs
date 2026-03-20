@@ -157,7 +157,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Food>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Foods__3214EC07A501AD90");
+            entity.HasKey(e => e.Id).HasName("PK__Foods__3214EC0769A24C96");
 
             entity.Property(e => e.FoodName)
                 .IsRequired()
@@ -171,7 +171,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<FoodCategory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__FoodCate__3214EC0759608C49");
+            entity.HasKey(e => e.Id).HasName("PK__FoodCate__3214EC0787EC3A3B");
 
             entity.Property(e => e.CategoryName)
                 .IsRequired()
@@ -181,7 +181,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<FoodRecord>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__FoodReco__3214EC070F6B4F74");
+            entity.HasKey(e => e.Id).HasName("PK__FoodReco__3214EC0782763F53");
 
             entity.Property(e => e.EatDt)
                 .HasPrecision(0)
@@ -207,7 +207,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Function>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Function__3214EC076861AC54");
+            entity.HasKey(e => e.Id).HasName("PK__Function__3214EC07924A1737");
 
             entity.Property(e => e.ApiPath)
                 .HasMaxLength(255)
@@ -219,7 +219,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Holiday>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Holidays__3214EC07229B1066");
+            entity.HasKey(e => e.Id).HasName("PK__Holidays__3214EC07F5D552CF");
 
             entity.HasIndex(e => e.HolidayDate, "IX_Holidays_Date").IsUnique();
 
@@ -231,7 +231,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Instructor>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC07BC538A1D");
+            entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC07F2C69D01");
 
             entity.Property(e => e.CancelCount).HasDefaultValue(1);
             entity.Property(e => e.Description)
@@ -250,7 +250,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<InstructorWallet>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC0722E78318");
+            entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC07480D4BCD");
 
             entity.Property(e => e.CurrentBalance).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.LastUpdated).HasPrecision(0);
@@ -263,7 +263,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<InstructorWalletDetail>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC0714BB0926");
+            entity.HasKey(e => e.Id).HasName("PK__Instruct__3214EC0724370CD3");
 
             entity.Property(e => e.Category)
                 .IsRequired()
@@ -282,7 +282,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<KeyWord>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__KeyWords__3214EC078BA3FCC1");
+            entity.HasKey(e => e.Id).HasName("PK__KeyWords__3214EC07D57B0D48");
 
             entity.Property(e => e.Word)
                 .IsRequired()
@@ -291,7 +291,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<LeaveApprovalDelegation>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__LeaveApp__3214EC074305C7AA");
+            entity.HasKey(e => e.Id).HasName("PK__LeaveApp__3214EC07F841836D");
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
@@ -355,7 +355,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<LeaveBalanceHistory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__LeaveBal__3214EC07C916D816");
+            entity.HasKey(e => e.Id).HasName("PK__LeaveBal__3214EC07E5FE65DB");
 
             entity.Property(e => e.ChangeDays).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.ChangeType)
@@ -435,7 +435,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Member>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Members__3214EC0715DC54F7");
+            entity.HasKey(e => e.Id).HasName("PK__Members__3214EC079134235E");
 
             entity.Property(e => e.ActivityLevel).HasMaxLength(50);
             entity.Property(e => e.Bmr).HasColumnName("BMR");
@@ -453,7 +453,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<MemberViolation>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__MemberVi__3214EC07D6FF9E0C");
+            entity.HasKey(e => e.Id).HasName("PK__MemberVi__3214EC07F1708994");
 
             entity.HasIndex(e => e.MemberId, "UQ_MemberViolations_MemberId").IsUnique();
 
@@ -469,7 +469,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC073C80940E");
+            entity.HasKey(e => e.Id).HasName("PK__Notifica__3214EC07F3404627");
 
             entity.Property(e => e.Content).IsRequired();
             entity.Property(e => e.CreatedAt)
@@ -494,7 +494,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Nutrient>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Nutrient__3214EC0793D0524D");
+            entity.HasKey(e => e.Id).HasName("PK__Nutrient__3214EC0774552203");
 
             entity.Property(e => e.Measure)
                 .IsRequired()
@@ -529,7 +529,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<PointsRecordDetail>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PointsRe__3214EC0709CFDF30");
+            entity.HasKey(e => e.Id).HasName("PK__PointsRe__3214EC076766F55D");
 
             entity.Property(e => e.CreateAt)
                 .HasPrecision(0)
@@ -574,7 +574,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<ProductCategory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__ProductC__3214EC07B5A644A4");
+            entity.HasKey(e => e.Id).HasName("PK__ProductC__3214EC07900D1DEB");
 
             entity.Property(e => e.CategoryName)
                 .IsRequired()
@@ -584,7 +584,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<ProductOrder>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__ProductO__3214EC07833D2451");
+            entity.HasKey(e => e.Id).HasName("PK__ProductO__3214EC077FF107C9");
 
             entity.Property(e => e.Address)
                 .IsRequired()
@@ -609,7 +609,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<ProductOrderDetail>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__ProductO__3214EC07346E09AD");
+            entity.HasKey(e => e.Id).HasName("PK__ProductO__3214EC074BD609BF");
 
             entity.Property(e => e.DiscountedPrice).HasColumnType("decimal(18, 0)");
             entity.Property(e => e.ImageUrl)
@@ -635,7 +635,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<ReserveOrder>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__ReserveO__3214EC07A9E9C87B");
+            entity.HasKey(e => e.Id).HasName("PK__ReserveO__3214EC07A61A21BB");
 
             entity.Property(e => e.CreateAt)
                 .HasPrecision(0)
@@ -663,7 +663,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Review>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Reviews__3214EC07580B7F54");
+            entity.HasKey(e => e.Id).HasName("PK__Reviews__3214EC07B588BCC0");
 
             entity.Property(e => e.Comment).HasMaxLength(500);
             entity.Property(e => e.CreatedAt)
@@ -689,7 +689,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Roles__3214EC07B852BB82");
+            entity.HasKey(e => e.Id).HasName("PK__Roles__3214EC078073FBC5");
 
             entity.HasIndex(e => e.RoleName, "UQ_Roles_RoleName").IsUnique();
 
@@ -700,7 +700,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<RoleFunction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__RoleFunc__3214EC07EEE5E880");
+            entity.HasKey(e => e.Id).HasName("PK__RoleFunc__3214EC07CDCAA361");
 
             entity.HasIndex(e => new { e.RoleId, e.FunctionId }, "UQ_RoleFunctions").IsUnique();
 
@@ -715,29 +715,18 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasConstraintName("FK_RoleFunctions_Role");
         });
 
-
-        modelBuilder.Entity<PointsRecordDetail>(entity =>
+        modelBuilder.Entity<Shift>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PointsRe__3214EC07");
+            entity.HasKey(e => e.Id).HasName("PK__Shifts__3214EC07A722B218");
 
-            entity.Property(e => e.CreateAt).HasPrecision(0);
-            entity.Property(e => e.MerchandiseCategory)
+            entity.Property(e => e.TimeSlot)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(20);
 
-            entity.HasOne(d => d.PointOrder).WithMany(p => p.PointsRecordDetails)
-                .HasForeignKey(d => d.PointOrderId)
+            entity.HasOne(d => d.Instructor).WithMany(p => p.Shifts)
+                .HasForeignKey(d => d.InstructorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PointsRecordDetails_PointOrders");
-
-            entity.HasOne(d => d.ReserveOrder).WithMany(p => p.PointsRecordDetails)
-                .HasForeignKey(d => d.ReserveOrderId)
-                .HasConstraintName("FK_PointsRecordDetails_ReserveOrders");
-
-            entity.HasOne(d => d.UserWallet).WithMany(p => p.PointsRecordDetails)
-                .HasForeignKey(d => d.UserWalletId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PointsRecordDetails_UserWallets");
+                .HasConstraintName("FK_Shifts_Instructors");
         });
 
         modelBuilder.Entity<TopUpPlan>(entity =>
@@ -756,7 +745,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC074F24B823");
+            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC07C63D5734");
 
             entity.HasIndex(e => e.Email, "UQ_Users_Email").IsUnique();
 
@@ -787,7 +776,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<UserExternalLogin>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__UserExte__3214EC07F0856A08");
+            entity.HasKey(e => e.Id).HasName("PK__UserExte__3214EC07C315ECE5");
 
             entity.Property(e => e.LoginProvider)
                 .IsRequired()
@@ -805,7 +794,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<UserRole>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__UserRole__3214EC07414C5122");
+            entity.HasKey(e => e.Id).HasName("PK__UserRole__3214EC0706DD5DDA");
 
             entity.HasIndex(e => new { e.UserId, e.RoleId }, "UQ_UserRoles").IsUnique();
 
@@ -822,7 +811,7 @@ public partial class MyFitnessCoachDbContext : DbContext
 
         modelBuilder.Entity<UserWallet>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__UserWall__3214EC079F1D7820");
+            entity.HasKey(e => e.Id).HasName("PK__UserWall__3214EC0797459E6D");
 
             entity.HasIndex(e => e.MemberId, "UQ_UserWallets_Member").IsUnique();
 
