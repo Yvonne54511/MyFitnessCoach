@@ -33,7 +33,7 @@ namespace Project_MyFitnessCoach.Repositories
                 {
                     Id = o.Id,
                     MemberId = o.MemberId,
-                    MemberName = o.Member.User.UserName,
+                    MemberName = o.Member != null && o.Member.User != null ? o.Member.User.UserName : "未知會員",
                     CreateAt = o.CreateAt,
                     OriginalAmount = o.OriginalAmount,
                     DiscountAmount = o.DiscountAmount,
@@ -103,20 +103,18 @@ namespace Project_MyFitnessCoach.Repositories
                 trends.Add(new OrderTrendDto { Date = date.ToString("M/d"), Count = count });
             }
 
-            // 縣市分布 (取 Address 前 3 個字)
-            var cityData = await _context.ProductOrders
-                .Where(o => !string.IsNullOrEmpty(o.Address))
-                .Select(o => o.Address.Substring(0, 3))
-                .GroupBy(city => city)
+            // 縣市分布 (安全取地址前 3 個字，由資料庫運算)
+            var cityGroups = await _context.ProductOrders
+                .Where(o => o.Address != null && o.Address.Length >= 3)
+                .GroupBy(o => o.Address.Substring(0, 3))
                 .Select(g => new CityDistributionDto { City = g.Key, Count = g.Count() })
                 .OrderByDescending(g => g.Count)
                 .Take(5)
                 .ToListAsync();
 
-            // 商品類別排行 (透過明細與產品關聯)
-            var categoryRankings = await _context.ProductOrderDetails
-                .Include(d => d.Product)
-                .ThenInclude(p => p.Category)
+            // 商品類別排行 (由資料庫運算，避免記憶體負載)
+            var categoryGroups = await _context.ProductOrderDetails
+                .Where(d => d.Product != null && d.Product.Category != null)
                 .GroupBy(d => d.Product.Category.CategoryName)
                 .Select(g => new CategoryRankingDto
                 {
@@ -137,7 +135,7 @@ namespace Project_MyFitnessCoach.Repositories
                 .Select(o => new ProductOrderDto
                 {
                     Id = o.Id,
-                    MemberName = o.Member.User.UserName,
+                    MemberName = o.Member != null && o.Member.User != null ? o.Member.User.UserName : "未知會員",
                     CreateAt = o.CreateAt,
                     OriginalAmount = o.OriginalAmount,
                     DiscountAmount = o.DiscountAmount,
@@ -154,7 +152,7 @@ namespace Project_MyFitnessCoach.Repositories
                 .Select(o => new ProductOrderDto
                 {
                     Id = o.Id,
-                    MemberName = o.Member.User.UserName,
+                    MemberName = o.Member != null && o.Member.User != null ? o.Member.User.UserName : "未知會員",
                     CreateAt = o.CreateAt,
                     OriginalAmount = o.OriginalAmount,
                     DiscountAmount = o.DiscountAmount,
@@ -171,8 +169,8 @@ namespace Project_MyFitnessCoach.Repositories
                 DisputedCount = await _context.ProductOrders.CountAsync(o => o.Status == 4 || o.Status == 5 || o.Status == 6), // 爭議中不限月份
                 DisputedChangePercentage = CalculateChange(disputedThisMonth, disputedLastMonth),
                 OrderTrends = trends,
-                CityDistributions = cityData,
-                CategoryRankings = categoryRankings,
+                CityDistributions = cityGroups,
+                CategoryRankings = categoryGroups,
                 TodayOrders = todayOrders,
                 PendingOrders = pendingOrders
             };
@@ -201,7 +199,7 @@ namespace Project_MyFitnessCoach.Repositories
                 {
                     Id = p.Id,
                     MemberId = p.MemberId,
-                    MemberName = p.Member.User.UserName,
+                    MemberName = p.Member != null && p.Member.User != null ? p.Member.User.UserName : "未知會員",
                     CreateAt = p.CreateAt,
                     OriginalAmount = p.OriginalAmount,
                     DiscountAmount = p.DiscountAmount,

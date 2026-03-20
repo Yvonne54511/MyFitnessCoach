@@ -43,17 +43,17 @@ namespace Project_MyFitnessCoach.Controllers
                 PendingShipmentChangePercentage = dto.PendingShipmentChangePercentage,//待處理訂單占比
                 DisputedCount = dto.DisputedCount, //爭議與退貨訂單總數
                 DisputedChangePercentage = dto.DisputedChangePercentage, //爭議與退貨訂單占比
-				OrderTrends = dto.OrderTrends.Select(t => new OrderTrendViewModel //給圖表用的linq日期與數量
+				OrderTrends = (dto.OrderTrends ?? new List<OrderTrendDto>()).Select(t => new OrderTrendViewModel //給圖表用的linq日期與數量
                 {
                     Date = t.Date,
                     Count = t.Count
                 }).ToList(),
-                CityDistributions = dto.CityDistributions.Select(c => new CityDistributionViewModel
+                CityDistributions = (dto.CityDistributions ?? new List<CityDistributionDto>()).Select(c => new CityDistributionViewModel
                 {
                     City = c.City,
                     Count = c.Count
                 }).ToList(),
-                CategoryRankings = dto.CategoryRankings.Select(c => new CategoryRankingViewModel
+                CategoryRankings = (dto.CategoryRankings ?? new List<CategoryRankingDto>()).Select(c => new CategoryRankingViewModel
                 {
                     CategoryName = c.CategoryName,
                     TotalSold = c.TotalSold

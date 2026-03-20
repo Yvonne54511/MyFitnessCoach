@@ -37,7 +37,8 @@ namespace Project_MyFitnessCoach.Controllers
         }
 
         // 點數數據概覽
-        public async Task<IActionResult> DashBoard()
+        [Function("edit_PlanOrders")]
+        public async Task<IActionResult> Dashboard()
         {
             var now = DateTime.Now;
             var today = now.Date;
@@ -46,22 +47,17 @@ namespace Project_MyFitnessCoach.Controllers
             var firstDayOfLastMonth = firstDayOfMonth.AddMonths(-1);
             var lastDayOfLastMonth = firstDayOfMonth.AddDays(-1);
 
-            // 1. KPI 數據
-            var todayRevenue = await _context.PointOrders
-                .Where(o => o.CreateAt >= today && o.Status == 1)
-                .SumAsync(o => (decimal?)o.DiscountedPrice) ?? 0;
-            
-            var yesterdayRevenue = await _context.PointOrders
-                .Where(o => o.CreateAt >= yesterday && o.CreateAt < today && o.Status == 1)
-                .SumAsync(o => (decimal?)o.DiscountedPrice) ?? 0;
+            // 取得所有相關訂單資料一次性處理 (優化連線不穩)
+            var orders = await _context.PointOrders
+                .Where(o => o.CreateAt >= firstDayOfLastMonth && o.Status == 1)
+                .Select(o => new { o.CreateAt, o.DiscountedPrice })
+                .ToListAsync();
 
-            var monthTotal = await _context.PointOrders
-                .Where(o => o.CreateAt >= firstDayOfMonth && o.Status == 1)
-                .SumAsync(o => (decimal?)o.DiscountedPrice) ?? 0;
-            
-            var lastMonthTotal = await _context.PointOrders
-                .Where(o => o.CreateAt >= firstDayOfLastMonth && o.CreateAt <= lastDayOfLastMonth && o.Status == 1)
-                .SumAsync(o => (decimal?)o.DiscountedPrice) ?? 0;
+            // 1. KPI 數據 (從記憶體中篩選，減少 DB 負載)
+            var todayRevenue = orders.Where(o => o.CreateAt >= today).Sum(o => (decimal?)o.DiscountedPrice) ?? 0;
+            var yesterdayRevenue = orders.Where(o => o.CreateAt >= yesterday && o.CreateAt < today).Sum(o => (decimal?)o.DiscountedPrice) ?? 0;
+            var monthTotal = orders.Where(o => o.CreateAt >= firstDayOfMonth).Sum(o => (decimal?)o.DiscountedPrice) ?? 0;
+            var lastMonthTotal = orders.Where(o => o.CreateAt >= firstDayOfLastMonth && o.CreateAt <= lastDayOfLastMonth).Sum(o => (decimal?)o.DiscountedPrice) ?? 0;
 
             var totalCirculatingPoints = await _context.UserWallets.SumAsync(w => (int?)w.CurrentBalance) ?? 0;
 
@@ -222,11 +218,14 @@ namespace Project_MyFitnessCoach.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 3. 建立 PointOrder (直接設為已完成 1)
+                // 3. 尋找匹配的儲值方案 (優化：根據點數與金額匹配對應的 PlanName)
+                var matchingPlan = await _context.TopUpPlans
+                    .FirstOrDefaultAsync(p => p.Points == pointAmount && p.Price == (decimal)price && p.IsActive);
+
                 var pointOrder = new PointOrder
                 {
                     MemberId = memberId,
-                    TopUpPlanId = 1, // 預設為手動儲值方案
+                    TopUpPlanId = matchingPlan?.Id ?? 1, // 如果匹配到則使用該方案 ID，否則預設為手動儲值方案 (1)
                     CreateAt = DateTime.Now,
                     PointQty = pointAmount,
                     OriginalPrice = price,
