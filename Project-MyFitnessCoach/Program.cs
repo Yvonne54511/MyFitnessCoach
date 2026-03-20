@@ -124,8 +124,8 @@ namespace Project_MyFitnessCoach
 					options.AccessDeniedPath = "/Home/Error/403";
 					options.Cookie.HttpOnly = true;
 					options.Cookie.SameSite = SameSiteMode.Lax;
-					// 強制在所有請求中嘗試使用 Secure，搭配 UseHttpsRedirection 確保安全
-					options.Cookie.SecurePolicy = CookieSecurePolicy.Always; 
+					// 根據請求協定自動決定是否使用 Secure，解決開發環境 http/https 混合導致的 Cookie 遺失問題
+					options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; 
 				});
 
 			var app = builder.Build();
