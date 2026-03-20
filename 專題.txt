@@ -190,7 +190,7 @@ extra:
 
 開發測試帳號：
 	包含特約商店 (sb-do31649784453@business.example.com) 
-	與買家測試帳號 (李薇音	eric55339944@gmail.com, 胡青薇	yvonne42396@gmail.com)。
+	與買家測試帳號 (李薇音	liweiyin13@gmail.com, 胡青薇		huqingwei12@gmail.com)。
 
 測試網址(Developer):
 	https://www.sandbox.paypal.com/mep/dashboard
