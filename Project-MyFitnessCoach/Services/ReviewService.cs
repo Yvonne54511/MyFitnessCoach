@@ -28,9 +28,9 @@ namespace Project_MyFitnessCoach.Services
             var entities = (await _repo.GetAllReviewsAsync()).ToList();
             var sensitiveWords = await _db.KeyWords.Where(k => k.Category == -1).Select(s => s.Word).ToListAsync();
 
-            // 取得檢舉類型的通知 (Report1)
+            // 取得未讀的檢舉類型的通知 (Report1)
             var reports = await _db.Notifications
-                .Where(n => n.NotifyType == "Report1")
+                .Where(n => n.NotifyType == "Report1" && !n.IsRead)
                 .Select(n => new { n.NotifyType, n.Content, n.CreatedAt })
                 .OrderBy(n => n.CreatedAt)
                 .ToListAsync();
@@ -79,6 +79,77 @@ namespace Project_MyFitnessCoach.Services
                     WarningCount = e.Member?.MemberViolation?.WarningCount ?? 0
                 };
             });
+        }
+
+        public async Task DismissReportAsync(int id)
+        {
+            var review = await _db.Reviews.FindAsync(id);
+            if (review == null) return;
+
+            // 1. 處理留言封鎖與違規次數恢復邏輯
+            if (review.IsBanned)
+            {
+                review.IsBanned = false;
+
+                var violation = await _db.MemberViolations.FirstOrDefaultAsync(v => v.MemberId == review.MemberId);
+                if (violation != null)
+                {
+                    if (violation.WarningCount > 0) violation.WarningCount--;
+
+                    if (violation.WarningCount < 5 && violation.IsSuspended)
+                    {
+                        violation.IsSuspended = false;
+                        violation.SuspendedAt = null;
+                        violation.Reason = $"檢舉 (評論ID: {id}) 已被駁回，自動解除停權";
+                    }
+                }
+            }
+
+            // 2. 找出所有與該評論 ID 相關的未讀檢舉通知
+            var reports = await _db.Notifications
+                .Where(n => n.NotifyType == "Report1" && !n.IsRead && n.Content != null &&
+                           (n.Content.Contains($"?id={id}") || n.Content.Contains($"id={id}")))
+                .ToListAsync();
+
+            // 3. 收集「不重複」的舉報者資訊，準備發送通知
+            // 我們只需要知道誰舉報了，以及舉報的內容（取最後一筆即可）
+            var uniqueReporters = reports
+                .Where(n => n.SenderId.HasValue)
+                .GroupBy(n => n.SenderId.Value)
+                .Select(g => g.Last()) // 每個舉報者取一筆
+                .ToList();
+
+            // 標記所有相關通知為已讀
+            foreach (var report in reports)
+            {
+                report.IsRead = true;
+            }
+
+            // 4. 對每位舉報者發送「一封」完整通知
+            foreach (var report in uniqueReporters)
+            {
+                // 擷取原始檢舉原因
+                string originalReason = report.Content ?? "未提供原因";
+                int urlIdx = originalReason.IndexOf(" [Url:");
+                if (urlIdx >= 0) originalReason = originalReason.Substring(0, urlIdx).Trim();
+
+                // 移除 HTML 標籤（如果有的話，例如 sensitive-toggle）以便在通知中顯示純文字
+                string cleanComment = System.Text.RegularExpressions.Regex.Replace(review.Comment ?? "", "<.*?>", string.Empty);
+                if (cleanComment.Length > 50) cleanComment = cleanComment.Substring(0, 50) + "...";
+
+                await _notificationService.SendAsync(
+                    receiverId: report.SenderId.Value,
+                    senderId: null, // 系統發送
+                    type: NotifyType.System,
+                    message: $"<b>您的檢舉已被駁回</b><br/>" +
+                             $"[原評論內容]: {cleanComment}<br/>" +
+                             $"[您的檢舉原因]: {originalReason}<br/>" +
+                             $"[管理員評估]: 經審核後認為該評論符合規範，故不予封鎖並已恢復顯示。",
+                    url: $"/Review/InstructorIndex"
+                );
+            }
+
+            await _db.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<ReviewDto>> GetInstructorReviewsAsync(int instructorId)

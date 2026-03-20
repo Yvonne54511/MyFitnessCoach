@@ -53,5 +53,19 @@ namespace Project_MyFitnessCoach.Controllers
             await _service.MarkAsReadAsync(id);
             return Ok();
         }
+
+        // 全部標記為已讀
+        [HttpPost("mark-all-read")]
+        public async Task<IActionResult> MarkAllAsRead()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            await _service.MarkAllAsReadAsync(userId);
+            return Ok();
+        }
     }
 }

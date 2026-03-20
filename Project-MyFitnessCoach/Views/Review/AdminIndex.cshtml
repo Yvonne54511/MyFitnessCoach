@@ -168,7 +168,14 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <form asp-action="BanReview" method="post" id="formBan" class="m-0">
+                <form asp-action="DismissReport" method="post" id="formDismiss" class="m-0 d-none">
+                    <input type="hidden" name="id" id="inputDismissReviewId" />
+                    <button type="button" id="btnDismissReport" class="btn btn-warning">
+                        <i class='bx bx-check-circle'></i> 駁回檢舉
+                    </button>
+                </form>
+
+                <form asp-action="BanReview" method="post" id="formBan" class="m-0 ml-2">
                     <input type="hidden" name="id" id="inputReviewId" />
                     <button type="button" id="btnBanReview" class="btn btn-danger">
                         <i class='bx bx-block'></i> 封鎖留言
@@ -293,8 +300,11 @@
                 if (reportMsg && reportMsg.trim().length > 0) {
                     $('#pReportMessage').text(reportMsg);
                     $('#divReport').removeClass('d-none');
+                    $('#formDismiss').removeClass('d-none');
+                    $('#inputDismissReviewId').val(btn.data('id'));
                 } else {
                     $('#divReport').addClass('d-none');
+                    $('#formDismiss').addClass('d-none');
                 }
 
                 // 封鎖狀態處理
@@ -360,6 +370,18 @@
                 pendingAction = function() {
                     $('#inputSuspendReason').val(reason);
                     $('#formSuspend').submit();
+                };
+                MicroModal.show('modal-confirm');
+            });
+
+            // Handle Dismiss Confirmation
+            $('#btnDismissReport').on('click', function() {
+                $('#modal-confirm-title').text('確認駁回檢舉');
+                $('#modal-confirm-content').text('您確定要駁回此檢舉嗎？駁回後該評論將不再顯示為「有檢舉」狀態。');
+                $('#modal-confirm-proceed').removeClass('btn-danger').addClass('btn-warning').text('確定駁回');
+                
+                pendingAction = function() {
+                    $('#formDismiss').submit();
                 };
                 MicroModal.show('modal-confirm');
             });

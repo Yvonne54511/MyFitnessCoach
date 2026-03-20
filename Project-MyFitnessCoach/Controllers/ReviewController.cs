@@ -64,6 +64,17 @@ namespace Project_MyFitnessCoach.Controllers
 
         [HttpPost]
         [Authorize]
+        [Function("edit_Comments_admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DismissReport(int id)
+        {
+            await _service.DismissReportAsync(id);
+            TempData["SuccessMessage"] = "檢舉已駁回。";
+            return RedirectToAction(nameof(AdminIndex));
+        }
+
+        [HttpPost]
+        [Authorize]
 		[Function("edit_Comments_admin")]
 		[ValidateAntiForgeryToken]
         public async Task<IActionResult> BanReview(int id)

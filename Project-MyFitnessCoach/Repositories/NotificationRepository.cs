@@ -11,6 +11,7 @@ namespace Project_MyFitnessCoach.Repositories
         Task CreateAsync(Notification notification);
         Task<List<Notification>> GetByUserIdAsync(int userId);
         Task MarkAsReadAsync(int id);
+        Task MarkAllAsReadAsync(int userId);
         Task<int> GetUnreadCountAsync(int userId);
     }
 
@@ -45,6 +46,20 @@ namespace Project_MyFitnessCoach.Repositories
                 notification.IsRead = true;
                 await _db.SaveChangesAsync();
             }
+        }
+
+        public async Task MarkAllAsReadAsync(int userId)
+        {
+            var notifications = await _db.Notifications
+                .Where(n => n.UserId == userId && !n.IsRead)
+                .ToListAsync();
+
+            foreach (var n in notifications)
+            {
+                n.IsRead = true;
+            }
+
+            await _db.SaveChangesAsync();
         }
 
         public async Task<int> GetUnreadCountAsync(int userId)

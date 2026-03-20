@@ -607,6 +607,14 @@
                 var id = $(this).data('id');
                 $.post('/api/notification/mark-as-read/' + id);
             });
+
+            // 全部標記為已讀
+            $('#mark-all-read').on('click', function (e) {
+                e.preventDefault();
+                $.post('/api/notification/mark-all-read', function () {
+                    fetchNotifications();
+                });
+            });
         });
     </script>
 </body>

@@ -73,6 +73,11 @@ namespace Project_MyFitnessCoach.Services
             await _repo.MarkAsReadAsync(id);
         }
 
+        public async Task MarkAllAsReadAsync(int userId)
+        {
+            await _repo.MarkAllAsReadAsync(userId);
+        }
+
         public async Task<int> GetUnreadCountAsync(int userId)
         {
             return await _repo.GetUnreadCountAsync(userId);
