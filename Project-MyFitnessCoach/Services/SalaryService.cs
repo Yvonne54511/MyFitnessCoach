@@ -40,13 +40,14 @@ namespace Project_MyFitnessCoach.Services
             // 1. 預約最多 (Top Booked) - Based on Shifts where IsBooked is true
             result.TopBooked = await _context.Shifts
                 .Where(s => s.IsBooked)
-                .GroupBy(s => new { s.InstructorId, s.Instructor.User.UserName })
+                .GroupBy(s => new { s.InstructorId, s.Instructor.User.UserName, s.Instructor.ImageUrl })
                 .OrderByDescending(g => g.Count())
                 .Take(3)
                 .Select(g => new RankingItemViewModel
                 {
                     InstructorId = g.Key.InstructorId,
                     InstructorName = g.Key.UserName,
+                    ImageUrl = g.Key.ImageUrl,
                     Value = g.Count().ToString() + " 次"
                 })
                 .ToListAsync();
@@ -54,13 +55,14 @@ namespace Project_MyFitnessCoach.Services
             // 2. 評分最高 (Top Rated) - Average rating from Reviews (not banned)
             result.TopRated = await _context.Reviews
                 .Where(r => !r.IsBanned)
-                .GroupBy(r => new { r.InstructorId, r.Instructor.User.UserName })
+                .GroupBy(r => new { r.InstructorId, r.Instructor.User.UserName, r.Instructor.ImageUrl })
                 .OrderByDescending(g => g.Average(r => r.Rating))
                 .Take(3)
                 .Select(g => new RankingItemViewModel
                 {
                     InstructorId = g.Key.InstructorId,
                     InstructorName = g.Key.UserName,
+                    ImageUrl = g.Key.ImageUrl,
                     Value = g.Average(r => r.Rating).ToString("F1") + " 分"
                 })
                 .ToListAsync();
@@ -68,13 +70,14 @@ namespace Project_MyFitnessCoach.Services
             // 3. 好評最多 (Most Positive Reviews) - Count of Reviews with Rating >= 4
             result.MostPositiveReviews = await _context.Reviews
                 .Where(r => !r.IsBanned && r.Rating >= 4)
-                .GroupBy(r => new { r.InstructorId, r.Instructor.User.UserName })
+                .GroupBy(r => new { r.InstructorId, r.Instructor.User.UserName, r.Instructor.ImageUrl })
                 .OrderByDescending(g => g.Count())
                 .Take(3)
                 .Select(g => new RankingItemViewModel
                 {
                     InstructorId = g.Key.InstructorId,
                     InstructorName = g.Key.UserName,
+                    ImageUrl = g.Key.ImageUrl,
                     Value = g.Count().ToString() + " 則"
                 })
                 .ToListAsync();
@@ -92,7 +95,7 @@ namespace Project_MyFitnessCoach.Services
                 {
                     Id = i.Id,
                     Name = i.User.UserName,
-                    ImageUrl = null, // UI 不顯示圖片，直接設為 null 避免任何 404
+                    ImageUrl = i.ImageUrl,
                     WalletBalance = i.InstructorWallets.FirstOrDefault() != null ? i.InstructorWallets.First().CurrentBalance : 0,
                     LastUpdated = i.InstructorWallets.FirstOrDefault() != null ? i.InstructorWallets.First().LastUpdated : DateTime.MinValue
                 })
@@ -159,6 +162,7 @@ namespace Project_MyFitnessCoach.Services
             {
                 InstructorId = instructorId,
                 InstructorName = instructor.User.UserName,
+                ImageUrl = instructor.ImageUrl,
                 InstructorEmail = instructor.User.Email, // 傳遞 Email
                 HourWage = instructor.HourWage,
                 Year = year,
