@@ -20,6 +20,7 @@ namespace Project_MyFitnessCoach.Models.ViewModels
     {
         public int InstructorId { get; set; }
         public string InstructorName { get; set; }
+        public string ImageUrl { get; set; }
         public string Value { get; set; } // The metric value to display (e.g. "12次", "4.8分")
     }
 
@@ -36,6 +37,7 @@ namespace Project_MyFitnessCoach.Models.ViewModels
     {
         public int InstructorId { get; set; }
         public string InstructorName { get; set; }
+        public string ImageUrl { get; set; }
         public string InstructorEmail { get; set; } // 這是登入用的 Email，也作為 PayPal 收款帳號
         public int HourWage { get; set; }
 
