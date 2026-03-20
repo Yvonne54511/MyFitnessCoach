@@ -11,16 +11,16 @@
             <h1 class="h3 mb-0 text-gray-800 d-inline-block mr-3">評論區 Dashboard</h1>
             <div class="btn-group shadow-sm" role="group">
                 <a asp-action="Rating" asp-route-year="@Model.SelectedYear" asp-route-month="@Model.SelectedMonth" class="btn btn-primary active border-right">
-                    <i class="fas fa-star-half-alt mr-1"></i> 營養師評分統計
+                    <i class="fas fa-star-half-alt mr-2"></i> 營養師評分統計
                 </a>
                 @if (canAdminLeaveBalances)
                 {
                     <a asp-action="KeyWordAnalytics" asp-route-year="@Model.SelectedYear" asp-route-month="@Model.SelectedMonth" class="btn btn-white text-primary border-right">
-                        <i class="fas fa-search mr-1"></i> 評論字詞分析
+                        <i class="fas fa-search mr-2"></i> 評論字詞分析
                     </a>
                 }
                 <button type="button" class="btn btn-white text-info" data-toggle="modal" data-target="#rankingModal">
-                    <i class="fas fa-trophy mr-1 text-warning"></i> 查看排名
+                    <i class="fas fa-trophy mr-2 text-warning"></i> 查看排名
                 </button>
             </div>
         </div>
@@ -34,7 +34,7 @@
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
                 <div class="modal-header bg-gradient-info text-white border-0 py-3">
                     <h5 class="modal-title font-weight-bold" id="rankingModalLabel">
-                        <i class="fas fa-crown mr-2"></i> 營養師人氣王排名
+                        <i class="fas fa-crown mr-3"></i> 營養師人氣王排名
                     </h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -45,12 +45,12 @@
                     <ul class="nav nav-pills nav-justified mb-4 shadow-sm bg-white p-1" style="border-radius: 12px;" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active font-weight-bold" id="monthly-tab" data-toggle="tab" href="#monthly-rank" role="tab" aria-controls="monthly-rank" aria-selected="true">
-                                <i class="far fa-calendar-alt mr-1"></i> 當月排名 (@(Model.SelectedMonth == 0 ? "累計" : Model.SelectedMonth + "月"))
+                                <i class="far fa-calendar-alt mr-2"></i> 當月排名 (@(Model.SelectedMonth == 0 ? "累計" : Model.SelectedMonth + "月"))
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link font-weight-bold text-warning" id="yearly-tab" data-toggle="tab" href="#yearly-rank" role="tab" aria-controls="yearly-rank" aria-selected="false">
-                                <i class="fas fa-trophy mr-1"></i> 當年排名 (@(Model.SelectedYear)年度)
+                                <i class="fas fa-trophy mr-2"></i> 當年排名 (@(Model.SelectedYear)年度)
                             </a>
                         </li>
                     </ul>
@@ -259,7 +259,7 @@
                                                         aria-expanded="false" 
                                                         aria-controls="collapse-@group.Id-@instructor.InstructorId">
                                                     <span class="font-weight-bold text-@group.Color">
-                                                        <i class="fas @group.Icon mr-2"></i> @group.Label
+                                                        <i class="fas @group.Icon mr-3"></i> @group.Label
                                                         <span class="badge badge-@group.Color badge-pill ml-2">@group.Count</span>
                                                     </span>
                                                     <span class="text-muted small">
@@ -429,8 +429,8 @@
         .rank-2 .podium-avatar { margin-top: -35px; border-color: #858796; }
         .rank-3 .podium-avatar { margin-top: -35px; border-color: #cd7f32; }
         
-        .podium-name { font-weight: bold; color: #4e73df; margin-bottom: 5px; text-align: center; }
-        .podium-score { font-size: 1.2rem; font-weight: 800; color: #5a5c69; }
+        .podium-name { font-weight: bold; color: #4e73df; margin-bottom: 10px; text-align: center; }
+        .podium-score { font-size: 1.2rem; font-weight: 800; color: #5a5c69; margin-bottom: 12px; }
         
         .crown-icon {
             position: absolute;
@@ -506,7 +506,7 @@
                     <tr onclick="jumpToDetail(${inst.instructorId}, '${inst.instructorName}')" style="cursor:pointer;">
                         <td class="font-weight-bold">${medal} ${rankNum}</td>
                         <td>
-                            <img src="${inst.imageUrl || '/img/undraw_profile.svg'}" class="rounded-circle mr-2" width="30" height="30" style="object-fit:cover;">
+                            <img src="${inst.imageUrl || '/img/undraw_profile.svg'}" class="rounded-circle mr-3" width="30" height="30" style="object-fit:cover;">
                             ${inst.instructorName}
                         </td>
                         <td class="text-center">
