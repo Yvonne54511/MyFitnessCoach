@@ -4,10 +4,25 @@
     ViewData["Title"] = "教練薪資錢包總覽";
 }
 
+@section styles {
+    <!-- 僅在此頁面引入 Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* 修正與 BS4 導覽列的衝突 */
+        .card-header h5 { font-size: 1.25rem; }
+        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+        .collapse:not(.show) { display: none; }
+        .bg-soft-success { background-color: #e1f5ea; color: #1cc88a; }
+        .bg-soft-primary { background-color: #e8eeff; color: #4e73df; }
+        .icon-box-sm { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 0.9rem; }
+        .history-item-row:hover { background-color: #f8f9fc; }
+    </style>
+}
+
 <div class="container-fluid mt-4">
     <div class="card shadow-sm border-0">
         <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-list me-2"></i>教練薪資錢包總覽</h5>
+            <h5 class="mb-0 text-white"><i class="fas fa-list me-2"></i>教練薪資錢包總覽</h5>
             <div class="d-flex gap-2">
                 <a asp-action="ExportToExcel" class="btn btn-sm btn-success">
                     <i class="fas fa-file-excel me-1"></i> 匯出明細 Excel
@@ -45,7 +60,7 @@
                                             </div>
                                         }
                                         <div>
-                                            <div class="fw-bold">@item.Name</div>
+                                            <div class="fw-bold text-dark">@item.Name</div>
                                             <small class="text-muted">ID: @item.Id</small>
                                         </div>
                                     </div>
@@ -57,9 +72,24 @@
                                     @(item.LastUpdated == DateTime.MinValue ? "無紀錄" : item.LastUpdated.ToString("yyyy/MM/dd HH:mm"))
                                 </td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-secondary" onclick="loadWalletDetail(@item.Id)" data-bs-toggle="modal" data-bs-target="#salaryDetailModal">
+                                    <button class="btn btn-sm btn-outline-info" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#details-@item.Id" 
+                                            aria-expanded="false" aria-controls="details-@item.Id"
+                                            onclick="loadWalletDetail(@item.Id)">
                                         <i class="fas fa-history me-1"></i> 錢包明細
                                     </button>
+                                </td>
+                            </tr>
+                            <tr class="p-0 border-0">
+                                <td colspan="4" class="p-0 border-0">
+                                    <div id="details-@item.Id" class="collapse" data-bs-parent="tbody">
+                                        <div class="card card-body border-0 bg-light p-0 detail-container" style="border-radius: 0;">
+                                            <div class="text-center py-5">
+                                                <div class="spinner-border text-primary" role="status"></div>
+                                                <p class="mt-2 text-muted">正在讀取交易紀錄...</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -70,46 +100,23 @@
     </div>
 </div>
 
-<!-- Salary Detail Modal -->
-<div class="modal fade" id="salaryDetailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header bg-dark text-white py-3 px-4 border-0">
-                <h5 class="modal-title fw-bold"><i class="fas fa-wallet me-2 text-warning"></i>教練錢包交易明細</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-0" id="modal-content">
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-2 text-muted">正在讀取交易紀錄...</p>
-                </div>
-            </div>
-            <div class="modal-footer bg-light border-0 py-3">
-                <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">關閉</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-    .modal-content { overflow: hidden; }
-    .bg-soft-success { background-color: #e1f5ea; color: #1cc88a; }
-    .bg-soft-primary { background-color: #e8eeff; color: #4e73df; }
-    .icon-box-sm { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 0.9rem; }
-    .history-item-row:hover { background-color: #f8f9fc; }
-</style>
-
 @section Scripts {
+    <!-- 引入 Bootstrap 5 JS Bundle (含 Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function loadWalletDetail(instructorId) {
-            $('#modal-content').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">載入中...</p></div>');
+            const $container = $('#details-' + instructorId + ' .detail-container');
             
+            // 如果已經載入過且不是正在讀取狀態，就不重複載入
+            if ($container.data('loaded')) return;
+
             $.get('@Url.Action("GetWalletDetail", "Salary")', { 
                 instructorId: instructorId
             }, function (data) {
-                $('#modal-content').html(data);
+                $container.html(data);
+                $container.data('loaded', true);
             }).fail(function () {
-                $('#modal-content').html('<div class="alert alert-danger">載入失敗，請稍後再試。</div>');
+                $container.html('<div class="alert alert-danger m-3">載入失敗，請稍後再試。</div>');
             });
         }
     </script>
