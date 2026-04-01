@@ -89,6 +89,10 @@ namespace Project_MyFitnessCoach
             builder.Services.AddScoped<ISalaryService, SalaryService>();
             builder.Services.AddScoped<IInstructorWalletRepository, InstructorWalletRepository>();
             builder.Services.AddScoped<IInstructorWalletService, InstructorWalletService>();
+            builder.Services.AddScoped<IPayPalService, PayPalService>();
+
+            // 註冊 HttpClient
+            builder.Services.AddHttpClient();
 
 			// 註冊使用Cookie驗證服務
 			builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -96,10 +100,11 @@ namespace Project_MyFitnessCoach
 				{
 					options.Cookie.Name = "MyFitnessCoach.Auth";
 					options.LoginPath = "/Account/Login";
-					options.AccessDeniedPath = "/Home/Error/403"; // 修改：權限不足時導向自訂 403 頁面
+					options.AccessDeniedPath = "/Home/Error/403";
 					options.Cookie.HttpOnly = true;
-					options.Cookie.SameSite = SameSiteMode.Lax; // 明確設定為 Lax
-					options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // 根據請求自動判斷 (HTTP 下不強制 Secure)
+					options.Cookie.SameSite = SameSiteMode.Lax;
+					// 在開發環境下，如果不是 HTTPS，不強制 Secure
+					options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; 
 				});
 
 			var app = builder.Build();

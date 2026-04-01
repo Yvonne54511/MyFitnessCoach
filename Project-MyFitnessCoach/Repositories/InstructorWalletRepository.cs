@@ -7,6 +7,7 @@ namespace Project_MyFitnessCoach.Repositories
     public interface IInstructorWalletRepository
     {
         Task<InstructorWallet?> GetByInstructorIdAsync(int instructorId);
+        Task<List<InstructorWalletDetail>> GetAllDetailsAsync();
         Task UpdateAsync(InstructorWallet wallet);
     }
 
@@ -26,6 +27,17 @@ namespace Project_MyFitnessCoach.Repositories
                 .ThenInclude(i => i.User)
                 .Include(w => w.InstructorWalletDetails)
                 .FirstOrDefaultAsync(w => w.InstructorId == instructorId);
+        }
+
+        public async Task<List<InstructorWalletDetail>> GetAllDetailsAsync()
+        {
+            return await _db.InstructorWalletDetails
+                .Include(d => d.InstructorWallet)
+                .ThenInclude(w => w.Instructor)
+                .ThenInclude(i => i.User)
+                .OrderByDescending(d => d.SalaryDate)
+                .ThenBy(d => d.InstructorWallet.Instructor.User.UserName)
+                .ToListAsync();
         }
 
         public async Task UpdateAsync(InstructorWallet wallet)

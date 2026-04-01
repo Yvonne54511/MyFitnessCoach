@@ -14,16 +14,25 @@ namespace Project_MyFitnessCoach.Services
         Task<List<SalaryInstructorViewModel>> GetInstructorsAsync();
         Task<SalaryDetailViewModel> GetSalaryDetailAsync(int instructorId, int year, int month, double monthlyPool = 0, double annualPool = 0);
         Task<SalaryRankingsViewModel> GetRankingsAsync();
+		Task<int> GetUserIdByInstructorIdAsync(int instructorId);
     }
 
     public class SalaryService : ISalaryService
     {
         private readonly MyFitnessCoachDbContext _context;
+		private readonly IConfiguration _configuration;
 
-        public SalaryService(MyFitnessCoachDbContext context)
+		public SalaryService(MyFitnessCoachDbContext context, IConfiguration configuration)
         {
             _context = context;
-        }
+			_configuration = configuration;
+		}
+
+		public async Task<int> GetUserIdByInstructorIdAsync(int instructorId)
+		{
+			var instructor = await _context.Instructors.FindAsync(instructorId);
+			return instructor?.UserId ?? 0;
+		}
 
         public async Task<SalaryRankingsViewModel> GetRankingsAsync()
         {
@@ -84,7 +93,7 @@ namespace Project_MyFitnessCoach.Services
                 {
                     Id = i.Id,
                     Name = i.User.UserName,
-                    ImageUrl = i.ImageUrl,
+                    ImageUrl = null, // UI 不顯示圖片，直接設為 null 避免任何 404
                     WalletBalance = i.InstructorWallet != null ? i.InstructorWallet.CurrentBalance : 0,
                     LastUpdated = i.InstructorWallet != null ? i.InstructorWallet.LastUpdated : DateTime.MinValue
                 })
@@ -151,6 +160,7 @@ namespace Project_MyFitnessCoach.Services
             {
                 InstructorId = instructorId,
                 InstructorName = instructor.User.UserName,
+                InstructorEmail = instructor.User.Email, // 傳遞 Email
                 HourWage = instructor.HourWage,
                 Year = year,
                 Month = month,
@@ -170,6 +180,9 @@ namespace Project_MyFitnessCoach.Services
 
             detail.BonusAmount = Math.Round(detail.SuggestedBonus, 0);
             detail.AnnualBonusAmount = Math.Round(detail.AnnualSuggestedBonus, 0);
+
+			// 注入匯率設定 (從 Controller 移至此處)
+			detail.TwdToUsdRate = _configuration.GetValue<double>("CurrencySettings:TwdToUsdRate", 32.0);
 
             return detail;
         }

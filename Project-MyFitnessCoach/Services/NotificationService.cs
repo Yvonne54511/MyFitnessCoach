@@ -35,6 +35,9 @@ namespace Project_MyFitnessCoach.Services
                 case NotifyType.Alert:
                     title = "緊急提醒";
                     break;
+                case NotifyType.Salary:
+                    title = "薪資入帳通知";
+                    break;
                 default:
                     title = "通知";
                     break;

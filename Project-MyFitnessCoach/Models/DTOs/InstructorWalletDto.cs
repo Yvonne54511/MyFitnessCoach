@@ -20,4 +20,11 @@ namespace Project_MyFitnessCoach.Models.DTOs
         public decimal TotalAmount { get; set; }
         public DateTime CreatedAt { get; set; }
     }
+
+    public class InstructorWalletExportDto
+    {
+        public string? InstructorName { get; set; }
+        public string? SalaryDate { get; set; }
+        public decimal TotalAmount { get; set; }
+    }
 }

@@ -123,26 +123,46 @@
                     <div class="col-md-5">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body d-flex flex-column justify-content-between p-4 text-center">
+                                <input type="hidden" id="hiddenInstructorId" value="@Model.InstructorId" />
+                                <input type="hidden" id="hiddenPayPalEmail" value="@Model.InstructorEmail" />
+                                <input type="hidden" id="hiddenExchangeRate" value="@Model.TwdToUsdRate" />
                                 <div>
                                     <h6 class="text-muted text-uppercase small fw-bold mb-4">月度薪資結算</h6>
                                     <div class="h4 mb-1 text-dark fw-bold">總發放金額</div>
-                                    <div class="display-5 text-danger fw-bold mb-4" id="displayFinalTotal">@Model.FinalTotalSalary.ToString("C0")</div>
+                                    <div class="display-5 text-danger fw-bold mb-2" id="displayFinalTotal">@Model.FinalTotalSalary.ToString("C0")</div>
+                                    <div class="h5 text-muted mb-4" id="displayFinalTotalUsd">≈ @Model.FinalTotalSalaryUsd.ToString("F2") USD</div>
                                     
                                     <div class="text-start bg-light rounded p-3 mb-4">
                                         <div class="d-flex justify-content-between mb-2">
                                             <span class="text-muted small">基本底薪：</span>
                                             <span class="fw-bold small">$ @Model.BaseSalary.ToString("N0")</span>
                                         </div>
-                                        <div class="d-flex justify-content-between">
+                                        <div class="d-flex justify-content-between mb-2">
                                             <span class="text-muted small">月度獎金：</span>
                                             <span class="fw-bold text-success small">+ $ <span id="bonusDisplayAmount">@Model.BonusAmount.ToString("N0")</span></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                                            <span class="text-muted small">目前匯率：</span>
+                                            <span class="text-muted small">1 USD = @Model.TwdToUsdRate TWD</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <button id="btnSendSalary" class="btn btn-primary w-100 py-3 shadow-sm" onclick="sendSalary('月度')">
-                                    <i class="fas fa-check-circle me-2"></i>核發月度薪資
-                                </button>
+                                @if (DateTime.Now.Day == 1)
+                                {
+                                    <button id="btnSendSalary" class="btn btn-primary w-100 py-3 shadow-sm">
+                                        <i class="fas fa-check-circle me-2"></i>核發月度薪資
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button id="btnSendSalary" class="btn btn-secondary w-100 py-3 shadow-sm" disabled>
+                                        <i class="fas fa-clock me-2"></i> 非發薪日 (每月 1 號)
+                                    </button>
+                                    <div class="mt-2 small text-danger fw-bold">
+                                        * 系統目前僅限每月 1 號開放薪資核發功能（結算前一月全月薪資）。
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -252,7 +272,7 @@
                                 </div>
                             </div>
 
-                            <button id="btnSendAnnualSalary" class="btn btn-info text-white w-100 py-3 shadow-sm" onclick="sendSalary('年度')">
+                            <button id="btnSendAnnualSalary" class="btn btn-info text-white w-100 py-3 shadow-sm">
                                 <i class="fas fa-gift me-2"></i>核發年度獎金
                             </button>
                         </div>
@@ -278,36 +298,22 @@
         }
     }
 
-    const baseSalary = @Model.BaseSalary;
+    // 將 const 改為 var，允許 AJAX 重複載入時覆蓋變數
+    var currentBaseSalary = @Model.BaseSalary;
 
     function calculateSalary() {
         const bonusAmount = parseFloat(document.getElementById('inputBonusAmount').value) || 0;
-        const finalTotal = baseSalary + bonusAmount;
+        const exchangeRate = parseFloat(document.getElementById('hiddenExchangeRate').value) || 32;
+        const finalTotalTwd = currentBaseSalary + bonusAmount;
+        const finalTotalUsd = finalTotalTwd / exchangeRate;
+
         document.getElementById('bonusDisplayAmount').innerText = Math.round(bonusAmount).toLocaleString();
-        document.getElementById('displayFinalTotal').innerText = '$ ' + Math.round(finalTotal).toLocaleString();
+        document.getElementById('displayFinalTotal').innerText = '$ ' + Math.round(finalTotalTwd).toLocaleString();
+        document.getElementById('displayFinalTotalUsd').innerText = '≈ ' + finalTotalUsd.toFixed(2) + ' USD';
     }
 
     function calculateAnnualSalary() {
         const annualBonus = parseFloat(document.getElementById('inputAnnualBonusAmount').value) || 0;
         document.getElementById('displayAnnualFinalTotal').innerText = '$ ' + Math.round(annualBonus).toLocaleString();
-    }
-
-    function sendSalary(type) {
-        const amount = type === '月度' 
-            ? document.getElementById('displayFinalTotal').innerText 
-            : document.getElementById('displayAnnualFinalTotal').innerText;
-        
-        if (confirm(`確定要核發 ${type} 薪資/獎金共 ${amount} 嗎？`)) {
-            const btnId = type === '月度' ? 'btnSendSalary' : 'btnSendAnnualSalary';
-            const btn = document.getElementById(btnId);
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>處理中...';
-            
-            setTimeout(() => {
-                btn.className = 'btn btn-success w-100 py-3 shadow-sm';
-                btn.innerHTML = `<i class="fas fa-check-double me-2"></i>${type}核發成功`;
-                alert(`${type}獎金已成功核發！`);
-            }, 800);
-        }
     }
 </script>

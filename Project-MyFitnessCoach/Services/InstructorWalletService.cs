@@ -2,11 +2,13 @@ using Project_MyFitnessCoach.Models.DTOs;
 using Project_MyFitnessCoach.Repositories;
 using System.Threading.Tasks;
 
-namespace Project_MyFitnessCoach.Services
-{
+namespace Project_MyFitnessCoach.Services 
+{ 
     public interface IInstructorWalletService
     {
         Task<InstructorWalletDto?> GetWalletByInstructorIdAsync(int instructorId);
+        Task<List<InstructorWalletExportDto>> GetAllWalletDetailsForExportAsync();
+        Task<bool> AddSalaryEntryAsync(int instructorId, decimal amount, string note);
     }
 
     public class InstructorWalletService : IInstructorWalletService
@@ -17,6 +19,33 @@ namespace Project_MyFitnessCoach.Services
         {
             _walletRepository = walletRepository;
         }
+
+    // ... GetWalletByInstructorIdAsync ...
+
+        public async Task<bool> AddSalaryEntryAsync(int instructorId, decimal amount, string note)
+        {
+            var wallet = await _walletRepository.GetByInstructorIdAsync(instructorId);
+            if (wallet == null) return false;
+
+            // 1. 增加餘額
+            wallet.CurrentBalance += (int)amount; 
+            wallet.LastUpdated = DateTime.Now;
+
+            // 2. 新增入帳明細
+            var detail = new Project_MyFitnessCoach.Models.EfModels.InstructorWalletDetail
+            {
+                InstructorWalletId = wallet.Id,
+                SalaryDate = DateTime.Now.ToString("yyyy-MM-dd"), // 修正為 string 格式
+                TotalAmount = amount, // 使用 decimal 賦值
+                CreatedAt = DateTime.Now
+            };
+
+            wallet.InstructorWalletDetails.Add(detail);
+
+            await _walletRepository.UpdateAsync(wallet);
+            return true;
+        }
+
 
         public async Task<InstructorWalletDto?> GetWalletByInstructorIdAsync(int instructorId)
         {
@@ -40,6 +69,17 @@ namespace Project_MyFitnessCoach.Services
                         CreatedAt = d.CreatedAt
                     }).ToList()
             };
+        }
+
+        public async Task<List<InstructorWalletExportDto>> GetAllWalletDetailsForExportAsync()
+        {
+            var details = await _walletRepository.GetAllDetailsAsync();
+            return details.Select(d => new InstructorWalletExportDto
+            {
+                InstructorName = d.InstructorWallet.Instructor.User.UserName,
+                SalaryDate = d.SalaryDate,
+                TotalAmount = d.TotalAmount
+            }).ToList();
         }
     }
 }

@@ -36,7 +36,9 @@ namespace Project_MyFitnessCoach.Models.ViewModels
     {
         public int InstructorId { get; set; }
         public string InstructorName { get; set; }
+        public string InstructorEmail { get; set; } // 這是登入用的 Email，也作為 PayPal 收款帳號
         public int HourWage { get; set; }
+
         public int Year { get; set; }
         public int Month { get; set; }
         public List<SalaryShiftViewModel> Shifts { get; set; } = new List<SalaryShiftViewModel>();
@@ -73,6 +75,10 @@ namespace Project_MyFitnessCoach.Models.ViewModels
         
         public double BonusAmount { get; set; } // 實際發放獎金 (預設為 SuggestedBonus)
         public double FinalTotalSalary => BaseSalary + BonusAmount;
+
+		// 匯率轉換
+		public double TwdToUsdRate { get; set; } = 32.0; // 預設值，由 Controller 注入
+		public double FinalTotalSalaryUsd => FinalTotalSalary / TwdToUsdRate;
     }
 
     public class SalaryShiftViewModel

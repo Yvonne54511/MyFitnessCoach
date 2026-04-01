@@ -32,23 +32,21 @@
                 </div>
             </div>
 
-            <h4 class="mb-4 text-secondary"><i class="fas fa-user-nurse me-2"></i>營養師列表</h4>
+            <h4 class="mb-4 text-secondary d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-user-nurse me-2"></i>營養師列表</span>
+                <a asp-action="AllWallets" class="btn btn-sm btn-outline-primary shadow-sm">
+                    <i class="fas fa-wallet me-1"></i> 錢包總覽
+                </a>
+            </h4>
             <div class="list-group list-group-flush shadow-sm rounded overflow-auto" style="max-height: 600px;">
                 @foreach (var instructor in Model.Instructors)
                 {
                     <a href="javascript:void(0)" class="list-group-item list-group-item-action instructor-item py-3" 
                        data-id="@instructor.Id" onclick="loadSalaryDetail(@instructor.Id)">
                         <div class="d-flex align-items-center">
-                            @if (!string.IsNullOrEmpty(instructor.ImageUrl))
-                            {
-                                <img src="@instructor.ImageUrl" class="rounded-circle me-3" style="width: 45px; height: 45px; object-fit: cover;" alt="@instructor.Name">
-                            }
-                            else
-                            {
-                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
-                                    <i class="fas fa-user text-white"></i>
-                                </div>
-                            }
+                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
                             <span class="h6 mb-0">@instructor.Name</span>
                         </div>
                     </a>
@@ -142,25 +140,165 @@
 </div>
 
 @section Scripts {
+    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
+    <style>
+        /* MicroModal Basic Styles */
+        .modal {
+          display: none;
+        }
+        .modal.is-open {
+          display: block;
+        }
+        .modal__overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0,0,0,0.6);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 2000;
+        }
+        .modal__container {
+          background-color: #fff;
+          padding: 30px;
+          max-width: 500px;
+          max-height: 100vh;
+          border-radius: 8px;
+          overflow-y: auto;
+          box-sizing: border-box;
+        }
+        .modal__header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .modal__title {
+          margin-top: 0;
+          margin-bottom: 0;
+          font-weight: 600;
+          font-size: 1.25rem;
+          line-height: 1.25;
+          color: #00449e;
+          box-sizing: border-box;
+        }
+        .modal__close {
+          background: transparent;
+          border: 0;
+        }
+        .modal__header .modal__close:before { content: "\2715"; }
+        .modal__content {
+          margin-top: 2rem;
+          margin-bottom: 2rem;
+          line-height: 1.5;
+          color: rgba(0,0,0,.8);
+        }
+        .modal__footer {
+          display: flex;
+          justify-content: flex-end;
+        }
+        .modal__btn {
+          font-size: .875rem;
+          padding-left: 1rem;
+          padding-right: 1rem;
+          padding-top: .5rem;
+          padding-bottom: .5rem;
+          background-color: #e6e6e6;
+          color: rgba(0,0,0,.8);
+          border-radius: .25rem;
+          border-style: none;
+          border-width: 0;
+          cursor: pointer;
+          text-transform: none;
+          overflow: visible;
+          line-height: 1.15;
+          margin: 0;
+          will-change: transform;
+          -moz-osx-font-smoothing: grayscale;
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          -webkit-transform: translateZ(0);
+          transform: translateZ(0);
+          transition: -webkit-transform .25s ease-out;
+          transition: transform .25s ease-out;
+          transition: transform .25s ease-out,-webkit-transform .25s ease-out;
+        }
+        .modal__btn-primary {
+          background-color: #00449e;
+          color: #fff;
+        }
+    </style>
+
+    <!-- MicroModal Structure -->
+    <div class="modal micromodal-slide" id="modal-salary-confirm" aria-hidden="true">
+        <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+            <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-salary-confirm-title">
+                <header class="modal__header">
+                    <h2 class="modal__title" id="modal-salary-confirm-title">
+                        核發薪資確認
+                    </h2>
+                    <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+                </header>
+                <main class="modal__content" id="modal-salary-confirm-content">
+                    您確定要核發薪資嗎？此動作將會透過 PayPal 進行實際轉帳。
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <strong>教練：</strong> <span id="confirm-instructor-name">-</span><br/>
+                        <strong>收款帳號 (Email)：</strong> <span id="confirm-paypal-email">-</span><br/>
+                        <strong>核發金額：</strong> <span class="text-danger fw-bold h5">$<span id="confirm-amount">0</span></span>
+                    </div>
+                </main>
+                <footer class="modal__footer">
+                    <button class="modal__btn modal__btn-primary me-2" id="btn-modal-confirm-issue">確認核發</button>
+                    <button class="modal__btn" data-micromodal-close aria-label="Close this dialog window">取消</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Alert Modal -->
+    <div class="modal micromodal-slide" id="modal-generic-alert" aria-hidden="true">
+        <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+            <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-generic-alert-title">
+                <header class="modal__header">
+                    <h2 class="modal__title" id="modal-generic-alert-title">提示</h2>
+                    <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+                </header>
+                <main class="modal__content" id="modal-generic-alert-content">
+                    <!-- Message content goes here -->
+                </main>
+                <footer class="modal__footer">
+                    <button class="modal__btn modal__btn-primary" data-micromodal-close>確定</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Initialize MicroModal
+        MicroModal.init();
+
+        // Helper to show generic alert
+        function showAlert(title, message) {
+            document.getElementById("modal-generic-alert-title").innerText = title;
+            document.getElementById("modal-generic-alert-content").innerText = message;
+            MicroModal.show('modal-generic-alert');
+        }
+
         function triggerGlobalUpdate() {
             const activeId = $('.instructor-item.active').data('id');
             if (activeId) {
-                // We use a small timeout to debounce typing if needed, 
-                // but direct call is okay for simple updates.
                 loadSalaryDetail(activeId);
             }
         }
 
         function loadSalaryDetail(instructorId) {
-            // Highlight selected item
             $('.instructor-item').removeClass('active');
             $(`.instructor-item[data-id="${instructorId}"]`).addClass('active');
 
-            // Show loading state
             $('#salary-detail-container').html('<div class="card h-100 border-0 shadow-sm d-flex align-items-center justify-content-center bg-light"><div class="text-center"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">載入中...</p></div></div>');
 
-            // Fetch detail via AJAX
             const monthlyPool = $('#monthlyBonusPool').val();
             const annualPool = $('#annualBonusPool').val();
             
@@ -170,9 +308,80 @@
                 annualBonusPool: annualPool
             }, function (data) {
                 $('#salary-detail-container').html(data);
+                bindIssueEvent(); // 重新綁定事件
             }).fail(function () {
                 $('#salary-detail-container').html('<div class="alert alert-danger mt-3">載入失敗，請稍後再試。</div>');
             });
         }
+
+        function bindIssueEvent() {
+            const issueBtn = document.getElementById("btnSendSalary");
+            if (!issueBtn) return;
+
+            issueBtn.onclick = function() {
+                const instructorId = document.getElementById("hiddenInstructorId").value;
+                const instructorName = $(".instructor-item.active .h6").text();
+                const receiverEmail = document.getElementById("hiddenPayPalEmail").value;
+                
+                const totalText = document.getElementById("displayFinalTotal").innerText;
+                const finalAmount = parseFloat(totalText.replace(/[^0-9.]/g, ''));
+
+                if (!receiverEmail) { showAlert("提示", "該教練尚未綁定 PayPal 收款帳號！"); return; }
+                if (isNaN(finalAmount) || finalAmount <= 0) { showAlert("金額錯誤", "核發金額必須大於 0！"); return; }
+
+                // Fill Modal Data
+                document.getElementById("confirm-instructor-name").innerText = instructorName;
+                document.getElementById("confirm-paypal-email").innerText = receiverEmail;
+                document.getElementById("confirm-amount").innerText = finalAmount.toLocaleString();
+
+                // Open Modal
+                MicroModal.show('modal-salary-confirm');
+
+                // Bind Confirm Action
+                document.getElementById("btn-modal-confirm-issue").onclick = async function() {
+                    MicroModal.close('modal-salary-confirm');
+                    executeIssueSalary(instructorId, receiverEmail, finalAmount, issueBtn);
+                };
+            };
+        }
+
+        async function executeIssueSalary(instructorId, receiverEmail, finalAmount, issueBtn) {
+            issueBtn.disabled = true;
+            const originalText = issueBtn.innerText;
+            issueBtn.innerText = "轉帳處理中...";
+
+            const requestData = {
+                InstructorId: parseInt(instructorId),
+                ReceiverEmail: receiverEmail,
+                Amount: parseFloat(finalAmount),
+                Note: "平台月度薪資結算"
+            };
+
+            try {
+                const response = await fetch('/Salary/IssueMonthlySalary', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showAlert("成功", result.message);
+                    loadSalaryDetail(instructorId); // 重新載入以更新狀態
+                } else {
+                    showAlert("錯誤", result.message);
+                }
+            } catch (error) {
+                console.error("API 請求失敗:", error);
+                showAlert("系統錯誤", "系統發生異常，請聯絡管理員。");
+            } finally {
+                issueBtn.disabled = false;
+                issueBtn.innerText = originalText;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            bindIssueEvent();
+        });
     </script>
 }
