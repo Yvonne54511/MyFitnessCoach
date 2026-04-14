@@ -60,6 +60,7 @@
                 <table class="table table-bordered table-hover" id="reviewDataTable" width="100%" cellspacing="0">
                     <thead class="table-dark text-white">
                         <tr>
+                            <th class="d-none">檢舉優先權</th>
                             <th>時間</th>
                             <th>學員</th>
                             <th>營養師</th>
@@ -71,7 +72,9 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
+                            var hasReport = !string.IsNullOrEmpty(item.ReportMessage);
                             <tr class="@(item.IsBanned ? "row-banned" : "")">
+                                <td class="d-none">@(hasReport ? "1" : "0")</td>
                                 <td data-order="@item.CreatedAt.Ticks">@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                                 <td>
                                     @item.MemberName 
@@ -246,9 +249,9 @@
 
             // DataTable Initialization
             $('#reviewDataTable').DataTable({
-                "order": [[ 0, "desc" ]],
+                "order": [[ 0, "desc" ], [ 1, "desc" ]],
                 "columnDefs": [
-                    { "orderable": false, "targets": 5 },
+                    { "orderable": false, "targets": 6 },
                     { "className": "align-middle", "targets": "_all" }
                 ],
                 "language": {

@@ -4,6 +4,16 @@
     ViewData["Title"] = "訂單管理";
 }
 
+@section styles {
+    <style>
+        /* 覆蓋 layout-warm.css 的橘色標題設定，恢復為白色 */
+        .table-dark th {
+            color: #ffffff !important;
+            background-color: #343a40 !important; /* 確保背景也是深色 */
+        }
+    </style>
+}
+
 <div class="container-fluid px-4">
     <h1 class="mt-4">訂單管理</h1>
     <ol class="breadcrumb mb-4">
@@ -52,7 +62,7 @@
         </div>
         <div class="card-body">
             <table class="table table-hover table-striped">
-                <thead class="table-dark">
+                <thead class="table-dark text-white">
                     <tr>
                         <th>編號</th>
                         <th>訂單時間</th>

@@ -177,9 +177,9 @@ namespace Project_MyFitnessCoach.Controllers
                 Roles = s.Roles
             }).ToList();
 
-            // 員工列表：排除只有 member 或 instructor 角色的使用者
+            // 員工列表：排除只有 member 或 instructor 角色的使用者（無角色的也顯示）
             var staffList = allStaff
-                .Where(s => s.Roles.Any(r => r != "member" && r != "instructor"))
+                .Where(s => !s.Roles.Any() || s.Roles.Any(r => r != "member" && r != "instructor"))
                 .ToList();
             // 營養師列表：有 instructor 角色的使用者
             ViewBag.InstructorList = allStaff
@@ -214,7 +214,7 @@ namespace Project_MyFitnessCoach.Controllers
                 IsConfirmed = s.IsConfirmed,
                 IsActive = s.IsActive,
                 Roles = s.Roles
-            }).Where(s => s.Roles.Any(r => r != "member" && r != "instructor"))
+            }).Where(s => !s.Roles.Any() || s.Roles.Any(r => r != "member" && r != "instructor"))
             .ToList();
 
             return PartialView("_StaffListPartial", staffList);
@@ -224,22 +224,29 @@ namespace Project_MyFitnessCoach.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Invite(StaffInviteViewModel model)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || model.RoleIds == null || model.RoleIds.Count == 0)
             {
-                return Json(new { success = false, message = "資料格式錯誤" });
+                return Json(new { success = false, message = "請填寫完整資料，並至少選擇一個角色" });
             }
 
-            var dto = new StaffInviteDto
+            try
             {
-                UserName = model.UserName,
-                Email = model.Email,
-                RoleIds = model.RoleIds
-            };
+                var dto = new StaffInviteDto
+                {
+                    UserName = model.UserName,
+                    Email = model.Email,
+                    RoleIds = model.RoleIds
+                };
 
-            var result = await _userService.InviteStaffAsync(dto, code => 
-                Url.Action("Activate", "Staff", new { code }, Request.Scheme));
+                var result = await _userService.InviteStaffAsync(dto, code =>
+                    Url.Action("Activate", "Staff", new { code }, Request.Scheme));
 
-            return Json(new { success = result.IsSuccess, message = result.Message });
+                return Json(new { success = result.IsSuccess, message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "邀請失敗：" + ex.Message });
+            }
         }
 
         [HttpGet]

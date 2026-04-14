@@ -71,7 +71,6 @@
                 </div>
                 <div class="card-body">
                     <form asp-action="BalanceGrant" method="post">
-                        @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="EmployeeId" />
                         <input type="hidden" asp-for="LeaveTypeId" />
                         <input type="hidden" asp-for="Year" />

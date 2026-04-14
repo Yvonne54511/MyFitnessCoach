@@ -715,38 +715,6 @@ public partial class MyFitnessCoachDbContext : DbContext
                 .HasConstraintName("FK_RoleFunctions_Role");
         });
 
-        modelBuilder.Entity<Shift>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Shifts__3214EC079539D058");
-
-            entity.Property(e => e.TimeSlot)
-                .IsRequired()
-                .HasMaxLength(20);
-
-            entity.HasOne(d => d.Instructor).WithMany(p => p.Shifts)
-                .HasForeignKey(d => d.InstructorId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Shifts_Instructors");
-        });
-
-        modelBuilder.Entity<PointOrder>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__PointOrd__3214EC0746269E1A");
-
-            entity.Property(e => e.CreateAt).HasPrecision(7);
-            entity.Property(e => e.DiscountedPrice).HasColumnType("decimal(18, 0)");
-            entity.Property(e => e.OriginalPrice).HasColumnType("decimal(18, 0)");
-
-            entity.HasOne(d => d.Member).WithMany(p => p.PointOrders)
-                .HasForeignKey(d => d.MemberId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PointOrders_Members");
-
-            entity.HasOne(d => d.TopUpPlan).WithMany(p => p.PointOrders)
-                .HasForeignKey(d => d.TopUpPlanId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PointOrders_TopUpPlans");
-        });
 
         modelBuilder.Entity<PointsRecordDetail>(entity =>
         {

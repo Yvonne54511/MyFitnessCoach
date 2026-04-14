@@ -26,6 +26,7 @@ namespace Project_MyFitnessCoach.Models.ViewModel
         public string Email { get; set; }
 
         [Required(ErrorMessage = "請至少選擇一個角色")]
+        [MinLength(1, ErrorMessage = "請至少選擇一個角色")]
         [Display(Name = "角色")]
         public List<int> RoleIds { get; set; } = new List<int>();
     }

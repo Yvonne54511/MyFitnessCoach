@@ -49,7 +49,6 @@
 
                     <!-- 可編輯表單 -->
                     <form asp-action="EmployeeEdit" method="post">
-                        @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="UserId" />
 

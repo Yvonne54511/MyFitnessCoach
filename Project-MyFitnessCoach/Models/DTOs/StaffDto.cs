@@ -18,7 +18,7 @@ namespace Project_MyFitnessCoach.Models.DTOs
     {
         public string UserName { get; set; }
         public string Email { get; set; }
-        public List<int> RoleIds { get; set; }
+        public List<int> RoleIds { get; set; } = new List<int>();
     }
 
     public class StaffUpdateDto

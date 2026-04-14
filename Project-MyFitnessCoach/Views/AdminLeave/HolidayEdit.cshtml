@@ -29,7 +29,6 @@
                 </div>
                 <div class="card-body">
                     <form asp-action="HolidayEdit" method="post">
-                        @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="Id" />
 
                         <div class="form-group">
