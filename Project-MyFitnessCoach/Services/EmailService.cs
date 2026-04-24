@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using MimeKit;
 using System.Threading.Tasks;
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace Project_MyFitnessCoach.Services
 {
@@ -85,6 +86,52 @@ namespace Project_MyFitnessCoach.Services
                     <a href='{resetUrl}' style='color:#b96410;'>{resetUrl}</a>
                 </p>
                 <p style='margin:24px 0 0;line-height:1.8;color:#7a614d;'>如果您沒有操作，請忽略這封信。</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+
+            return await SendEmailAsync(userEmail, subject, bodyHtml);
+        }
+
+        public async Task<bool> SendReservationCancelEmailAsync(string userEmail, string userName, string instructorName, string date, string timeSlot)
+        {
+            var subject = "MyFitnessCoach 預約取消通知";
+            var bodyHtml = $@"
+<!DOCTYPE html>
+<html lang='zh-Hant'>
+<head>
+    <meta charset='utf-8' />
+    <title>MyFitnessCoach 預約取消通知</title>
+</head>
+<body style='margin:0;padding:0;background:#fff7e8;font-family:Segoe UI,Microsoft JhengHei,sans-serif;color:#4a3523;'>
+    <div style='max-width:640px;margin:32px auto;padding:24px;'>
+        <div style='background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 20px 45px rgba(209,134,28,.16);'>
+            <div style='padding:32px 36px;background:linear-gradient(135deg,#ff7676,#ff4d4d);color:#ffffff;'>
+                <div style='font-size:12px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;'>Reservation Cancelled</div>
+                <h1 style='margin:14px 0 10px;font-size:30px;'>預約取消通知</h1>
+                <p style='margin:0;font-size:15px;line-height:1.8;'>很抱歉，您的預約已被管理員取消。</p>
+            </div>
+            <div style='padding:36px;'>
+                <p style='margin:0 0 14px;'>Hi {userName}，</p>
+                <p style='margin:0 0 14px;line-height:1.8;'>我們很抱歉地通知您，您原訂於 <strong>{date} {timeSlot}</strong> 與 <strong>{instructorName}</strong> 營養師的諮詢預約已被取消。</p>
+                <p style='margin:0 0 14px;line-height:1.8;'>如果您是使用<strong>點數</strong>預約，點數已全數退還至您的電子錢包。您可以登入系統查看您的餘額，並重新安排其他時段。</p>
+                <div style='margin:24px 0;padding:20px;background:#fff5dc;border-radius:14px;'>
+                    <p style='margin:0 0 8px;font-weight:700;color:#b96410;'>取消預約資訊：</p>
+                    <ul style='margin:0;padding-left:20px;line-height:1.8;'>
+                        <li>諮詢日期：{date}</li>
+                        <li>諮詢時段：{timeSlot}</li>
+                        <li>營養師：{instructorName}</li>
+                    </ul>
+                </div>
+                <p style='margin:0 0 28px;line-height:1.8;'>您可以前往系統重新預約：</p>
+                <p style='margin:0;'>
+                    <a href='http://localhost:5173/AllInstructor' style='display:inline-block;padding:14px 28px;border-radius:999px;background:linear-gradient(135deg,#f2a531,#e47b22);color:#fffaf2;text-decoration:none;font-weight:700;'>前往系統</a>
+                </p>
+                <p style='margin:20px 0 0;font-size:13px;color:#7a614d;'>如果按鈕無法點擊，請複製以下連結至瀏覽器：</p>
+                <p style='margin:5px 0 0;font-size:13px;word-break:break-all;color:#b96410;'>http://localhost:5173/AllInstructor</p>
+                <p style='margin:24px 0 0;line-height:1.8;color:#7a614d;'>這封信是由系統自動發出，如有任何疑問，請聯繫客服。</p>
             </div>
         </div>
     </div>

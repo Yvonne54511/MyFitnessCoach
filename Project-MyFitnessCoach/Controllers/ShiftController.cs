@@ -120,12 +120,24 @@ namespace Project_MyFitnessCoach.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateShiftStatus(int shiftId, bool isBooked)
         {
-            var result = await _adminService.UpdateShiftStatusAsync(shiftId, isBooked);
-            if (result)
+            _logger.LogInformation("收到更新班表狀態請求: shiftId={shiftId}, isBooked={isBooked}", shiftId, isBooked);
+            
+            try 
             {
-                return Json(new { success = true });
+                var result = await _adminService.UpdateShiftStatusAsync(shiftId, isBooked);
+                if (result)
+                {
+                    return Json(new { success = true });
+                }
+                
+                _logger.LogWarning("班表狀態更新失敗 (Service 回傳 false): shiftId={shiftId}", shiftId);
+                return Json(new { success = false, message = "更新失敗，可能是因為該時段已過期或資料不存在" });
             }
-            return Json(new { success = false, message = "更新失敗" });
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新班表狀態時發生異常: {Message}", ex.Message);
+                return Json(new { success = false, message = "系統發生錯誤: " + ex.Message });
+            }
         }
     }
 }

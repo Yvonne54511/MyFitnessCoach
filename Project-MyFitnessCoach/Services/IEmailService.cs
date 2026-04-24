@@ -23,5 +23,10 @@ namespace Project_MyFitnessCoach.Services
         /// (相容舊版) 發送員工邀請驗證信
         /// </summary>
         bool SendStaffInvitationEmail(string email, string userName, string invitationUrl);
+
+        /// <summary>
+        /// 發送預約取消通知信
+        /// </summary>
+        Task<bool> SendReservationCancelEmailAsync(string userEmail, string userName, string instructorName, string date, string timeSlot);
     }
 }

@@ -53,7 +53,7 @@ namespace Project_MyFitnessCoach.Models.ViewModels
     public class PointsRecordDetailViewModel
     {
         public int Id { get; set; }
-        public int PointOrderId { get; set; }
+        public int? PointOrderId { get; set; }
         public int UserWalletId { get; set; }
 
         [Display(Name = "紀錄時間")]

@@ -137,7 +137,7 @@ namespace Project_MyFitnessCoach.Models.Services
                     // 3. 寫入流水帳
                     var record = new PointsRecordDetail
                     {
-                        PointOrderId = 0, // 非儲值產生的紀錄
+                        PointOrderId = null, // 改為 null，因為這不是儲值產生的
                         UserWalletId = wallet.Id,
                         CreateAt = DateTime.Now,
                         PointAmount = refundAmount,

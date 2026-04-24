@@ -9,7 +9,7 @@ public partial class PointsRecordDetail
 {
     public int Id { get; set; }
 
-    public int PointOrderId { get; set; }
+    public int? PointOrderId { get; set; }
 
     public int UserWalletId { get; set; }
 
