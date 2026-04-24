@@ -46,9 +46,9 @@ namespace Project_MyFitnessCoach
             //builder.Services.AddScoped<Microsoft.AspNetCore.Identity.IPasswordHasher<User>>(sp => sp.GetRequiredService<BCryptPasswordHasher>());
 			builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 			builder.Services.AddScoped<IMemberAccountService, MemberAccountService>();
-            builder.Services.AddScoped<IEmailService, EmailService>();
-            builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
-            builder.Services.AddScoped<IDashboardService, DashboardService>();
+			builder.Services.AddScoped<IEmailService, EmailService>();
+			builder.Services.AddScoped<GoogleCalendarService>();
+			builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();            builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();

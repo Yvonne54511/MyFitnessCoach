@@ -21,12 +21,14 @@ namespace Project_MyFitnessCoach.Repositories
     {
         private readonly MyFitnessCoachDbContext _context;
         private readonly IEmailService _emailService;
+        private readonly GoogleCalendarService _googleCalendarService;
         private readonly ILogger<AdminRepository> _logger;
 
-        public AdminRepository(MyFitnessCoachDbContext context, IEmailService emailService, ILogger<AdminRepository> logger)
+        public AdminRepository(MyFitnessCoachDbContext context, IEmailService emailService, GoogleCalendarService googleCalendarService, ILogger<AdminRepository> logger)
         {
             _context = context;
             _emailService = emailService;
+            _googleCalendarService = googleCalendarService;
             _logger = logger;
         }
 
@@ -73,7 +75,6 @@ namespace Project_MyFitnessCoach.Repositories
 
             if (shift == null) return false;
 
-            // 補回時間判定：不允許修改過去的班表
             var now = DateTime.Now;
             int hour = 8;
             if (shift.TimeSlot.Contains("午")) hour = 13;
@@ -88,7 +89,7 @@ namespace Project_MyFitnessCoach.Repositories
             if (now > shiftDateTime)
             {
                 _logger.LogWarning("Repository: 禁止修改過去的班表 (ShiftId: {ShiftId})", shiftId);
-                return false; // 這裡補回來了
+                return false;
             }
 
             if (shift.IsBooked == isBooked) return true;
@@ -103,45 +104,62 @@ namespace Project_MyFitnessCoach.Repositories
                     {
                         foreach (var order in shift.ReserveOrders.ToList())
                         {
-                            // 補回：更安全的會員資料讀取
                             var member = await _context.Members
                                 .Include(m => m.User)
                                 .Include(m => m.UserWallet)
                                 .FirstOrDefaultAsync(m => m.Id == order.MemberId);
 
-                            if (member != null && order.PointCost.HasValue && order.PointCost.Value > 0)
+                            if (member != null)
                             {
-                                // 退回點數
-                                if (member.UserWallet != null)
+                                // 1. 退回點數
+                                if (order.PointCost.HasValue && order.PointCost.Value > 0)
                                 {
-                                    member.UserWallet.CurrentBalance += (decimal)order.PointCost.Value;
-                                    member.UserWallet.LastUpdated = DateTime.Now;
-
-                                    // 記錄流水 (PointOrderId 可為 NULL)
-                                    _context.PointsRecordDetails.Add(new PointsRecordDetail
+                                    if (member.UserWallet != null)
                                     {
-                                        PointOrderId = null,
-                                        UserWalletId = member.UserWallet.Id,
-                                        CreateAt = DateTime.Now,
-                                        PointAmount = order.PointCost.Value,
-                                        MerchandiseCategory = "Cancel",
-                                        ReserveOrderId = null
-                                    });
+                                        member.UserWallet.CurrentBalance += (decimal)order.PointCost.Value;
+                                        member.UserWallet.LastUpdated = DateTime.Now;
+
+                                        _context.PointsRecordDetails.Add(new PointsRecordDetail
+                                        {
+                                            PointOrderId = null,
+                                            UserWalletId = member.UserWallet.Id,
+                                            CreateAt = DateTime.Now,
+                                            PointAmount = order.PointCost.Value,
+                                            MerchandiseCategory = "後台取消預約(點數歸還)",
+                                            ReserveOrderId = null
+                                        });
+                                    }
                                 }
 
-                                // 寄送 Email (失敗不中斷交易)
+                                // 2. 寄送 Email (這裡可以用 Task.Run 隔離，因為 EmailService 不用 DB)
                                 if (member.User != null && !string.IsNullOrEmpty(member.User.Email))
                                 {
-                                    try {
-                                        _ = _emailService.SendReservationCancelEmailAsync(
-                                            member.User.Email, member.User.UserName, 
-                                            shift.Instructor.User.UserName ?? "您的營養師", 
-                                            shift.ScheduleDate.ToString("yyyy-MM-dd"), shift.TimeSlot);
-                                    } catch { }
+                                    // 抓取所需的字串，避免在非同步執行時 member 被釋放
+                                    string email = member.User.Email;
+                                    string userName = member.User.UserName;
+                                    string instrName = shift.Instructor.User.UserName ?? "您的營養師";
+                                    string dateStr = shift.ScheduleDate.ToString("yyyy-MM-dd");
+                                    string timeStr = shift.TimeSlot;
+
+                                    _ = Task.Run(() => _emailService.SendReservationCancelEmailAsync(email, userName, instrName, dateStr, timeStr));
+                                }
+
+                                // 3. Google 日曆同步刪除 (必須等待，因為它會用到同一個 DbContext)
+                                if (!string.IsNullOrEmpty(order.GoogleEventId))
+                                {
+                                    try
+                                    {
+                                        // 修改為 await，避免 DbContext 同時被多個 Thread 使用
+                                        await _googleCalendarService.DeleteEventAsync(member.UserId, order.GoogleEventId);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, "Google 日曆同步刪除失敗: {Message}", ex.Message);
+                                    }
                                 }
                             }
 
-                            // 處理外鍵並刪除預約
+                            // 4. 處理外鍵並刪除預約
                             var relatedLogs = await _context.PointsRecordDetails.Where(r => r.ReserveOrderId == order.Id).ToListAsync();
                             foreach (var log in relatedLogs) log.ReserveOrderId = null;
 
