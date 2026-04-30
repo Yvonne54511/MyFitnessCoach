@@ -132,11 +132,24 @@ namespace Project_MyFitnessCoach.Repositories
                                 }
 
                                 // 2. 寄送 Email (這裡可以用 Task.Run 隔離，因為 EmailService 不用 DB)
-                                if (member.User != null && !string.IsNullOrEmpty(member.User.Email))
+                                string email = "";
+                                string userName = "";
+
+                                if (order.MemberId == 6 && !string.IsNullOrEmpty(order.Memorandum) && order.Memorandum.StartsWith("GuestEmail:"))
                                 {
-                                    // 抓取所需的字串，避免在非同步執行時 member 被釋放
-                                    string email = member.User.Email;
-                                    string userName = member.User.UserName;
+                                    // 訪客模式：從備註提取 Email
+                                    email = order.Memorandum.Replace("GuestEmail:", "").Trim();
+                                    userName = "訪客";
+                                }
+                                else if (member.User != null && !string.IsNullOrEmpty(member.User.Email))
+                                {
+                                    // 一般會員
+                                    email = member.User.Email;
+                                    userName = member.User.UserName;
+                                }
+
+                                if (!string.IsNullOrEmpty(email))
+                                {
                                     string instrName = shift.Instructor.User.UserName ?? "您的營養師";
                                     string dateStr = shift.ScheduleDate.ToString("yyyy-MM-dd");
                                     string timeStr = shift.TimeSlot;
