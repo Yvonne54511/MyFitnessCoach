@@ -31,6 +31,8 @@ public partial class User
 
     public DateTime? ResetPasswordConfirmCodeExpiry { get; set; }
 
+    public bool? IsResetPasswordConfirmCodeUsed { get; set; }
+
     public virtual Employee Employee { get; set; }
 
     public virtual ICollection<Instructor> Instructors { get; set; } = new List<Instructor>();
@@ -42,6 +44,8 @@ public partial class User
     public virtual ICollection<Notification> NotificationUsers { get; set; } = new List<Notification>();
 
     public virtual ICollection<UserExternalLogin> UserExternalLogins { get; set; } = new List<UserExternalLogin>();
+
+    public virtual ICollection<UserPasswordHistory> UserPasswordHistories { get; set; } = new List<UserPasswordHistory>();
 
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

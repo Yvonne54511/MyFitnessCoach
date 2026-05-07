@@ -23,6 +23,22 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[CartItems]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Carts]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Coupons]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DailyDiets]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Departments]",
          "ObjectType": 0
       },
@@ -32,10 +48,6 @@
       },
       {
          "Name": "[dbo].[FoodCategories]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[FoodRecords]",
          "ObjectType": 0
       },
       {
@@ -91,6 +103,18 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[MemberCoupons]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[MemberFavoriteFoods]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[MemberGoals]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Members]",
          "ObjectType": 0
       },
@@ -103,7 +127,7 @@
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[Nutrients]",
+         "Name": "[dbo].[NutrientReferenceValues]",
          "ObjectType": 0
       },
       {
@@ -128,6 +152,10 @@
       },
       {
          "Name": "[dbo].[Products]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RateLimitLogs]",
          "ObjectType": 0
       },
       {
@@ -159,6 +187,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[UserPasswordHistories]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[UserRoles]",
          "ObjectType": 0
       },
@@ -171,15 +203,19 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[WaterLogs]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[FoodCalories]",
+         "ObjectType": 3
+      },
+      {
          "Name": "[dbo].[vw_EmployeeDeptInfo]",
          "ObjectType": 3
       },
       {
          "Name": "[dbo].[vw_RoleFunctions]",
-         "ObjectType": 3
-      },
-      {
-         "Name": "[dbo].[vw_UserMemberFoodRecord]",
          "ObjectType": 3
       },
       {

@@ -5,23 +5,25 @@ using System.Collections.Generic;
 
 namespace Project_MyFitnessCoach.Models.EfModels;
 
-public partial class Nutrient
+public partial class NutrientReferenceValue
 {
     public int Id { get; set; }
 
     public int FoodId { get; set; }
 
-    public int BaseAmount { get; set; }
-
     public string Measure { get; set; }
 
-    public double? Kcal { get; set; }
+    public decimal BaseAmount { get; set; }
 
-    public double? ProteinGram { get; set; }
+    public int WeightInGrams { get; set; }
 
-    public double? CarbGram { get; set; }
+    public decimal? Kcal { get; set; }
 
-    public double? FatGram { get; set; }
+    public decimal? ProteinGram { get; set; }
+
+    public decimal? CarbGram { get; set; }
+
+    public decimal? FatGram { get; set; }
 
     public virtual Food Food { get; set; }
 }

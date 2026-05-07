@@ -25,5 +25,7 @@ public partial class BodyRecord
 
     public string ImageUrl { get; set; }
 
+    public decimal? HipCircumference { get; set; }
+
     public virtual Member Member { get; set; }
 }

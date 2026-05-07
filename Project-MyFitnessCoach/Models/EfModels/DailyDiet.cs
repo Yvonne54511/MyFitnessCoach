@@ -5,21 +5,27 @@ using System.Collections.Generic;
 
 namespace Project_MyFitnessCoach.Models.EfModels;
 
-public partial class FoodRecord
+public partial class DailyDiet
 {
     public int Id { get; set; }
 
     public int MemberId { get; set; }
 
-    public DateTime EatDt { get; set; }
+    public DateOnly? EatDt { get; set; }
 
     public string MealType { get; set; }
 
-    public int FoodId { get; set; }
+    public int? FoodId { get; set; }
 
-    public double Amount { get; set; }
+    public decimal? Amount { get; set; }
 
     public string Measure { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public string Note { get; set; }
+
+    public string ImageUrl { get; set; }
 
     public virtual Food Food { get; set; }
 

@@ -25,6 +25,8 @@ public partial class Product
 
     public bool IsActive { get; set; }
 
+    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+
     public virtual ProductCategory Category { get; set; }
 
     public virtual ICollection<ProductOrderDetail> ProductOrderDetails { get; set; } = new List<ProductOrderDetail>();

@@ -205,7 +205,7 @@ namespace Project_MyFitnessCoach
                     };
 
                     // 由程式產生符合當前環境的正確雜湊值
-                    adminUser.HashedPassword = hasher.HashPassword(adminUser, "123456");
+                    adminUser.HashedPassword = hasher.HashPassword(adminUser, "@A12345678");
 
                     db.Users.Add(adminUser);
                     db.SaveChanges();

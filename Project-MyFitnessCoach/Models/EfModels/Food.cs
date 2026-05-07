@@ -13,11 +13,19 @@ public partial class Food
 
     public string FoodName { get; set; }
 
-    public bool IsDeleted { get; set; }
+    public bool IsActive { get; set; }
+
+    public int? MemberId { get; set; }
+
+    public DateTime UpdatedAt { get; set; }
 
     public virtual FoodCategory Category { get; set; }
 
-    public virtual ICollection<FoodRecord> FoodRecords { get; set; } = new List<FoodRecord>();
+    public virtual ICollection<DailyDiet> DailyDiets { get; set; } = new List<DailyDiet>();
 
-    public virtual ICollection<Nutrient> Nutrients { get; set; } = new List<Nutrient>();
+    public virtual Member Member { get; set; }
+
+    public virtual ICollection<MemberFavoriteFood> MemberFavoriteFoods { get; set; } = new List<MemberFavoriteFood>();
+
+    public virtual ICollection<NutrientReferenceValue> NutrientReferenceValues { get; set; } = new List<NutrientReferenceValue>();
 }

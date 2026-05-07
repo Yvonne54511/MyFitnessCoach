@@ -29,6 +29,28 @@ public partial class ProductOrder
 
     public string Memo { get; set; }
 
+    public string MerchantTradeNo { get; set; }
+
+    public decimal? FinalAmount { get; set; }
+
+    public int PaymentMethod { get; set; }
+
+    public string StoreId { get; set; }
+
+    public string StoreName { get; set; }
+
+    public string LogisticsOrderNo { get; set; }
+
+    public int? CouponId { get; set; }
+
+    public byte InvoiceType { get; set; }
+
+    public string DonationCode { get; set; }
+
+    public string CarrierCode { get; set; }
+
+    public virtual Coupon Coupon { get; set; }
+
     public virtual Member Member { get; set; }
 
     public virtual ICollection<ProductOrderDetail> ProductOrderDetails { get; set; } = new List<ProductOrderDetail>();

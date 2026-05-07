@@ -15,13 +15,13 @@ public partial class Member
 
     public DateTime? DateOfBirth { get; set; }
 
-    public double? Weight { get; set; }
+    public double? StartWeight { get; set; }
 
     public double? Height { get; set; }
 
     public string ActivityLevel { get; set; }
 
-    public string Target { get; set; }
+    public string HealthPlan { get; set; }
 
     public double? Bmr { get; set; }
 
@@ -31,9 +31,21 @@ public partial class Member
 
     public int CancelCount { get; set; }
 
+    public double? TargetWeight { get; set; }
+
     public virtual ICollection<BodyRecord> BodyRecords { get; set; } = new List<BodyRecord>();
 
-    public virtual ICollection<FoodRecord> FoodRecords { get; set; } = new List<FoodRecord>();
+    public virtual Cart Cart { get; set; }
+
+    public virtual ICollection<DailyDiet> DailyDiets { get; set; } = new List<DailyDiet>();
+
+    public virtual ICollection<Food> Foods { get; set; } = new List<Food>();
+
+    public virtual ICollection<MemberCoupon> MemberCoupons { get; set; } = new List<MemberCoupon>();
+
+    public virtual ICollection<MemberFavoriteFood> MemberFavoriteFoods { get; set; } = new List<MemberFavoriteFood>();
+
+    public virtual MemberGoal MemberGoal { get; set; }
 
     public virtual MemberViolation MemberViolation { get; set; }
 
@@ -48,4 +60,6 @@ public partial class Member
     public virtual User User { get; set; }
 
     public virtual UserWallet UserWallet { get; set; }
+
+    public virtual ICollection<WaterLog> WaterLogs { get; set; } = new List<WaterLog>();
 }

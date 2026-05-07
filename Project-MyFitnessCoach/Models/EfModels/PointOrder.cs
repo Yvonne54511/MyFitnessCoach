@@ -23,6 +23,8 @@ public partial class PointOrder
 
     public int Status { get; set; }
 
+    public string MerchantTradeNo { get; set; }
+
     public virtual Member Member { get; set; }
 
     public virtual ICollection<PointsRecordDetail> PointsRecordDetails { get; set; } = new List<PointsRecordDetail>();
