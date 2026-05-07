@@ -29,8 +29,6 @@ public partial class ReserveOrder
 
     public string GoogleEventId { get; set; }
 
-    public string GuestEmail { get; set; }
-
     public virtual Member Member { get; set; }
 
     public virtual ICollection<PointsRecordDetail> PointsRecordDetails { get; set; } = new List<PointsRecordDetail>();

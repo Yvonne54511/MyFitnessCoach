@@ -135,10 +135,10 @@ namespace Project_MyFitnessCoach.Repositories
                                 string email = "";
                                 string userName = "";
 
-                                if (order.MemberId == 6 && !string.IsNullOrEmpty(order.GuestEmail))
+                                if (order.MemberId == 6 && !string.IsNullOrEmpty(order.Memorandum) && order.Memorandum.StartsWith("GuestEmail:"))
                                 {
-                                    // 訪客模式：從專用欄位提取 Email
-                                    email = order.GuestEmail.Trim();
+                                    // 訪客模式：從備註提取 Email
+                                    email = order.Memorandum.Replace("GuestEmail:", "").Trim();
                                     userName = "訪客";
                                 }
                                 else if (member.User != null && !string.IsNullOrEmpty(member.User.Email))
